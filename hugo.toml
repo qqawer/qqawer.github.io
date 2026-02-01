@@ -49,7 +49,7 @@ defaultContentLanguage = "en" # Changed default to English
         [[languages.zh.menu.main]]
             identifier = "search"
             name = "搜索"
-            url = "/zh/search/"
+            url = "/zh/page/search/"
             weight = -10
             [languages.zh.menu.main.params]
                 icon = "search"
@@ -65,7 +65,7 @@ defaultContentLanguage = "en" # Changed default to English
         [[languages.zh.menu.main]]
             identifier = "archives"
             name = "归档"
-            url = "/zh/archives/"
+            url = "/zh/page/archives/"
             weight = 2
             [languages.zh.menu.main.params]
                 icon = "archives"
@@ -73,7 +73,7 @@ defaultContentLanguage = "en" # Changed default to English
         [[languages.zh.menu.main]]
             identifier = "about"
             name = "关于"
-            url = "/zh/about/"
+            url = "/zh/page/about/"
             weight = 4
             [languages.zh.menu.main.params]
                 icon = "user"
@@ -81,7 +81,7 @@ defaultContentLanguage = "en" # Changed default to English
         [[languages.zh.menu.main]]
             identifier = "links"
             name = "链接"
-            url = "/zh/links/"
+            url = "/zh/page/links/"
             weight = 5
             [languages.zh.menu.main.params]
                 icon = "link"
@@ -114,7 +114,7 @@ defaultContentLanguage = "en" # Changed default to English
         [[languages.en.menu.main]]
             identifier = "search"
             name = "Search"
-            url = "/search/"
+            url = "/page/search/"
             weight = -10
             [languages.en.menu.main.params]
                 icon = "search"
@@ -130,7 +130,7 @@ defaultContentLanguage = "en" # Changed default to English
         [[languages.en.menu.main]]
             identifier = "archives"
             name = "Archives"
-            url = "/archives/"
+            url = "/page/archives/"
             weight = 2
             [languages.en.menu.main.params]
                 icon = "archives"
@@ -138,7 +138,7 @@ defaultContentLanguage = "en" # Changed default to English
         [[languages.en.menu.main]]
             identifier = "about"
             name = "About"
-            url = "/about/"
+            url = "/page/about/"
             weight = 4
             [languages.en.menu.main.params]
                 icon = "user"
@@ -146,7 +146,7 @@ defaultContentLanguage = "en" # Changed default to English
         [[languages.en.menu.main]]
             identifier = "links"
             name = "Links"
-            url = "/links/"
+            url = "/page/links/"
             weight = 5
             [languages.en.menu.main.params]
                 icon = "link"
