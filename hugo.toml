@@ -1,0 +1,179 @@
+baseURL = "https://qqawer.github.io/"
+title = "Outsider's Blog"
+theme = "hugo-theme-stack"
+hasCJKLanguage = true
+defaultContentLanguage = "en" # Changed default to English
+
+[services]
+    [services.disqus]
+        shortname = "your-disqus-shortname"
+
+[params]
+    mainSections = ["post"]
+    rssFullContent = true
+    favicon = "img/avatar.png"
+
+    [params.sidebar]
+        emoji = "👋"
+        subtitle = "这里是副标题"
+        avatar = "img/avatar.png"
+
+
+
+    [params.colorScheme]
+        toggle = true
+        default = "auto" # 可选: "auto" (跟随系统), "light" (亮色), "dark" (暗色)
+
+    ignoreLogs = ['warning-goldmark-raw-html']
+
+    [params.article]
+        [params.article.license]
+            enabled = true
+            default = "Licensed under CC BY-NC-SA 4.0"
+
+    [params.widgets]
+        homepage = [
+             { type = "search" },
+             { type = "archives", params = { limit = 5 } },
+             { type = "categories", params = { limit = 10 } },
+             { type = "tag-cloud", params = { limit = 10 } },
+        ]
+        page = [{ type = "toc" }]
+
+[languages]
+    [languages.zh]
+        languageName = "中文"
+        weight = 2
+        title = "Outsider的博客"
+        
+        [[languages.zh.menu.main]]
+            identifier = "search"
+            name = "搜索"
+            url = "/zh/search/"
+            weight = -10
+            [languages.zh.menu.main.params]
+                icon = "search"
+
+        [[languages.zh.menu.main]]
+            identifier = "home"
+            name = "首页"
+            url = "/zh/"
+            weight = 1
+            [languages.zh.menu.main.params]
+                icon = "home"
+
+        [[languages.zh.menu.main]]
+            identifier = "archives"
+            name = "归档"
+            url = "/zh/archives/"
+            weight = 2
+            [languages.zh.menu.main.params]
+                icon = "archives"
+        
+        [[languages.zh.menu.main]]
+            identifier = "about"
+            name = "关于"
+            url = "/zh/about/"
+            weight = 4
+            [languages.zh.menu.main.params]
+                icon = "user"
+        
+        [[languages.zh.menu.main]]
+            identifier = "links"
+            name = "链接"
+            url = "/zh/links/"
+            weight = 5
+            [languages.zh.menu.main.params]
+                icon = "link"
+
+        [[languages.zh.menu.social]]
+            identifier = "github"
+            name = "GitHub"
+            url = "https://github.com/qqawer"
+            weight = 1
+            [languages.zh.menu.social.params]
+                icon = "brand-github"
+                newTab = false
+
+        [[languages.zh.menu.social]]
+            identifier = "linkedin"
+            name = "LinkedIn"
+            url = "https://www.linkedin.com/in/zhili-wang-24b3192a6/"
+            weight = 2
+            [languages.zh.menu.social.params]
+                icon = "linkedin"
+                newTab = false
+
+    [languages.en]
+        languageName = "English"
+        weight = 1
+        title = "Outsider's Blog"
+        [languages.en.params.sidebar]
+            subtitle = "Theme Stack designed for blogs"
+        
+        [[languages.en.menu.main]]
+            identifier = "search"
+            name = "Search"
+            url = "/search/"
+            weight = -10
+            [languages.en.menu.main.params]
+                icon = "search"
+
+        [[languages.en.menu.main]]
+            identifier = "home"
+            name = "Home"
+            url = "/"
+            weight = 1
+            [languages.en.menu.main.params]
+                icon = "home"
+
+        [[languages.en.menu.main]]
+            identifier = "archives"
+            name = "Archives"
+            url = "/archives/"
+            weight = 2
+            [languages.en.menu.main.params]
+                icon = "archives"
+        
+        [[languages.en.menu.main]]
+            identifier = "about"
+            name = "About"
+            url = "/about/"
+            weight = 4
+            [languages.en.menu.main.params]
+                icon = "user"
+
+        [[languages.en.menu.main]]
+            identifier = "links"
+            name = "Links"
+            url = "/links/"
+            weight = 5
+            [languages.en.menu.main.params]
+                icon = "link"
+
+        [[languages.en.menu.social]]
+            identifier = "github"
+            name = "GitHub"
+            url = "https://github.com/qqawer"
+            weight = 1
+            [languages.en.menu.social.params]
+                icon = "brand-github"
+                newTab = false
+
+        [[languages.en.menu.social]]
+            identifier = "linkedin"
+            name = "LinkedIn"
+            url = "https://www.linkedin.com/in/zhili-wang-24b3192a6/"
+            weight = 2
+            [languages.en.menu.social.params]
+                icon = "linkedin"
+                newTab = false
+
+        [languages.en.params.widgets]
+            homepage = [
+                 { type = "search" },
+                 { type = "archives", params = { limit = 5 } },
+                 { type = "categories", params = { limit = 10 } },
+                 { type = "tag-cloud", params = { limit = 10 } },
+            ]
+            page = [{ type = "toc" }]
