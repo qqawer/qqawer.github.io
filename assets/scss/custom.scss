@@ -100,78 +100,354 @@
     /* Night: Sky Blue */
 }
 
-/* Keywords (func, var, etc) -> PURPLE */
+/* 1. Code Block Container (The "Card") */
+.article-content .highlight {
+    background-color: #f6f8fa !important;
+    /* Light Mode: Light Gray */
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    margin: 20px 0;
+    padding: 10px 0;
+    /* Standard padding, no top space for dots */
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Remove Mac Dots (User Requested) */
+.article-content .highlight::before {
+    display: none !important;
+}
+
+/* 2. Inner Elements (Reset to prevent double-boxing) */
+.article-content .highlight pre,
+.article-content .highlight .chroma,
+.article-content .highlight table,
+.article-content .highlight td {
+    background-color: transparent !important;
+    /* Ensure inner layers are clear */
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 3. The Code Content Text */
+.article-content .highlight code,
+.article-content .highlight .chroma .lntd:last-child,
+.article-content .highlight .chroma .lntd:first-child {
+    font-family: "JetBrains Mono", Consolas, Monaco, monospace;
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+    padding: 0 !important;
+}
+
+/* Fix Line Number Alignment */
+.article-content .highlight .chroma .lntd:first-child {
+    padding-right: 15px !important;
+    text-align: right;
+    user-select: none;
+    color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.article-content .highlight .chroma .lntd:last-child {
+    width: 100%;
+}
+
+/* Container Padding */
+.article-content .highlight>.chroma,
+.article-content .highlight>table {
+    padding: 15px !important;
+    display: block;
+}
+
+.article-content .highlight table {
+    width: 100% !important;
+    border-collapse: collapse;
+}
+
+.article-content .highlight code {
+    color: #24292e !important;
+}
+
+/* Dark Mode Adaptation */
+[data-scheme="dark"] .article-content .highlight {
+    background-color: #000000 !important;
+    /* Pure Black Request */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+[data-scheme="dark"] .article-content .highlight code,
+[data-scheme="dark"] .article-content .highlight .chroma .lntd:last-child {
+    color: #e6edf3 !important;
+}
+
+[data-scheme="dark"] .article-content .highlight .chroma .lntd:first-child {
+    color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ... (keep other sections) ... */
+
+/* Dark Mode Extend Button Gradient */
+[data-scheme="dark"] .highlight-expand-btn {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
+    /* Fade to Black */
+    color: #8b949e;
+}
+
+[data-scheme="dark"] .highlight-expand-btn:hover {
+    color: #58a6ff;
+}
+
+/* --- COPY BUTTON FIX --- */
+.copyCodeButton {
+    background-color: #f6f8fa !important;
+    /* Match Light Mode Block */
+    color: #586069 !important;
+    border: none !important;
+}
+
+[data-scheme="dark"] .copyCodeButton {
+    background-color: #000000 !important;
+    /* Match Dark Mode Black for Copy Button */
+    color: #8b949e !important;
+}
+
+/* --- SYNTAX HIGHLIGHTING (Vibrant "Picture 4" Style) --- */
+
+/* Keywords (func, var, if, else) -> Cyan/Pink */
 .chroma .k,
 .chroma .kd,
 .chroma .kp,
 .chroma .kr,
 .chroma .kt {
-    color: #6f42c1 !important;
-    /* Day: Purple */
+    color: #d73a49 !important;
+    /* Pink/Red */
 }
+
+/* CSS Properties / Attributes -> Green */
+.chroma .nt,
+.chroma .na,
+.chroma .nc,
+.chroma .nd {
+    color: #22863a !important;
+    /* Green */
+}
+
+/* Numbers / Values / Units -> Purple */
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo,
+.chroma .il {
+    color: #6f42c1 !important;
+    /* Purple */
+}
+
+/* Strings -> Dark Blue */
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .dl,
+.chroma .sd,
+.chroma .s2 {
+    color: #032f62 !important;
+    /* Navy Blue */
+}
+
+/* Variables -> Orange/Red */
+.chroma .nv,
+.chroma .vc,
+.chroma .vg,
+.chroma .vi {
+    color: #e36209 !important;
+    /* Orange */
+}
+
+/* Functions -> Purple/Blue */
+.chroma .nf,
+.chroma .fm {
+    color: #6f42c1 !important;
+    /* Purple */
+}
+
+/* Comments -> Gray Italic */
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .cp,
+.chroma .cpf,
+.chroma .c1,
+.chroma .cs {
+    color: #6a737d !important;
+    font-style: italic;
+}
+
+/* --- DARK MODE SYNTAX UNIFICATION (Matching Light Mode Vibe) --- */
+/* Ensure the SAME hues are used, just brighter for contrast */
 
 [data-scheme="dark"] .chroma .k,
 [data-scheme="dark"] .chroma .kd,
 [data-scheme="dark"] .chroma .kp,
 [data-scheme="dark"] .chroma .kr,
 [data-scheme="dark"] .chroma .kt {
-    color: #c678dd !important;
-    /* Night: Light Purple */
+    color: #ff7b72 !important;
+    /* Brighter Pink/Red */
 }
 
-/* Numbers -> ORANGE */
-.chroma .m,
-.chroma .mb,
-.chroma .mh,
-.chroma .mi {
-    color: #d73a49 !important;
+[data-scheme="dark"] .chroma .nt,
+[data-scheme="dark"] .chroma .na,
+[data-scheme="dark"] .chroma .nc,
+[data-scheme="dark"] .chroma .nd {
+    color: #7ee787 !important;
+    /* Brighter Green */
 }
 
 [data-scheme="dark"] .chroma .m,
+[data-scheme="dark"] .chroma .mi,
 [data-scheme="dark"] .chroma .mb,
+[data-scheme="dark"] .chroma .mf,
 [data-scheme="dark"] .chroma .mh,
-[data-scheme="dark"] .chroma .mi {
-    color: #d19a66 !important;
-}
-
-/* Night: Orange */
-
-/* Functions -> BLUE/YELLOW */
-.chroma .nf,
-.chroma .fm {
-    color: #005cc5 !important;
-}
-
+[data-scheme="dark"] .chroma .mo,
+[data-scheme="dark"] .chroma .il,
 [data-scheme="dark"] .chroma .nf,
 [data-scheme="dark"] .chroma .fm {
-    color: #61afef !important;
+    color: #d2a8ff !important;
+    /* Brighter Purple */
 }
 
-/* Comments - Gray */
-.chroma .c,
-.chroma .c1,
-.chroma .ch,
-.chroma .cm {
-    color: #6a737d !important;
-    font-style: italic;
+[data-scheme="dark"] .chroma .s,
+[data-scheme="dark"] .chroma .s2,
+[data-scheme="dark"] .chroma .sa,
+[data-scheme="dark"] .chroma .sb,
+[data-scheme="dark"] .chroma .sc,
+[data-scheme="dark"] .chroma .dl,
+[data-scheme="dark"] .chroma .sd {
+    color: #a5d6ff !important;
+    /* Brighter Blue */
+}
+
+[data-scheme="dark"] .chroma .nv,
+[data-scheme="dark"] .chroma .vc,
+[data-scheme="dark"] .chroma .vg,
+[data-scheme="dark"] .chroma .vi {
+    color: #ffa657 !important;
+    /* Brighter Orange */
 }
 
 [data-scheme="dark"] .chroma .c,
-[data-scheme="dark"] .chroma .c1,
 [data-scheme="dark"] .chroma .ch,
-[data-scheme="dark"] .chroma .cm {
-    color: #7f848e !important;
+[data-scheme="dark"] .chroma .cm,
+[data-scheme="dark"] .chroma .cp,
+[data-scheme="dark"] .chroma .cpf,
+[data-scheme="dark"] .chroma .c1,
+[data-scheme="dark"] .chroma .cs {
+    color: #8b949e !important;
+    /* Lighter Gray */
 }
 
-/* Inline Code Spans */
+
+/* --- INLINE CODE (Gray Box + Black Text) --- */
+/* This targets strict inline `code` that isn't part of a syntax block */
 :root {
-    --code-background-color: rgba(175, 184, 193, 0.2) !important;
-    --code-text-color: #24292e !important;
-    /* Revert to specific dark gray (GitHub style) */
+    --code-background-color: #eff1f3 !important;
+    /* Standard Light Gray Chip */
+    --code-text-color: #1f2328 !important;
+    /* Strict Black/Dark Gray */
 }
 
 [data-scheme="dark"] {
-    --code-background-color: rgba(110, 118, 129, 0.4) !important;
-    --code-text-color: #c9d1d9 !important;
-    /* Revert to light gray */
+    /* USER REQUEST: "Gray square with black font" even in dark mode */
+    --code-background-color: #eff1f3 !important;
+    /* Keep it Light Gray */
+    --code-text-color: #1f2328 !important;
+    /* Keep it Black */
+}
+
+/* Force override for any non-highlight code blocks (tables, paragraphs) */
+.article-content>p>code,
+.article-content>ul>li>code,
+.article-content>ol>li>code,
+.article-content>table code {
+    background-color: #eff1f3 !important;
+    color: #1f2328 !important;
+    padding: 0.2em 0.4em;
+    border-radius: 6px;
+    font-family: "JetBrains Mono", Consolas, Monaco, monospace;
+    font-size: 85%;
+}
+
+/* Ensure no conflict with the main code blocks */
+.article-content .highlight code {
+    background-color: transparent !important;
+    color: inherit !important;
+}
+
+/* --- COLLAPSIBLE CODE BLOCKS --- */
+.highlight-wrapper {
+    position: relative;
+    transition: max-height 0.3s ease;
+}
+
+.highlight-wrapper.collapsed {
+    max-height: 300px;
+    /* ~15 lines */
+    overflow: hidden;
+}
+
+.highlight-expand-btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    /* Gradient fade area */
+    background: linear-gradient(to bottom, rgba(246, 248, 250, 0), rgba(246, 248, 250, 1));
+    /* Light Mode Fade */
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    padding-bottom: 10px;
+    color: #586069;
+    font-size: 14px;
+    font-weight: bold;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.highlight-expand-btn:hover {
+    color: #0366d6;
+}
+
+.highlight-expand-btn i {
+    margin-right: 5px;
+}
+
+/* Dark Mode Extend Button Gradient */
+[data-scheme="dark"] .highlight-expand-btn {
+    background: linear-gradient(to bottom, rgba(30, 30, 30, 0), rgba(30, 30, 30, 1));
+    color: #8b949e;
+}
+
+[data-scheme="dark"] .highlight-expand-btn:hover {
+    color: #58a6ff;
+}
+
+/* --- COPY BUTTON FIX --- */
+.copyCodeButton {
+    background-color: #f6f8fa !important;
+    /* Match Light Mode Block */
+    color: #586069 !important;
+    border: none !important;
+}
+
+[data-scheme="dark"] .copyCodeButton {
+    background-color: #1e1e1e !important;
+    /* Match Dark Mode Block */
+    color: #8b949e !important;
 }

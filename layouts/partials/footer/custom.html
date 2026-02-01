@@ -1,0 +1,29 @@
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const MAX_HEIGHT = 300; // Max height in pixels before collapsing
+        const codeBlocks = document.querySelectorAll('.article-content .highlight');
+
+        codeBlocks.forEach(block => {
+            // Check current height
+            if (block.offsetHeight > MAX_HEIGHT) {
+                // Add class to styling
+                block.classList.add('highlight-wrapper', 'collapsed');
+
+                // Create Button
+                const btn = document.createElement('div');
+                btn.className = 'highlight-expand-btn';
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+
+                // Add Click Event
+                btn.addEventListener('click', () => {
+                    block.classList.remove('collapsed');
+                    block.style.maxHeight = 'none'; // Ensure it stays open
+                    btn.remove(); // Remove button after expanding
+                });
+
+                // Append button to block
+                block.appendChild(btn);
+            }
+        });
+    });
+</script>

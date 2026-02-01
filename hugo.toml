@@ -8,6 +8,12 @@ defaultContentLanguage = "en" # Changed default to English
     [services.disqus]
         shortname = "your-disqus-shortname"
 
+[markup]
+    [markup.highlight]
+        noClasses = false
+        lineNos = true
+        guessSyntax = true
+
 [params]
     mainSections = ["post"]
     rssFullContent = true
