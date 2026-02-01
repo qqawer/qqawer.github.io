@@ -1,0 +1,11 @@
+# Hugo default output
+public
+resources/_gen
+assets/jsconfig.json
+hugo_stats.json
+*~
+~*
+
+# System files
+.DS_Store
+Thumbs.db
