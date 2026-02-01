@@ -158,11 +158,33 @@
 .article-content .highlight>table {
     padding: 15px !important;
     display: block;
+    overflow-x: auto !important;
+    /* Fix Missing Scrollbar */
 }
 
 .article-content .highlight table {
     width: 100% !important;
     border-collapse: collapse;
+    display: table !important;
+    /* Restore Table Layout inside Scrollable Container */
+}
+
+/* Scrollbar Styling (Optional Polish) */
+.article-content .highlight>.chroma::-webkit-scrollbar,
+.article-content .highlight>table::-webkit-scrollbar {
+    height: 8px;
+    background-color: transparent;
+}
+
+.article-content .highlight>.chroma::-webkit-scrollbar-thumb,
+.article-content .highlight>table::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+[data-scheme="dark"] .article-content .highlight>.chroma::-webkit-scrollbar-thumb,
+[data-scheme="dark"] .article-content .highlight>table::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .article-content .highlight code {
