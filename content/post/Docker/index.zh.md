@@ -3,7 +3,6 @@ title: "Docker 学习笔记：镜像操作详解"
 description: "深入理解 Docker 镜像的核心操作：获取、运行、列出与删除"
 date: 2026-02-02
 slug: "docker-image-operations"
-image: "helena-hertz-wWZzXlDpMog-unsplash.jpg"
 categories:
     - Documentation
 tags:
@@ -16,7 +15,7 @@ toc: true
 
 ### 1) `docker pull`
 
-![docker pull](https://images.unsplash.com/photo-1605745341117-9575522cd999?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80) 
+[docker pull 示意图](https://images.unsplash.com/photo-1605745341117-9575522cd999?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80)
 *(示例图: 容器拉取流程)*
 
 **命令格式**:  
