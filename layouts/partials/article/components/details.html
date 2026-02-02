@@ -1,0 +1,111 @@
+<div class="article-details">
+    {{ if .Params.categories }}
+    <header class="article-category">
+        {{ range (.GetTerms "categories") }}
+        <a href="{{ .RelPermalink }}" {{ with .Params.color }}style="background-color: {{ . }}; color: #fff;" {{ end }}>
+            {{ .LinkTitle }}
+        </a>
+        {{ end }}
+    </header>
+    {{ end }}
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="{{ .RelPermalink }}">
+                {{ .Title }}
+            </a>
+        </h2>
+
+        {{ with .Params.description }}
+        <h3 class="article-subtitle">
+            {{ . }}
+        </h3>
+        {{ end }}
+    </div>
+
+    {{ $showDate := not .Params.disableDate }}
+    {{ $showDate := not .Params.disableDate }}
+    {{ $showReadTime := not .Params.disableReadTime }}
+    {{ $showViewCount := true }}
+
+    {{ if or $showDate $showReadTime $showViewCount }}
+    <footer class="article-time">
+        <!-- 1. Publication Date -->
+        {{ if $showDate }}
+        <div class="article-time--item">
+            {{ partial "helper/icon" "date" }}
+            <time class="article-time--published">
+                {{ .Date.Format "2006-01-02" }}
+            </time>
+        </div>
+        {{ end }}
+
+        <!-- 2. Last Updated (Only if Lastmod > Date) -->
+        {{ if and (ne .Lastmod .Date) (gt .Lastmod .Date) }}
+        <span class="article-time--separator">|</span>
+        <div class="article-time--item">
+            {{ partial "helper/icon" "edit" }}
+            <time class="article-time--updated" title="Last Updated">
+                {{ .Lastmod.Format "2006-01-02" }}
+            </time>
+        </div>
+        {{ end }}
+
+        <!-- 3. Word Count -->
+        <span class="article-time--separator">|</span>
+        <div class="article-time--item">
+            {{ partial "helper/icon" "article" }}
+            <span>{{ .WordCount }} 字</span>
+        </div>
+
+        <!-- 4. View Count -->
+        <span class="article-time--separator">|</span>
+        <div class="article-time--item" id="viewCount">
+            {{ partial "helper/icon" "eye" }}
+            <span class="article-time--views">
+                <span id="vercount_value_page_pv">loading...</span>次
+            </span>
+        </div>
+    </footer>
+    {{ end }}
+
+    <style>
+        .article-time {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            /* Allow wrapping on small screens */
+            gap: 10px;
+            /* Space between items */
+            color: #adadad;
+            font-size: 1.4rem;
+            /* Match theme font size */
+        }
+
+        .article-time--item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .article-time--separator {
+            color: #e0e0e0;
+            font-weight: 300;
+        }
+
+        [data-scheme="dark"] .article-time--separator {
+            color: #4a4a4a;
+        }
+    </style>
+
+    {{ if .IsTranslated }}
+    <footer class="article-translations">
+        {{ partial "helper/icon" "language" }}
+        <div>
+            {{ range .Translations }}
+            <a href="{{ .RelPermalink }}" class="link">{{ .Language.LanguageName }}</a>
+            {{ end }}
+        </div>
+    </footer>
+    {{ end }}
+</div>

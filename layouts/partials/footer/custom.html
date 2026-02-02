@@ -25,5 +25,23 @@
                 block.appendChild(btn);
             }
         });
+
+        // 2. View Count Logic (Hide on Homepage)
+        function showHideView() {
+            let viewCounts = document.querySelectorAll("#viewCount");
+            if (viewCounts.length > 0) {
+                // If not an article page, hide view counts
+                let article = document.querySelector(".article-page");
+                if (!article) {
+                    viewCounts.forEach(ele => {
+                        ele.style.display = 'none';
+                    });
+                }
+            }
+        }
+        showHideView();
     });
 </script>
+
+<!-- Vercount Script -->
+<script defer src="https://cn.vercount.one/js"></script>
