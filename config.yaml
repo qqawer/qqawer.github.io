@@ -1,3 +1,0 @@
-
-# Suppress raw markwdown warnings
-ignoreLogs: ["warning-goldmark-raw-html"]
