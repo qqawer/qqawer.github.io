@@ -107,10 +107,14 @@
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     margin: 20px 0;
-    padding: 10px 0;
-    /* Standard padding, no top space for dots */
+    padding: 0;
+    /* Reset padding here, handled by chroma */
     position: relative;
     border: 1px solid rgba(0, 0, 0, 0.05);
+
+    /* FIX OVERFLOW */
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* Remove Mac Dots (User Requested) */
@@ -161,6 +165,8 @@
     display: block;
     overflow-x: auto !important;
     /* Fix Missing Scrollbar */
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .article-content .highlight table {
