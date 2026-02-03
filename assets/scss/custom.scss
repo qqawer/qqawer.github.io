@@ -153,10 +153,11 @@
     width: 100%;
 }
 
-/* Container Padding */
+/* Container Padding - Reserve top space for Copy Button */
 .article-content .highlight>.chroma,
 .article-content .highlight>table {
-    padding: 15px !important;
+    padding: 45px 15px 15px 15px !important;
+    /* Top padding increased */
     display: block;
     overflow-x: auto !important;
     /* Fix Missing Scrollbar */
@@ -223,16 +224,27 @@
 
 /* --- COPY BUTTON FIX --- */
 .copyCodeButton {
-    background-color: #f6f8fa !important;
-    /* Match Light Mode Block */
-    color: #586069 !important;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 10;
+
+    background-color: #e1e4e8 !important;
+    /* Slightly darker for visibility */
+    color: #24292e !important;
     border: none !important;
 }
 
 [data-scheme="dark"] .copyCodeButton {
-    background-color: #000000 !important;
-    /* Match Dark Mode Black for Copy Button */
-    color: #8b949e !important;
+    background-color: #2d2d2d !important;
+    /* Match Dark Mode Header */
+    color: #c9d1d9 !important;
 }
 
 /* --- SYNTAX HIGHLIGHTING (Vibrant "Picture 4" Style) --- */
