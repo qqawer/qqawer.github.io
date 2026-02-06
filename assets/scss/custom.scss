@@ -107,8 +107,13 @@
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     margin: 20px 0;
-    padding: 0;
-    /* Reset padding here, handled by chroma */
+
+    /* PADDING for Copy Button Header */
+    padding-top: 40px !important;
+    padding-bottom: 10px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+
     position: relative;
     border: 1px solid rgba(0, 0, 0, 0.05);
 
@@ -132,6 +137,7 @@
     border: none !important;
     box-shadow: none !important;
     margin: 0 !important;
+    /* PADDING REMOVED from inner, handled by container */
     padding: 0 !important;
 }
 
@@ -157,24 +163,16 @@
     width: 100%;
 }
 
-/* Container Padding - Reserve top space for Copy Button */
+/* Container Padding -> Removed specific padding from child to rely on Container */
 .article-content .highlight>.chroma,
 .article-content .highlight>table {
-    padding: 45px 15px 15px 15px !important;
-    /* Top padding increased */
     display: block;
-    overflow-x: auto !important;
-    /* Fix Missing Scrollbar */
-    max-width: 100%;
-    box-sizing: border-box;
+    width: 100%;
 }
 
-.article-content .highlight table {
-    width: 100% !important;
-    border-collapse: collapse;
-    display: table !important;
-    /* Restore Table Layout inside Scrollable Container */
-}
+/* Restore theme's flex/block layout for tables - DO NOT FORCE display: table */
+/* The theme's common.scss handles the overflow on the td:last-child */
+
 
 /* Scrollbar Styling (Optional Polish) */
 .article-content .highlight>.chroma::-webkit-scrollbar,
