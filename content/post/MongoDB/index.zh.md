@@ -43,6 +43,9 @@ use EcoGo;
 // 删除当前数据库（谨慎操作）
 db.dropDatabase();
 
+// 语法：db.集合名.drop()
+db.chat_records.drop(); // 删除chat_records集合
+
 // 退出终端
 exit;
 ```
@@ -239,6 +242,39 @@ db.users.deleteOne({ "id": "8f2e4a0d-7b1c-4f9a-9d2e-1a3b5c7d9f0e" });
 db.users.deleteOne({ "phone": "13800001234" });
 ```
 **成功输出**：`{ "acknowledged": true, "deletedCount": 1 }`
+
+#### 4.4.1.2 删除字段
+```js
+// 单文档删除字段
+db.集合名.updateOne(
+  { 查询条件 }, // 定位要修改的文档
+  { $unset: { "要删除的字段名": "" } } // 字段值可填任意（通常用空字符串）
+);
+
+// 多文档删除字段
+db.集合名.updateMany(
+  { 查询条件 }, // 筛选要修改的所有文档
+  { $unset: { "要删除的字段名": "" } }
+);
+
+// 删除该用户的share_location字段
+db.users.updateOne(
+  { "phone": "13800001234" }, // 定位唯一用户
+  { $unset: { "preferences.share_location": "" } } // 删除嵌套字段
+);
+
+
+// 场景：删除用户邮箱字段
+db.users.updateMany(
+  {}, // 空条件表示匹配所有文档/行（谨慎使用！）
+  { $unset: { "email": "" } }
+);
+```
+**成功输出**：`{ "acknowledged": true, "matchedCount": 1, "modifiedCount": 1 }`
+- matchedCount=1：匹配到 1 个用户文档；
+- modifiedCount=1：成功删除该字段。
+
+
 
 #### 4.4.2 批量数据删除
 ```js
