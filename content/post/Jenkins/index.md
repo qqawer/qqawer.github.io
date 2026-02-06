@@ -1,9 +1,8 @@
 ---
 title: "Jenkins 学习笔记"
 description: "从入门到实践：Jenkins 核心概念、镜像操作与常用命令详解"
-date: 2026-02-02
+date: 2026-02-06
 slug: "jenkins-learning-notes"
-image: "helena-hertz-wWZzXlDpMog-unsplash.jpg"
 categories:
     - Documentation
 tags:
