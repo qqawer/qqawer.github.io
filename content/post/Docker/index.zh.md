@@ -190,9 +190,98 @@ docker exec -it web-server /bin/bash
 
 ---
 
-## 5. 构建与发布 (`docker build & push`)
+## 5. Dockerfile 核心指令详解与实战
 
-### 5.1 构建镜像 (`docker build`)
+Dockerfile 是一个文本文件，包含了一系列构建 Docker 镜像的指令。通过 `docker build` 命令，我们可以根据 Dockerfile 的描述自动创建镜像。
+
+### 5.1 常用指令概览
+
+| 指令 | 说明 | 示例 |
+| :--- | :--- | :--- |
+| **FROM** | 指定基础镜像 (必须是第一条指令) | `FROM ubuntu:18.04` |
+| **RUN** | 执行 Shell 命令 (构建时执行) | `RUN apt-get update` |
+| **COPY** | 复制本地文件到镜像 | `COPY ./app /usr/bin/app` |
+| **WORKDIR** | 设置工作目录 (后续指令在该目录下执行) | `WORKDIR /app` |
+| **ENV** | 设置环境变量 (持久化到镜像) | `ENV VERSION=1.0` |
+| **ARG** | 设置构建参数 (仅构建时有效) | `ARG GO_VERSION=1.19` |
+| **CMD** | 容器启动默认命令 (可被覆盖) | `CMD ["./app"]` |
+| **ENTRYPOINT** | 容器启动入口点 (不可覆盖) | `ENTRYPOINT ["./app"]` |
+| **EXPOSE** | 声明监听端口 | `EXPOSE 8080` |
+
+### 5.2 核心指令辨析
+
+#### 1. CMD 与 ENTRYPOINT 的区别
+这是 Dockerfile 中最容易混淆的两个指令。
+
+| 特性 | CMD | ENTRYPOINT |
+| :--- | :--- | :--- |
+| **作用** | 设置容器启动的默认命令 | 设置容器的执行入口 |
+| **覆盖性** | `docker run` 后的参数会**完全覆盖** CMD | `docker run` 后的参数会**追加**到 ENTRYPOINT 后 |
+| **最佳实践** | 用于提供默认参数 | 用于定义固定的执行程序 |
+
+**组合使用最佳实践**:
+使用 `ENTRYPOINT` 定义固定的主程序，使用 `CMD` 定义默认参数。
+```dockerfile
+FROM alpine
+ENTRYPOINT ["ls"]
+CMD ["-l"]
+```
+- `docker run my-image` -> 执行 `ls -l`
+- `docker run my-image -a` -> 执行 `ls -a` (覆盖了 CMD 的 `-l`)
+
+#### 2. ENV vs ARG
+- **ENV (Environment Variable)**: 环境变量。不仅在构建过程中有效，**容器运行时**也依然存在。适合设置程序运行时需要的配置（如数据库地址）。
+- **ARG (Build Argument)**: 构建参数。仅在 `docker build` **构建过程**中有效，构建好的镜像内不存在。适合设置版本号等构建时需要的变量。
+
+#### 3. WORKDIR
+- 用于指定工作目录。后续的 `RUN`, `CMD`, `ENTRYPOINT`, `COPY` 等指令都会在该目录下执行。
+- 如果目录不存在，会自动创建。
+- 推荐使用绝对路径。
+```dockerfile
+WORKDIR /app
+COPY . .
+# 此时文件被复制到了 /app 目录下
+```
+
+### 5.3 实战：构建 Go (Gin) 服务镜像
+
+下面演示如何将一个 Go 语言写的 Web 服务 (Gin 框架) 打包成 Docker 镜像。
+
+**1. 准备 Go 项目**
+假设有一个编译好的二进制文件 `main` (注意需在 Linux 环境下编译或设置交叉编译 `CGO_ENABLED=0 GOOS=linux go build ...`)。
+
+**2. 编写 Dockerfile**
+```dockerfile
+# 1. 指定基础镜像 (使用轻量级的 alpine)
+FROM alpine:latest
+
+# 2. 设置工作目录
+WORKDIR /app
+
+# 3. 复制二进制文件到镜像
+COPY main /app/main
+
+# 4. 声明服务端口
+EXPOSE 8080
+
+# 5. 设置启动命令
+ENTRYPOINT ["./main"]
+```
+
+**3. 构建与运行**
+```bash
+# 构建镜像
+docker build -t gin-server:v1 .
+
+# 运行容器
+docker run -d -p 8080:8080 --name my-gin-server gin-server:v1
+```
+
+---
+
+## 6. 构建与发布 (`docker build & push`)
+
+### 6.1 构建镜像 (`docker build`)
 
 根据 Dockerfile 构建新镜像。
 
@@ -213,7 +302,7 @@ docker build -t myapp:v1 .
 docker build -f Dockerfile.dev -t myapp:dev .
 ```
 
-### 5.2 推送镜像 (`docker push`)
+### 6.2 推送镜像 (`docker push`)
 
 将本地镜像推送到远程仓库（需先 `docker login`）。
 
@@ -231,26 +320,26 @@ docker push myusername/myapp:v1
 
 ---
 
-## 6. 使用场景与优缺点
+## 7. 使用场景与优缺点
 
-### 6.1 使用场景
+### 7.1 使用场景
 - **快速部署**: 消除“在我机器上能跑”的问题。
 - **微服务架构**: 独立部署和扩展服务。
 - **CI/CD**: 自动化构建和测试环境。
 
-### 6.2 优势
+### 7.2 优势
 - **轻量级**: 共享宿主机内核，资源占用少。
 - **秒级启动**: 远快于虚拟机。
 - **一致性**: 无论开发、测试还是生产环境，环境完全一致。
 
-### 6.3 局限性
+### 7.3 局限性
 - **隔离性**: 弱于虚拟机（共享内核可能导致安全风险）。
 - **持久化**: 数据需要挂载 Volume，否则重启即丢。
 - **OS依赖**: 只能运行与宿主机内核兼容的 OS（如 Linux 容器不能直接在纯 Windows 核心运行，需 WSL2）。
 
 ---
 
-## 7. 知识小结
+## 8. 知识小结
 
 | 知识点 | 核心内容 | 操作示例 |
 | :--- | :--- | :--- |
@@ -259,11 +348,12 @@ docker push myusername/myapp:v1
 | **列出容器** | 查看运行/所有状态 | `docker ps -a` |
 | **日志查看** | 调试必用 | `docker logs -f my-app` |
 | **进入容器** | 运行时调试 (exec) | `docker exec -it my-app bash` |
+| **Dockerfile指令** | `COPY`, `CMD`, `ENTRYPOINT` | `ENTRYPOINT ["./app"]` |
 | **构建镜像** | Dockerfile -> Image | `docker build -t my-app:v1 .` |
 | **删除资源** | 这里要注意依赖关系 | `docker rm <ID>` (容器) / `docker rmi <ID>` (镜像) |
 
 ---
 
-## 8. 未来发展
+## 9. 未来发展
 
 Docker 已经成为云原生时代的基石。随着 Kubernetes (K8s) 的普及，Docker 作为容器运行时（Runtime）的标准地位更加稳固。未来，它将继续在微服务、Serverless 和边缘计算中发挥核心作用。
