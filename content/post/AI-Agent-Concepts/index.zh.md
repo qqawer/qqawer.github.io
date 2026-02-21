@@ -15,7 +15,7 @@ toc: true
 
 # AI自动化协作体系中的关键概念解析
 
-![AI自动化协作体系](image.png.avif)
+![AI自动化协作体系](image.png)
 
 ## 1. 初始AI模型交互与提示词演进
 
