@@ -88,7 +88,14 @@ func main() {
 
 	model := client.GenerativeModel("gemini-2.5-flash")
 	resp, err := model.GenerateContent(ctx, genai.Text("Hello, Gemini! Explain how AI works in a few words"))
-	
+	/*
+    result, err := client.Models.GenerateContent(
+        ctx,
+        "gemini-3-flash-preview",
+        genai.Text("Explain how AI works in a few words"),
+        nil,
+    )
+    */
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -544,3 +551,523 @@ func printResponse(resp *genai.GenerateContentResponse) {
    - Strict metric extraction (like JSON parsing financial tables) benefits heavily from minimal deviation. Lower `Temperature` ranges heavily.
    - For creative aggregation or preventing systemic lockups (crashing on single questions), rebound the `Temperature` back toward Google's default threshold of `1.0`. 
 4. **Context Saturation Limits**: The `Files API` thrives structurally uploading 50 files. But for direct prompt injections, cap specific questions mapping to roughly 5 simultaneous PDFs. Flooding prompts erases early-injected context rulesides.
+
+
+
+# Advanced: Context Caching
+
+In a typical AI workflow, you might pass the same input tokens over and over to a model. The Gemini API offers two caching mechanisms to reduce costs:
+
+## 1. Implicit Caching (Automatic)
+
+Implicit caching is enabled by default. If you send similar large prompts within a short amount of time, the system automatically caches them, and the cost savings are passed on to you.
+- **Cost Saving**: Automatic, but no guaranteed hit.
+- **Min Token Limits**:
+  - `gemini-2.5-flash` / `gemini-3-flash-preview`: **1024 tokens**
+  - `gemini-2.5-pro` / `gemini-3.1-pro-preview`: **4096 tokens**
+- **How to verify**: You can see the number of tokens which were cache hits in the response object's `usage_metadata` field.
+
+## 2. Explicit Caching (Manual)
+
+Explicit caching allows you to manually cache a set of tokens for a specific Time-To-Live (TTL, defaults to 1 hour). This guarantees lower costs when passing the same corpus of tokens repeatedly.
+
+### When to use Explicit Caching:
+- Chatbots with extensive system instructions.
+- Repetitive analysis of the exact same lengthy video, audio, or PDF files.
+- Frequent code repository analysis across multiple distinct user prompts.
+
+### Code Example: Explicit Caching in Go
+
+Here is how you create and use an explicit cache. Pay close attention to the code comments highlighting where the caching actually happens.
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"time"
+
+	"google.golang.org/genai"
+	"google.golang.org/api/option"
+)
+
+func main() {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(""))
+	if err != nil { log.Fatal(err) }
+	defer client.Close()
+
+	modelName := "gemini-2.5-flash"
+	
+	// 1. Upload your large file normally via Files API
+	document, err := client.Files.UploadFromPath(ctx, "docs/large_transcript.txt", nil)
+	if err != nil { log.Fatal(err) }
+
+	parts := []*genai.Part{ genai.NewPartFromURI(document.URI, document.MIMEType) }
+	contents := []*genai.Content{ genai.NewContentFromParts(parts, genai.RoleUser) }
+
+	// =====================================================================
+	// 2. CREATE THE CACHE (⚠️ CACHING LOGIC HERE)
+	// Instead of calling GenerateContent directly, we create a Cache object.
+	// We bind the uploaded document and the system instruction to this cache.
+	// =====================================================================
+	cache, err := client.Caches.Create(ctx, modelName, &genai.CreateCachedContentConfig{
+		Contents: contents,
+		SystemInstruction: genai.NewContentFromText("You are an expert analyzing transcripts.", genai.RoleUser),
+		TTL: 3600 * time.Second, // Cache lives for 1 hour
+	})
+	if err != nil { log.Fatal(err) }
+	
+	fmt.Println("Cache successfully created! Cache Name:", cache.Name)
+
+	// =====================================================================
+	// 3. USE THE CACHE (⚠️ CACHING LOGIC HERE)
+	// We pass the cached content's name into GenerateContentConfig.
+	// The model will automatically inject the huge file we cached above,
+	// only consuming cheaper "Context Cached" tokens.
+	// =====================================================================
+	fmt.Println("\n--- Query 1 ---")
+	resp1, err := client.Models.GenerateContent(
+		ctx,
+		modelName,
+		genai.Text("Please summarize this transcript"),
+		&genai.GenerateContentConfig{
+			CachedContent: cache.Name, // Explicitly linking the Cache ID!
+		},
+	)
+	if err != nil { log.Fatal(err) }
+	printResponse(resp1) 
+
+	// =====================================================================
+	// 4. REUSE THE SAME CACHE (⚠️ MULTIPLE HITS)
+	// You can reuse this exact same cache without re-uploading the file
+	// as many times as you want before the TTL expires.
+	// =====================================================================
+	fmt.Println("\n--- Query 2 ---")
+	resp2, err := client.Models.GenerateContent(
+		ctx,
+		modelName,
+		genai.Text("Extract all financial decisions made in this transcript."),
+		&genai.GenerateContentConfig{
+			CachedContent: cache.Name, // Reusing the exact same cache
+		},
+	)
+	if err != nil { log.Fatal(err) }
+	printResponse(resp2) 
+}
+
+func printResponse(resp *genai.GenerateContentResponse) {
+	if resp != nil && len(resp.Candidates) > 0 {
+		for _, cand := range resp.Candidates {
+			if cand.Content != nil {
+				for _, part := range cand.Content.Parts { fmt.Println(part) }
+			}
+		}
+	}
+}
+```
+
+### Cache Lifecycle Management (Full Code)
+
+You cannot download the cached content itself, but you can manage its metadata (like `name`, `model`, `display_name`, `usage_metadata`, `expire_time`) and lifecycle:
+
+#### 1. List Caches
+
+You can list all available caches in your project, either all at once or via pagination:
+
+```go
+// List all caches simply
+caches, err := client.Caches.All(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("Listing all caches:")
+for _, item := range caches {
+    fmt.Println("   ", item.Name)
+}
+
+// List caches using pagination (Page size = 2)
+page, err := client.Caches.List(ctx, &genai.ListCachedContentsConfig{PageSize: 2})
+if err != nil {
+    log.Fatal(err)
+}
+
+pageIndex := 1
+for {
+    fmt.Printf("Listing caches (page %d):\n", pageIndex)
+    for _, item := range page.Items {
+        fmt.Println("   ", item.Name)
+    }
+    if page.NextPageToken == "" {
+        break
+    }
+    page, err = page.Next(ctx)
+    if err == genai.ErrPageDone {
+        break
+    } else if err != nil {
+        log.Fatal(err)
+    }
+    pageIndex++
+}
+```
+
+#### 2. Update a Cache (TTL)
+
+You can only update the expiration time (`ttl` or `expire_time`) of a cache. Modifying the actual cached files or prompt instructions is not permitted.
+
+```go
+// Update the TTL (2 hours / 7200 seconds)
+cache, err = client.Caches.Update(ctx, cache.Name, &genai.UpdateCachedContentConfig{
+    TTL: 7200 * time.Second,
+})
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("After update:")
+fmt.Println(cache)
+```
+
+#### 3. Delete a Cache
+
+If you are completely finished with your queries, it is highly recommended to manually delete the cache immediately to prevent unnecessary storage billing:
+
+```go
+_, err = client.Caches.Delete(ctx, cache.Name, &genai.DeleteCachedContentConfig{})
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("Cache deleted:", cache.Name)
+```
+
+---
+
+## Practical Scenario 3: Caching Long Prompt Templates (Per Document Type)
+
+**Background**: You have multiple document types (invoices, bills of lading, contracts, etc.). Each type has a correspondingly **very long** extraction instruction (JSON Schema + validation rules + few-shot examples) that is **fixed and never changes**. For the same document type, every request sends the same long prompt, but the actual document file differs each time.
+
+> **Key Concept Reversal**:
+> - **Scenario 1**: Cache the **large file**, swap the prompt each time → Best for querying one document multiple times
+> - **This Scenario**: Cache the **long prompt template**, swap the file each time → Best for batch-processing different files of the same type
+
+### Design Overview
+
+```
+【What's inside the cache】
+└── SystemInstruction: "You are a professional document parsing engine..."
+└── Contents:          [Very long JSON Schema + Few-Shot examples + extraction rules]  ← Fixed per doc type, very long
+
+【What's sent fresh with each GenerateContent call】
+└── CachedContent:  The cache name for the matching document type
+└── Fresh content:  The actual document file for this specific request
+```
+
+### Full Go Implementation
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"time"
+
+	"google.golang.org/genai"
+	"google.golang.org/api/option"
+)
+
+// Very long prompt template (Invoice type)
+// ❗ NOTE: The role/persona is already declared in SystemInstruction above.
+// Only put task-specific instructions here: JSON Schema, field rules, few-shot examples.
+const invoicePromptTemplate = `
+
+## Output Format (must be valid JSON)
+{
+  "invoice_number":   "string",
+  "invoice_date":     "YYYY-MM-DD",
+  "seller_name":      "string",
+  "buyer_name":       "string",
+  "total_amount":     number,
+  "currency":         "string",
+  "line_items": [
+    {
+      "description":  "string",
+      "quantity":     number,
+      "unit_price":   number,
+      "subtotal":     number
+    }
+  ]
+}
+
+## Extraction Rules
+- Convert all dates to YYYY-MM-DD format
+- Convert all monetary values to numeric, stripping currency symbols
+- If a field doesn't exist, set it to null — never omit the key
+- Extract ALL line items without exception
+...（abbreviated — the actual prompt can be thousands of tokens long）
+`
+
+// Registry of document-type caches
+type DocTypeCache struct {
+	CacheName string
+}
+
+// Build and cache the prompt template for a given document type (called once at startup)
+func buildPromptCache(ctx context.Context, client *genai.Client, modelName, docType, promptTemplate string) (*DocTypeCache, error) {
+	// =====================================================================
+	// KEY: We cache the long prompt template itself as Contents.
+	// SystemInstruction + long prompt = tokens saved on every subsequent request.
+	// =====================================================================
+	promptParts := []*genai.Part{genai.NewPartFromText(promptTemplate)}
+	promptContent := []*genai.Content{genai.NewContentFromParts(promptParts, genai.RoleUser)}
+
+	cache, err := client.Caches.Create(ctx, modelName, &genai.CreateCachedContentConfig{
+		Contents: promptContent,
+		SystemInstruction: genai.NewContentFromText(
+			"You are a professional document parsing engine. Follow the cached instructions strictly and output valid JSON.",
+			genai.RoleUser,
+		),
+		TTL: 24 * 3600 * time.Second, // Rebuild once per day
+	})
+	if err != nil {
+		return nil, fmt.Errorf("[%s] cache creation failed: %v", docType, err)
+	}
+	fmt.Printf("[%s] Prompt template cached successfully: %s\n", docType, cache.Name)
+	return &DocTypeCache{CacheName: cache.Name}, nil
+}
+
+// Process a single document using the pre-cached prompt template
+func processDocument(ctx context.Context, client *genai.Client, modelName string, cache *DocTypeCache, filePath string) {
+	// Upload the actual document file for this request (changes every time)
+	document, err := client.Files.UploadFromPath(ctx, filePath, nil)
+	if err != nil {
+		log.Printf("Upload failed [%s]: %v", filePath, err)
+		return
+	}
+	defer client.Files.Delete(ctx, document.Name)
+
+	// =====================================================================
+	// Each GenerateContent call:
+	//   - CachedContent = the cached long prompt template (⚠️ CACHE HIT — cheap tokens)
+	//   - Fresh content  = the actual document file for this request (⚠️ normal billing)
+	// =====================================================================
+	resp, err := client.Models.GenerateContent(
+		ctx,
+		modelName,
+		genai.NewPartFromURI(document.URI, document.MIMEType), // Only the file — prompt is already cached
+		&genai.GenerateContentConfig{
+			CachedContent: cache.CacheName, // Reference the correct doc-type cache
+		},
+	)
+	if err != nil {
+		log.Printf("Parsing failed [%s]: %v", filePath, err)
+		return
+	}
+
+	fmt.Printf("\n=== Parsed Result [%s] ===\n", filePath)
+	for _, cand := range resp.Candidates {
+		if cand.Content != nil {
+			for _, part := range cand.Content.Parts {
+				fmt.Println(part)
+			}
+		}
+	}
+}
+
+func main() {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(""))
+	if err != nil { log.Fatal(err) }
+	defer client.Close()
+
+	modelName := "gemini-2.5-flash"
+
+	// 1. Build one cache per document type at startup (only once)
+	invoiceCache, err := buildPromptCache(ctx, client, modelName, "invoice", invoicePromptTemplate)
+	if err != nil { log.Fatal(err) }
+	defer client.Caches.Delete(ctx, invoiceCache.CacheName, &genai.DeleteCachedContentConfig{})
+
+	// billOfLadingCache, _ := buildPromptCache(ctx, client, modelName, "bol", bolPromptTemplate)
+	// contractCache, _     := buildPromptCache(ctx, client, modelName, "contract", contractPromptTemplate)
+
+	// 2. Batch-process a list of invoice files — each file hits the same cache
+	invoiceFiles := []string{
+		"docs/invoice_2024_001.pdf",
+		"docs/invoice_2024_002.pdf",
+		"docs/invoice_2024_003.pdf",
+	}
+
+	for _, f := range invoiceFiles {
+		processDocument(ctx, client, modelName, invoiceCache, f)
+	}
+}
+```
+
+### Cost Comparison
+
+| Strategy | Tokens sent per request | Best For |
+|----------|-------------------------|----------|
+| No caching | File + full prompt (every time) | Infrequent / one-off requests |
+| **Cache long prompt** (this scenario) | File (normal rate) + Prompt (cached, ~75% discount) | Batching many files of the same type |
+| Cache large file (Scenario 1) | Prompt (normal rate) + File (cached, ~75% discount) | Querying the same file multiple times |
+
+---
+
+## Practical Scenario 4: ResponseSchema Structured Output (JSON Schema Uses Zero Prompt Tokens)
+
+**The Problem**: A large JSON Schema embedded inside the prompt causes two issues:
+1. **Massive token consumption** — the schema itself can be thousands of tokens
+2. **No JSON correctness guarantee** — the model only "references" your schema text; it can still produce malformed JSON
+
+**The Solution**: `GenerateContentConfig.ResponseSchema` + `ResponseMIMEType: "application/json"`
+
+This is Gemini's **Structured Output** feature. The schema is passed as a constraint to the inference engine — it **does not count toward prompt tokens at all** — and the model uses **Constrained Decoding** at the grammar level to **enforce valid JSON output** every single time.
+
+### Comparison: Two Approaches
+
+| | Schema in the Prompt | ResponseSchema |
+|---|---|---|
+| Schema token cost | ❌ Counts as prompt tokens (expensive) | ✅ Zero prompt tokens |
+| JSON validity guarantee | ❌ Model "references" it, can still produce malformed output | ✅ Constrained decoding enforces validity at grammar level |
+| Schema / prompt decoupling | ❌ Mixed together, hard to maintain | ✅ Completely separate, clean code |
+| Works with Context Caching | ✅ | ✅ |
+
+### Go Implementation
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"google.golang.org/genai"
+	"google.golang.org/api/option"
+)
+
+// Define the ResponseSchema per document type in Go code — not in the prompt text
+var invoiceSchema = &genai.Schema{
+	Type: genai.TypeObject,
+	Properties: map[string]*genai.Schema{
+		"invoice_number": {Type: genai.TypeString},
+		"invoice_date":   {Type: genai.TypeString, Description: "Format: YYYY-MM-DD"},
+		"seller_name":    {Type: genai.TypeString},
+		"buyer_name":     {Type: genai.TypeString},
+		"total_amount":   {Type: genai.TypeNumber},
+		"currency":       {Type: genai.TypeString},
+		"line_items": {
+			Type: genai.TypeArray,
+			Items: &genai.Schema{
+				Type: genai.TypeObject,
+				Properties: map[string]*genai.Schema{
+					"description": {Type: genai.TypeString},
+					"quantity":    {Type: genai.TypeNumber},
+					"unit_price":  {Type: genai.TypeNumber},
+					"subtotal":    {Type: genai.TypeNumber},
+				},
+				Required: []string{"description", "quantity", "unit_price", "subtotal"},
+			},
+		},
+	},
+	Required: []string{"invoice_number", "invoice_date", "seller_name", "buyer_name", "total_amount", "currency", "line_items"},
+}
+
+// Each document type can have a completely different (concise) prompt
+// No need to paste the JSON Schema into the prompt text anymore
+var docTypePrompts = map[string]string{
+	"invoice":  "Extract all key fields from this invoice, including seller, buyer, amounts, and all line items.",
+	"bol":      "Extract all shipping information from this bill of lading, including shipper, consignee, cargo description, and routing.",
+	"contract": "Extract the contract number, parties, effective date, expiry date, and a summary of core terms.",
+}
+
+var docTypeSchemas = map[string]*genai.Schema{
+	"invoice": invoiceSchema,
+	// "bol":      billOfLadingSchema,
+	// "contract": contractSchema,
+}
+
+func processWithSchema(ctx context.Context, client *genai.Client, modelName, docType, filePath string) {
+	schema := docTypeSchemas[docType]
+	prompt := docTypePrompts[docType]
+
+	document, err := client.Files.UploadFromPath(ctx, filePath, nil)
+	if err != nil { log.Fatal(err) }
+	defer client.Files.Delete(ctx, document.Name)
+
+	resp, err := client.Models.GenerateContent(
+		ctx,
+		modelName,
+		[]*genai.Content{{
+			Parts: []*genai.Part{
+				genai.NewPartFromURI(document.URI, document.MIMEType),
+				genai.NewPartFromText(prompt), // Concise prompt — no schema text
+			},
+		}},
+		&genai.GenerateContentConfig{
+			// =====================================================================
+			// ⚠️ KEY: Schema passed here — consumes ZERO prompt tokens
+			// Constrained decoding makes it IMPOSSIBLE to output malformed JSON
+			// =====================================================================
+			ResponseMIMEType: "application/json",
+			ResponseSchema:   schema,
+		},
+	)
+	if err != nil { log.Fatal(err) }
+
+	// Directly use the guaranteed-valid JSON string
+	fmt.Printf("[%s] Result:\n%s\n", filePath, resp.Text())
+}
+
+func main() {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(""))
+	if err != nil { log.Fatal(err) }
+	defer client.Close()
+
+	modelName := "gemini-2.5-flash"
+
+	processWithSchema(ctx, client, modelName, "invoice", "docs/invoice_001.pdf")
+	processWithSchema(ctx, client, modelName, "invoice", "docs/invoice_002.pdf")
+}
+```
+
+### Optimal Combination: ResponseSchema + Context Caching
+
+These two features are completely compatible and work perfectly together:
+
+```
+【What's in the cache】
+└── SystemInstruction: "You are a professional document parsing engine"
+└── Contents:          [Descriptive prompt for this document type — no schema text needed]
+
+【Each GenerateContent call】
+└── CachedContent:    Cache name for the matching document type
+└── Fresh content:    The actual document file
+└── ResponseSchema:   Go-defined schema (zero prompt tokens, constrained decoding)
+```
+
+```go
+// Optimal final architecture
+resp, err := client.Models.GenerateContent(
+	ctx,
+	modelName,
+	genai.NewPartFromURI(document.URI, document.MIMEType),
+	&genai.GenerateContentConfig{
+		CachedContent:    invoiceCache.CacheName, // Cache hit: descriptive prompt
+		ResponseMIMEType: "application/json",
+		ResponseSchema:   invoiceSchema,           // Schema: zero tokens, constrained output
+	},
+)
+```
+
+### Summary: What Goes Where?
+
+| Content | Where | Why |
+|---------|-------|-----|
+| Role declaration ("You are a parsing engine") | `SystemInstruction` | High priority, short |
+| Descriptive task prompt ("Extract invoice fields, pay attention to...") | `Contents` (cacheable) | Semantic description, varies by doc type |
+| JSON Schema structure definition | `ResponseSchema` | Zero prompt tokens, constrained decoding guarantees valid JSON |
+| Actual document file | Fresh `Contents` each call | Different every time |

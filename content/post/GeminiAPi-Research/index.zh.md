@@ -88,7 +88,14 @@ func main() {
 
 	model := client.GenerativeModel("gemini-2.5-flash")
 	resp, err := model.GenerateContent(ctx, genai.Text("Hello, Gemini! Explain how AI works in a few words"))
-	
+    /*
+    result, err := client.Models.GenerateContent(
+        ctx,
+        "gemini-3-flash-preview",
+        genai.Text("Explain how AI works in a few words"),
+        nil,
+    )
+    */
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -545,3 +552,526 @@ func printResponse(resp *genai.GenerateContentResponse) {
    - 提取严谨数据（如发票金额）：降低 `Temperature`，或者使用结构化 JSON。
    - 一般场景由于太严格导致模型卡死：尝试将 `Temperature` 回调到默认值 `1.0`。
 4. **单次提交流程**：Files API 虽然能传很多文件，但是对于普通的问答，一次请求最好控制在 5 个相关文档内，避免模型遗忘最初的上下文。
+
+---
+
+# 进阶二：Context Caching (上下文缓存)
+
+在典型的 AI 工作流中，你可能会反复向模型传递相同的庞大背景知识。Gemini API 提供了两种缓存机制来帮助降低成本：
+
+## 1. 隐式缓存 (Implicit Caching / 自动)
+
+隐式缓存默认开启。如果你在短时间内发送了包含相似大段前缀提示的请求，系统会自动对其进行缓存，并将节省的成本返还给你。
+- **成本节省**：自动生效，但不保证每次都能命中。
+- **最低 Token 阈值**：
+  - `gemini-2.5-flash` / `gemini-3-flash-preview`：**1024 tokens**
+  - `gemini-2.5-pro` / `gemini-3.1-pro-preview`：**4096 tokens**
+- **如何验证命中**：你可以在响应对象的 `usage_metadata` 字段中查看命中缓存的 token 数量。
+
+## 2. 显式缓存 (Explicit Caching / 手动)
+
+显式缓存允许你手动为一组 token 创建带有生效时间 (TTL，默认 1 小时) 的缓存对象。在需要重复传入大量相同背景内容的场景下，这能稳定保证更低的成本。
+
+### 适用场景：
+- 带有海量 System Instructions (系统指令) 的聊天机器人。
+- 对同一个长视频、长音频或超大 PDF 文件进行反复的多轮提问分析。
+- 多次分析同一个庞大的代码仓库。
+
+### 实战代码：Go 语言中的显式缓存
+
+以下代码演示了如何显式地创建和调用缓存。请特别注意代码注释中标出的**缓存核心逻辑**位置。
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"time"
+
+	"google.golang.org/genai"
+	"google.golang.org/api/option"
+)
+
+func main() {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(""))
+	if err != nil { log.Fatal(err) }
+	defer client.Close()
+
+	modelName := "gemini-2.5-flash"
+	
+	// 1. 常规上传大文件 (使用 Files API)
+	document, err := client.Files.UploadFromPath(ctx, "docs/large_transcript.txt", nil)
+	if err != nil { log.Fatal(err) }
+
+	parts := []*genai.Part{ genai.NewPartFromURI(document.URI, document.MIMEType) }
+	contents := []*genai.Content{ genai.NewContentFromParts(parts, genai.RoleUser) }
+
+	// =====================================================================
+	// 2. 创建缓存 (⚠️ 缓存动作在此发生)
+	// 在这里我们不直接调用 GenerateContent，而是创建一个 Cache 对象。
+	// 我们将刚刚上传的文件以及系统提示词绑定到这个缓存对象上。
+	// =====================================================================
+	cache, err := client.Caches.Create(ctx, modelName, &genai.CreateCachedContentConfig{
+		Contents: contents,
+		SystemInstruction: genai.NewContentFromText("你是一个专业的会议录音分析专家。", genai.RoleUser),
+		TTL: 3600 * time.Second, // 缓存存活时间：1小时
+	})
+	if err != nil { log.Fatal(err) }
+	
+	fmt.Println("缓存创建成功！Cache Name:", cache.Name)
+
+	// =====================================================================
+	// 3. 第一次使用缓存 (⚠️ 命中缓存)
+	// 将缓存的 Name 传入 GenerateContentConfig。
+	// 模型会自动读取庞大的原始文本，只消耗“缓存读取”的廉价 token。
+	// =====================================================================
+	fmt.Println("\n--- 第 1 次提问 ---")
+	resp1, err := client.Models.GenerateContent(
+		ctx,
+		modelName,
+		genai.Text("请总结这份会议记录的核心要点。"),
+		&genai.GenerateContentConfig{
+			CachedContent: cache.Name, // 核心：显式关联 Cache ID
+		},
+	)
+	if err != nil { log.Fatal(err) }
+	printResponse(resp1) 
+
+	// =====================================================================
+	// 4. 第二次使用同一个缓存 (⚠️ 再次命中缓存)
+	// 在 TTL 到期前，你可以无限次复用这个庞大的上下文，而不用重新传输文件。
+	// =====================================================================
+	fmt.Println("\n--- 第 2 次提问 ---")
+	resp2, err := client.Models.GenerateContent(
+		ctx,
+		modelName,
+		genai.Text("请提取这份记录中提到的所有财务数据指标。"),
+		&genai.GenerateContentConfig{
+			CachedContent: cache.Name, // 复用同一个 Cache ID
+		},
+	)
+	if err != nil { log.Fatal(err) }
+	printResponse(resp2)
+}
+
+func printResponse(resp *genai.GenerateContentResponse) {
+	if resp != nil && len(resp.Candidates) > 0 {
+		for _, cand := range resp.Candidates {
+			if cand.Content != nil {
+				for _, part := range cand.Content.Parts { fmt.Println(part) }
+			}
+		}
+	}
+}
+```
+
+### 缓存的生命周期管理操作 (完整代码)
+
+缓存的内容本身无法被下载出来，但你可以管理它的元数据（如 `name`, `model`, `display_name`, `usage_metadata`, `expire_time`）和生命周期：
+
+#### 1. 列出所有缓存 (List caches)
+
+你可以通过分页或一次性列出当前项目下的所有可用缓存：
+
+```go
+// 简单列出所有缓存
+caches, err := client.Caches.All(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("Listing all caches:")
+for _, item := range caches {
+    fmt.Println("   ", item.Name)
+}
+
+// 分页列出缓存 (Page size = 2)
+page, err := client.Caches.List(ctx, &genai.ListCachedContentsConfig{PageSize: 2})
+if err != nil {
+    log.Fatal(err)
+}
+
+pageIndex := 1
+for {
+    fmt.Printf("Listing caches (page %d):\n", pageIndex)
+    for _, item := range page.Items {
+        fmt.Println("   ", item.Name)
+    }
+    if page.NextPageToken == "" {
+        break
+    }
+    page, err = page.Next(ctx)
+    if err == genai.ErrPageDone {
+        break
+    } else if err != nil {
+        log.Fatal(err)
+    }
+    pageIndex++
+}
+```
+
+#### 2. 更新缓存的存活期 (Update a cache)
+
+你只能更新缓存的过期时间 (`ttl` 或 `expire_time`)，不支持修改缓存内的文件或提示词。
+
+```go
+// 将 TTL 更新为 2 小时 (7200 秒)
+cache, err = client.Caches.Update(ctx, cache.Name, &genai.UpdateCachedContentConfig{
+    TTL: 7200 * time.Second,
+})
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("After update:")
+fmt.Println(cache)
+```
+
+#### 3. 主动删除缓存 (Delete a cache)
+
+如果提问结束，推荐主动调用删除操作防止产生多余的按时计费存储成本：
+
+```go
+_, err = client.Caches.Delete(ctx, cache.Name, &genai.DeleteCachedContentConfig{})
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("Cache deleted:", cache.Name)
+```
+
+---
+
+## 实战场景三：缓存超长 Prompt 模板（按单据类型）
+
+**场景背景**：你有多种单据类型（发票、提单、合同…），每种类型对应一段**极长**的提取指令（JSON Schema 定义 + 规则约束 + Few-Shot 示例），内容固定不变。
+同一类型的单据每次传入的是不同文件，但 prompt 完全相同。
+
+> **核心思路变换**：
+> - 场景一：缓存**大文件**，每次换 prompt → 适合反复问同一份文档
+> - 本场景：缓存**超长 Prompt 模板**，每次换文件 → 适合批量处理同类型的不同单据
+
+### 设计思路
+
+```
+【缓存里存放的内容】
+└── SystemInstruction: "你是专业单据解析引擎…"
+└── Contents:          [超长的 JSON Schema + Few-Shot 示例 + 提取规则]  ← 这部分每次都一样，非常长
+
+【每次 GenerateContent 传入的内容】
+└── CachedContent:  对应单据类型的 Cache Name
+└── 新鲜内容:        本次实际单据文件（每次不同）
+```
+
+### 完整 Go 代码实现
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"time"
+
+	"google.golang.org/genai"
+	"google.golang.org/api/option"
+)
+
+// 超长 prompt 模板（发票类型）
+// ❗ 注意：角色声明由 SystemInstruction 统一负责，这里只放具体任务指令
+// Contents 里只放：JSON Schema + 字段规则 + Few-Shot 示例（纯任务内容）
+const invoicePromptTemplate = `
+
+## 输出格式（必须为合法 JSON）
+{
+  "invoice_number":   "string",
+  "invoice_date":     "YYYY-MM-DD",
+  "seller_name":      "string",
+  "buyer_name":       "string",
+  "total_amount":     number,
+  "currency":         "string",
+  "line_items": [
+    {
+      "description":  "string",
+      "quantity":     number,
+      "unit_price":   number,
+      "subtotal":     number
+    }
+  ]
+}
+
+## 提取规则
+- 日期统一转换为 YYYY-MM-DD 格式
+- 金额统一转为数值型，去除货币符号
+- 如字段不存在，填 null，不得省略 key
+- line_items 必须提取所有行，一条不可遗漏
+...（此处省略，实际 prompt 可能长达数千 token）
+`
+
+// 单据类型注册表：提前为每种类型创建并缓存 prompt 模板
+type DocTypeCache struct {
+	CacheName string
+}
+
+func buildPromptCache(ctx context.Context, client *genai.Client, modelName, docType, promptTemplate string) (*DocTypeCache, error) {
+	// =====================================================================
+	// 关键：把超长 prompt 模板作为 Contents 缓存进去
+	// 系统指令 + 长 prompt = 每次请求都省掉的大批 token
+	// =====================================================================
+	promptParts := []*genai.Part{genai.NewPartFromText(promptTemplate)}
+	promptContent := []*genai.Content{genai.NewContentFromParts(promptParts, genai.RoleUser)}
+
+	cache, err := client.Caches.Create(ctx, modelName, &genai.CreateCachedContentConfig{
+		Contents: promptContent,
+		SystemInstruction: genai.NewContentFromText(
+			"你是专业的单据解析引擎，请严格按照已缓存的指令提取字段，输出合法 JSON。",
+			genai.RoleUser,
+		),
+		TTL: 24 * 3600 * time.Second, // 每天构建一次缓存即可
+	})
+	if err != nil {
+		return nil, fmt.Errorf("[%s] 缓存创建失败: %v", docType, err)
+	}
+	fmt.Printf("[%s] Prompt 模板缓存成功: %s\n", docType, cache.Name)
+	return &DocTypeCache{CacheName: cache.Name}, nil
+}
+
+func processDocument(ctx context.Context, client *genai.Client, modelName string, cache *DocTypeCache, filePath string) {
+	// 上传本次实际单据文件（每次都是新的）
+	document, err := client.Files.UploadFromPath(ctx, filePath, nil)
+	if err != nil {
+		log.Printf("文件上传失败 [%s]: %v", filePath, err)
+		return
+	}
+	defer client.Files.Delete(ctx, document.Name)
+
+	// =====================================================================
+	// 每次 GenerateContent：
+	//   - CachedContent = 已缓存的超长 prompt 模板 (⚠️ 命中缓存，廉价 token)
+	//   - 新鲜传入     = 本次实际文件            (⚠️ 正常计费 token)
+	// =====================================================================
+	resp, err := client.Models.GenerateContent(
+		ctx,
+		modelName,
+		genai.NewPartFromURI(document.URI, document.MIMEType), // 只传文件，prompt 已在缓存里
+		&genai.GenerateContentConfig{
+			CachedContent: cache.CacheName, // 引用对应单据类型的缓存
+		},
+	)
+	if err != nil {
+		log.Printf("解析失败 [%s]: %v", filePath, err)
+		return
+	}
+
+	fmt.Printf("\n=== 解析结果 [%s] ===\n", filePath)
+	for _, cand := range resp.Candidates {
+		if cand.Content != nil {
+			for _, part := range cand.Content.Parts {
+				fmt.Println(part)
+			}
+		}
+	}
+}
+
+func main() {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(""))
+	if err != nil { log.Fatal(err) }
+	defer client.Close()
+
+	modelName := "gemini-2.5-flash"
+
+	// 1. 启动时按单据类型构建 Prompt 缓存（只建一次）
+	invoiceCache, err := buildPromptCache(ctx, client, modelName, "invoice", invoicePromptTemplate)
+	if err != nil { log.Fatal(err) }
+	defer client.Caches.Delete(ctx, invoiceCache.CacheName, &genai.DeleteCachedContentConfig{})
+
+	// billOfLadingCache, err := buildPromptCache(ctx, client, modelName, "bol", bolPromptTemplate)
+	// contractCache, err := buildPromptCache(ctx, client, modelName, "contract", contractPromptTemplate)
+
+	// 2. 批量处理发票文件，每次只传文件，prompt 命中缓存
+	invoiceFiles := []string{
+		"docs/invoice_2024_001.pdf",
+		"docs/invoice_2024_002.pdf",
+		"docs/invoice_2024_003.pdf",
+	}
+
+	for _, f := range invoiceFiles {
+		processDocument(ctx, client, modelName, invoiceCache, f)
+	}
+}
+```
+
+### 成本优势一览
+
+| 策略 | 每次请求发送的 token | 适合场景 |
+|------|----------------------|---------|
+| 不使用缓存 | 文件 + 超长 Prompt（每次全量） | 偶发请求 |
+| 缓存超长 Prompt（本场景）| 文件（普通计费） + Prompt（缓存价格，约 75% 折扣） | 批量处理同类型单据 |
+| 缓存大文件（场景一）| Prompt（普通计费） + 文件（缓存价格） | 反复询问同一份文件 |
+
+---
+
+## 实战场景四：ResponseSchema 结构化输出（JSON Schema 不占 prompt token）
+
+**核心问题**：JSON Schema 很大，把它塞在 prompt 里会：
+1. **大量消耗 token**（Schema 本身就很长）
+2. **无法保证 JSON 不乱**（模型只是"参考"你的 prompt，仍然可能输出格式错误）
+
+**解决方案**：`GenerateContentConfig.ResponseSchema` + `ResponseMIMEType: "application/json"`
+
+这是 Gemini 的**结构化输出（Structured Output）** 功能。Schema 作为推理引擎的约束参数传入，**完全不进入 prompt token 计算**，且模型底层使用约束解码（Constrained Decoding），从语法层面**强制输出合法 JSON**。
+
+### 两种方案对比
+
+| | 把 Schema 写在 prompt 里 | 用 ResponseSchema |
+|---|---|---|
+| Schema token 消耗 | ✅ 占用 prompt token（很贵） | ✅ 不占 prompt token |
+| JSON 合法性保证 | ❌ 模型"参考"，可能输出乱格式 | ✅ 约束解码，语法层强制保证 |
+| Schema 与 prompt 是否解耦 | ❌ 混在一起难维护 | ✅ 完全独立，代码清晰 |
+| 是否可与 Context Cache 结合 | ✅ | ✅ |
+
+### Go 代码实现
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"google.golang.org/genai"
+	"google.golang.org/api/option"
+)
+
+// 每种单据类型定义各自的 ResponseSchema（Go 代码定义，不写在 prompt 里）
+var invoiceSchema = &genai.Schema{
+	Type: genai.TypeObject,
+	Properties: map[string]*genai.Schema{
+		"invoice_number": {Type: genai.TypeString},
+		"invoice_date":   {Type: genai.TypeString, Description: "格式: YYYY-MM-DD"},
+		"seller_name":    {Type: genai.TypeString},
+		"buyer_name":     {Type: genai.TypeString},
+		"total_amount":   {Type: genai.TypeNumber},
+		"currency":       {Type: genai.TypeString},
+		"line_items": {
+			Type: genai.TypeArray,
+			Items: &genai.Schema{
+				Type: genai.TypeObject,
+				Properties: map[string]*genai.Schema{
+					"description": {Type: genai.TypeString},
+					"quantity":    {Type: genai.TypeNumber},
+					"unit_price":  {Type: genai.TypeNumber},
+					"subtotal":    {Type: genai.TypeNumber},
+				},
+				Required: []string{"description", "quantity", "unit_price", "subtotal"},
+			},
+		},
+	},
+	Required: []string{"invoice_number", "invoice_date", "seller_name", "buyer_name", "total_amount", "currency", "line_items"},
+}
+
+// 不同单据类型的 prompt 可以有完全不同的语义描述（简洁版，无需 Schema 文本）
+var docTypePrompts = map[string]string{
+	"invoice": "请从这张发票中提取所有关键字段，包括卖家、买家、金额和商品行项目。",
+	"bol":     "请从这份提单中提取所有货运关键信息，包括托运人、收货人、货物描述和运输路线。",
+	"contract": "请从这份合同中提取合同编号、签署方、生效日期、到期日期及核心条款摘要。",
+}
+
+var docTypeSchemas = map[string]*genai.Schema{
+	"invoice":  invoiceSchema,
+	// "bol":      billOfLadingSchema,
+	// "contract": contractSchema,
+}
+
+func processWithSchema(ctx context.Context, client *genai.Client, modelName, docType, filePath string) {
+	schema, ok := docTypeSchemas[docType]
+	if !ok {
+		log.Fatalf("未知单据类型：%s", docType)
+	}
+	prompt, ok := docTypePrompts[docType]
+	if !ok {
+		log.Fatalf("未找到对应 prompt：%s", docType)
+	}
+
+	// 上传文件
+	document, err := client.Files.UploadFromPath(ctx, filePath, nil)
+	if err != nil { log.Fatal(err) }
+	defer client.Files.Delete(ctx, document.Name)
+
+	resp, err := client.Models.GenerateContent(
+		ctx,
+		modelName,
+		[]*genai.Content{{
+			Parts: []*genai.Part{
+				genai.NewPartFromURI(document.URI, document.MIMEType),
+				genai.NewPartFromText(prompt), // prompt 简洁，无需 Schema 文字
+			},
+		}},
+		&genai.GenerateContentConfig{
+			// =====================================================================
+			// ⚠️ 关键：Schema 在这里传入，完全不占 prompt token
+			// 模型底层使用约束解码，输出必然是合法的 JSON，不可能乱掉
+			// =====================================================================
+			ResponseMIMEType: "application/json",
+			ResponseSchema:   schema,
+		},
+	)
+	if err != nil { log.Fatal(err) }
+
+	// 直接拿到合法 JSON 字符串
+	fmt.Printf("[%s] 解析结果:\n%s\n", filePath, resp.Text())
+}
+
+func main() {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(""))
+	if err != nil { log.Fatal(err) }
+	defer client.Close()
+
+	modelName := "gemini-2.5-flash"
+
+	processWithSchema(ctx, client, modelName, "invoice", "docs/invoice_001.pdf")
+	processWithSchema(ctx, client, modelName, "invoice", "docs/invoice_002.pdf")
+}
+```
+
+### 与 Context Caching 结合使用
+
+ResponseSchema 和 Context Caching 完全可以同时使用。这是最优组合：
+
+```
+【缓存里存放的内容】
+└── SystemInstruction: "你是专业单据解析引擎"（简洁角色声明）
+└── Contents:          [单据类型特定的 prompt（描述性语言，无需贴 Schema）]
+
+【每次 GenerateContent】
+└── CachedContent:    对应单据类型的 Cache Name
+└── 新鲜内容:          实际文件
+└── ResponseSchema:   Go 代码定义的 Schema（不占 prompt token，底层约束）
+```
+
+```go
+// 最终最优方案（缓存 prompt 描述 + Schema 约束解码）
+resp, err := client.Models.GenerateContent(
+	ctx,
+	modelName,
+	genai.NewPartFromURI(document.URI, document.MIMEType),
+	&genai.GenerateContentConfig{
+		CachedContent:    invoiceCache.CacheName,  // 命中缓存：描述性 prompt
+		ResponseMIMEType: "application/json",
+		ResponseSchema:   invoiceSchema,            // Schema 不在 prompt 里，不占 token
+	},
+)
+```
+
+### 小结：什么该放在哪里？
+
+| 内容 | 放在哪里 | 原因 |
+|------|----------|------|
+| 角色声明（"你是解析引擎"） | `SystemInstruction` | 高优先级，短小 |
+| 描述性任务 prompt（"请提取发票字段，注意..."） | `Contents`（可缓存） | 有意义的语义描述，可随单据类型变化 |
+| JSON Schema 结构定义 | `ResponseSchema` | 不占 prompt token，约束解码保证合法 JSON |
+| 实际单据文件 | 每次新鲜传入 `Contents` | 每次不同 |
