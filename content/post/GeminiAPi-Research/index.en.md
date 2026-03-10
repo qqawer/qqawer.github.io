@@ -12,10 +12,11 @@ tags:
     - Development
 toc: true
 ---
+# Deep Dive into Gemini API: Advanced Practical Guide
 
-# Gemini API Quickstart
+## I. Gemini API Quickstart
 
-## 1. Install Google GenAI SDK
+### 1. Install Google GenAI SDK
 
 Run the following commands in your project's module directory:
 
@@ -26,11 +27,11 @@ go get golang.org/x/oauth2/google
 go get cloud.google.com/go/storage
 ```
 
-## 2. Environment Setup: Setting the API Key
+### 2. Environment Setup: Setting the API Key
 
 The client automatically reads the `GEMINI_API_KEY` system environment variable upon initialization. All official Gemini API example code assumes you have this variable set up.
 
-### Temporary Setup (Current Terminal Only)
+#### Temporary Setup (Current Terminal Only)
 
 ```bash
 # macOS/Linux (Terminal)
@@ -43,7 +44,7 @@ set GEMINI_API_KEY="[ENCRYPTION_KEY]"
 $env:GEMINI_API_KEY="[ENCRYPTION_KEY]"
 ```
 
-### Permanent Setup (Recommended)
+#### Permanent Setup (Recommended)
 
 ```bash
 # macOS
@@ -63,10 +64,12 @@ source ~/.bashrc
 
 ---
 
-## 3. Make Your First Request
+### 3. Make Your First Request
 
 The following example demonstrates how to call the Gemini 2.5 Flash model to send a basic text request using the `GenerateContent` method.
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -102,14 +105,39 @@ func main() {
 	fmt.Println(resp.Text)
 }
 ```
+{{< /tab >}}
+
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.GenerateContentResponse;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 自动读取 GEMINI_API_KEY 环境变量
+        Client client = new Client();
+
+        GenerateContentResponse response = client.models.generateContent(
+            "gemini-2.5-flash",
+            "Hello, Gemini! Explain how AI works in a few words",
+            null
+        );
+        System.out.println(response.text());
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ---
 
-# Advanced: File Input Methods
+## II. File Input Methods
 
 All Gemini API endpoints (including Batch, Interactions, and Live API) natively support multi-modal inputs (PDFs, images, videos, etc.). You can read from a local file and include it in your prompt, or upload large files via the API.
 
-## I. Comparison of Input Methods
+### I. Comparison of Input Methods
 
 | Method | Best Use Case | Max File Size | Persistence / Caching |
 |--------|---------------|---------------|-----------------------|
@@ -120,14 +148,16 @@ All Gemini API endpoints (including Batch, Interactions, and Live API) natively 
 
 ---
 
-## II. Core Go Implementations
+### II. Core Go Implementations
 
 Below are the **completely independent, runnable Go code examples** for all four strategies, containing all necessary module imports and client initializations.
 
-### 1. Inline Data - Directly Uploading Small Local Files
+#### 1. Inline Data - Directly Uploading Small Local Files
 
 This is the simplest input method. Suitable for small files (PDF ≤ 50MB, others ≤ 100MB).
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -191,12 +221,51 @@ func printResponse(resp *genai.GenerateContentResponse) {
 	fmt.Println("---")
 }
 ```
+{{< /tab >}}
 
-### 2. GCS URI Reg. (Google Cloud Storage)
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 初始化客户端（自动读取 GEMINI_API_KEY 环境变量）
+        Client client = new Client();
+
+        // 读取本地 PDF 文件
+        byte[] fileBytes = Files.readAllBytes(Paths.get("my_local_file.pdf"));
+
+        // 构造请求内容（文件二进制数据 + 文本提示）
+        List<Part> parts = List.of(
+            Part.fromBytes(fileBytes, "application/pdf"),
+            Part.fromText("Summarize this document")
+        );
+        Content content = Content.fromParts(parts, "user");
+
+        // 调用 API
+        GenerateContentResponse response = client.models.generateContent(
+            "gemini-2.5-flash",
+            List.of(content),
+            null
+        );
+        System.out.println(response.text());
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+#### 2. GCS URI Reg. (Google Cloud Storage)
 
 Useful for colossal files already hosted in GCP, sidestepping local parsing and slow re-uploads.
 
-#### Prerequisites: GCP IAM CLI Configuration
+##### Prerequisites: GCP IAM CLI Configuration
 Your Gemini service agent must explicitly own `Storage Object Viewer` authority:
 ```bash
 # 1. Spawn a dedicated service identity
@@ -208,7 +277,9 @@ gcloud storage buckets add-iam-policy-binding gs://<YOUR_BUCKET> \
   --role="roles/storage.objectViewer"
 ```
 
-#### Go Code Implementation
+##### Go Code Implementation
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -293,12 +364,53 @@ func printResponse(resp *genai.GenerateContentResponse) {
 	}
 }
 ```
+{{< /tab >}}
 
-### 3. External HTTP / Signed URLs
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.util.List;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 初始化客户端（自动读取 GEMINI_API_KEY 和应用默认凭证）
+        Client client = new Client();
+
+        String[] gcsURIs = {"gs://my_bucket/some_object.pdf"};
+        String prompt = "Summarize this file.";
+
+        for (String uri : gcsURIs) {
+            System.out.println("处理文件: " + uri);
+            // 从 GCS URI 直接加载文件
+            List<Part> parts = List.of(
+                Part.fromText(prompt),
+                Part.fromUri(uri, "application/pdf")
+            );
+            Content content = Content.fromParts(parts, "user");
+
+            GenerateContentResponse response = client.models.generateContent(
+                "gemini-2.5-flash",
+                List.of(content),
+                null
+            );
+            System.out.println(response.text());
+        }
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+#### 3. External HTTP / Signed URLs
 
 Optimal for fast ingestion via public HTTPS or Pre-signed URLs (S3/Azure SAS). Must be ≤ 100MB.
 *(Note: Gemini 2.0 might restrict external curl crawls, so we revert to 1.5-flash here)*
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -352,15 +464,51 @@ func printResponse(resp *genai.GenerateContentResponse) {
 	}
 }
 ```
+{{< /tab >}}
+
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.util.List;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+
+        String externalUri = "https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf";
+
+        // 使用推荐稳定版处理外链
+        List<Part> parts = List.of(
+            Part.fromUri(externalUri, "application/pdf"),
+            Part.fromText("Summarize this external file")
+        );
+        Content content = Content.fromParts(parts, "user");
+
+        GenerateContentResponse response = client.models.generateContent(
+            "gemini-1.5-flash",
+            List.of(content),
+            null
+        );
+        System.out.println(response.text());
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ---
 
-## III. Files API Deep Reuse Strategy
+### III. Files API Deep Reuse Strategy
 
 When files breach **100 MB** total, or PDFs surpass **50 MB**, the **Files API** is unavoidable. The primary benefit lies in **Caching Logic**: Upload a massive file once to capture a unique `File ID`, then repeatedly inject that ID into new prompts over the next 48 hours without enduring large network overheads.
 
-### Files API Basic Operations Snippets
+#### Files API Basic Operations Snippets
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 // Upload and capture the designated File memory object
 file, err := client.Files.UploadFromPath(ctx, "path/to/sample.mp3", nil)
@@ -376,11 +524,33 @@ for fileData, err := range client.Files.All(ctx) {
 // Manually trigger garbage collection
 client.Files.Delete(ctx, file.Name)
 ```
+{{< /tab >}}
 
-### Scenario 1: Upload Multiple PDFs, Execute Prompts Independently (Common)
+{{< tab "Java" >}}
+```java
+// 上传文件并返回 File 对象
+File file = client.files.upload(Paths.get("path/to/sample.mp3"), null);
+
+// 获取文件元数据
+File gotFile = client.files.get(file.name());
+
+// 遍历列出项目中所有上传的文件
+for (File fileData : client.files.list(null)) {
+    System.out.println(fileData.name());
+}
+
+// 主动删除文件
+client.files.delete(file.name());
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+#### Scenario 1: Upload Multiple PDFs, Execute Prompts Independently (Common)
 
 Perfect for queuing up invoices or contracts into the cloud, then systematically querying each one individually.
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -468,11 +638,83 @@ func printResponse(resp *genai.GenerateContentResponse) {
 	}
 }
 ```
+{{< /tab >}}
 
-### Scenario 2: Batch Upload and Merge Prompts (Cross-Logic Analysis)
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.nio.file.Paths;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+
+        // 1. 定义要上传的多个 PDF
+        String[] pdfFiles = {"docs/invoice1.pdf", "docs/contract2.pdf"};
+        Map<String, File> uploadedFiles = new LinkedHashMap<>();
+
+        // 2. 上传文件并保存
+        for (String filePath : pdfFiles) {
+            File uploaded = client.files.upload(Paths.get(filePath), null);
+            uploadedFiles.put(filePath, uploaded);
+            System.out.printf("文件 %s 上传成功，File ID: %s%n", filePath, uploaded.name());
+        }
+
+        // 3. 第一次调用：利用保存的 File URI 请求
+        System.out.println("
+=== 第一次调用（解析文件）===");
+        for (Map.Entry<String, File> entry : uploadedFiles.entrySet()) {
+            File f = entry.getValue();
+            List<Part> parts = List.of(
+                Part.fromUri(f.uri(), f.mimeType()),
+                Part.fromText("提取 PDF 中的关键信息，输出 JSON 格式")
+            );
+            GenerateContentResponse resp = client.models.generateContent(
+                "gemini-2.5-flash",
+                List.of(Content.fromParts(parts, "user")),
+                null
+            );
+            System.out.println("解析结果: " + entry.getKey());
+            System.out.println(resp.text());
+        }
+
+        // 4. 第二次调用：复用同一个 File URI，更换提示词
+        System.out.println("
+=== 第二次调用（复用 File URI 换提示语）===");
+        for (Map.Entry<String, File> entry : uploadedFiles.entrySet()) {
+            File f = entry.getValue();
+            List<Part> parts = List.of(
+                Part.fromUri(f.uri(), f.mimeType()),
+                Part.fromText("总结核心内容，200字以内")
+            );
+            GenerateContentResponse resp = client.models.generateContent(
+                "gemini-2.5-flash",
+                List.of(Content.fromParts(parts, "user")),
+                null
+            );
+            System.out.println(resp.text());
+        }
+
+        // 5. 最终清理
+        for (File f : uploadedFiles.values()) {
+            client.files.delete(f.name());
+        }
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+#### Scenario 2: Batch Upload and Merge Prompts (Cross-Logic Analysis)
 
 Instead of looping IDs, we aggregate all `File ID`s into a singular multi-dimensional prompt structure to invoke cross-logical comparisons.
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -533,18 +775,67 @@ func printResponse(resp *genai.GenerateContentResponse) {
 	}
 }
 ```
+{{< /tab >}}
+
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.nio.file.Paths;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+
+        // 1. 上传多个相关文件
+        String[] pdfPaths = {"docs/file1.pdf", "docs/file2.pdf"};
+        List<File> uploadedFiles = new ArrayList<>();
+
+        for (String path : pdfPaths) {
+            File uploaded = client.files.upload(Paths.get(path), null);
+            uploadedFiles.add(uploaded);
+        }
+
+        // 2. 构造多文件请求
+        List<Part> parts = new ArrayList<>();
+        for (File f : uploadedFiles) {
+            parts.add(Part.fromUri(f.uri(), f.mimeType()));
+        }
+        parts.add(Part.fromText("对比这两份 PDF，找出异同点，输出 markdown。"));
+
+        // 3. 单次统一请求
+        GenerateContentResponse response = client.models.generateContent(
+            "gemini-2.5-flash",
+            List.of(Content.fromParts(parts, "user")),
+            null
+        );
+        System.out.println("多文件对比结果:");
+        System.out.println(response.text());
+
+        // 清理
+        for (File f : uploadedFiles) {
+            client.files.delete(f.name());
+        }
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ---
 
-## IV. Prompt Engineering Best Practices 
+### IV. Prompt Engineering Best Practices
 
-### Fundamentals of Multi-modal Prompting
+#### Fundamentals of Multi-modal Prompting
 - **Specificity**: Never be ambiguous. Instruct the model precisely on operational pipelines.
 - **Implement Few-Shot Constraints**: Inject hardcoded expected responses to force compliance.
 - **Enforce Return Syntax**: Manually instruct string types (`markdown`, `JSON`, `HTML`).
 - **Images Take Priority**: When pushing blob data, position image `genai.Blob` wrappers sequentially *before* the prompt strings `genai.Text`. Visual processing neurons execute top-down effectively.
 
-### Remediation & Troubleshooting
+#### Remediation & Troubleshooting
 1. **Model hallucinating incorrect sectors**: Edit internal prompt texts explicitly denoting positions ("Identify numerals strictly embedded within the top right financial column chart.")
 2. **Output lacks structural depth**: Adopt a dual-query layered architecture. Advise the model to formally observe the visual evidence inside paragraph 1 ("Describe purely what shapes you are observing first"), and only construct an answer derived from the observations in paragraph 2. 
 3. **Infinite Hallucination loops**: 
@@ -554,11 +845,11 @@ func printResponse(resp *genai.GenerateContentResponse) {
 
 
 
-# Advanced: Context Caching
+## III. Context Caching
 
 In a typical AI workflow, you might pass the same input tokens over and over to a model. The Gemini API offers two caching mechanisms to reduce costs:
 
-## 1. Implicit Caching (Automatic)
+### 1. Implicit Caching (Automatic)
 
 Implicit caching is enabled by default. If you send similar large prompts within a short amount of time, the system automatically caches them, and the cost savings are passed on to you.
 - **Cost Saving**: Automatic, but no guaranteed hit.
@@ -567,19 +858,21 @@ Implicit caching is enabled by default. If you send similar large prompts within
   - `gemini-2.5-pro` / `gemini-3.1-pro-preview`: **4096 tokens**
 - **How to verify**: You can see the number of tokens which were cache hits in the response object's `usage_metadata` field.
 
-## 2. Explicit Caching (Manual)
+### 2. Explicit Caching (Manual)
 
 Explicit caching allows you to manually cache a set of tokens for a specific Time-To-Live (TTL, defaults to 1 hour). This guarantees lower costs when passing the same corpus of tokens repeatedly.
 
-### When to use Explicit Caching:
+#### When to use Explicit Caching:
 - Chatbots with extensive system instructions.
 - Repetitive analysis of the exact same lengthy video, audio, or PDF files.
 - Frequent code repository analysis across multiple distinct user prompts.
 
-### Code Example: Explicit Caching in Go
+#### Code Example: Explicit Caching in Go
 
 Here is how you create and use an explicit cache. Pay close attention to the code comments highlighting where the caching actually happens.
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -668,15 +961,78 @@ func printResponse(resp *genai.GenerateContentResponse) {
 	}
 }
 ```
+{{< /tab >}}
 
-### Cache Lifecycle Management (Full Code)
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.List;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+        String modelName = "gemini-2.5-flash";
+
+        // 1. 常规上传大文件 (使用 Files API)
+        File document = client.files.upload(Paths.get("docs/large_transcript.txt"), null);
+        List<Part> parts = List.of(Part.fromUri(document.uri(), document.mimeType()));
+        List<Content> contents = List.of(Content.fromParts(parts, "user"));
+
+        // =====================================================================
+        // 2. 创建缓存 (⚠️ 缓存动作在此发生)
+        // =====================================================================
+        CachedContent cache = client.caches.create(
+            modelName,
+            CreateCachedContentConfig.builder()
+                .contents(contents)
+                .systemInstruction(Content.fromText("你是一个专业的会议录音分析专家。", "user"))
+                .ttl(Duration.ofSeconds(3600))
+                .build()
+        );
+        System.out.println("缓存创建成功！Cache Name: " + cache.name());
+
+        // =====================================================================
+        // 3. 第一次使用缓存 (⚠️ 命中缓存)
+        // =====================================================================
+        System.out.println("\n--- 第 1 次提问 ---");
+        GenerateContentResponse resp1 = client.models.generateContent(
+            modelName,
+            "请总结这份会议记录的核心要点。",
+            GenerateContentConfig.builder().cachedContent(cache.name()).build()
+        );
+        System.out.println(resp1.text());
+
+        // =====================================================================
+        // 4. 第二次使用同一个缓存 (⚠️ 再次命中缓存)
+        // =====================================================================
+        System.out.println("\n--- 第 2 次提问 ---");
+        GenerateContentResponse resp2 = client.models.generateContent(
+            modelName,
+            "请提取这份记录中提到的所有财务数据指标。",
+            GenerateContentConfig.builder().cachedContent(cache.name()).build()
+        );
+        System.out.println(resp2.text());
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+#### Cache Lifecycle Management (Full Code)
 
 You cannot download the cached content itself, but you can manage its metadata (like `name`, `model`, `display_name`, `usage_metadata`, `expire_time`) and lifecycle:
 
-#### 1. List Caches
+##### 1. List Caches
 
 You can list all available caches in your project, either all at once or via pagination:
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 // List all caches simply
 caches, err := client.Caches.All(ctx)
@@ -712,11 +1068,40 @@ for {
     pageIndex++
 }
 ```
+{{< /tab >}}
 
-#### 2. Update a Cache (TTL)
+{{< tab "Java" >}}
+```java
+// 简单列出所有缓存
+List<CachedContent> caches = client.caches.list(null);
+System.out.println("Listing all caches:");
+for (CachedContent cc : caches) {
+    System.out.println("    " + cc.name());
+}
+
+// 分页列出缓存（页大小 = 2）
+ListCachedContentsResponse page = client.caches.list(
+    ListCachedContentsConfig.builder().pageSize(2).build()
+);
+int pageIndex = 1;
+while (page != null) {
+    System.out.printf("Listing caches (page %d):%n", pageIndex);
+    for (CachedContent cc : page.cachedContents()) {
+        System.out.println("    " + cc.name());
+    }
+    page = page.hasNextPage() ? page.nextPage() : null;
+    pageIndex++;
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+##### 2. Update a Cache (TTL)
 
 You can only update the expiration time (`ttl` or `expire_time`) of a cache. Modifying the actual cached files or prompt instructions is not permitted.
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 // Update the TTL (2 hours / 7200 seconds)
 cache, err = client.Caches.Update(ctx, cache.Name, &genai.UpdateCachedContentConfig{
@@ -728,11 +1113,29 @@ if err != nil {
 fmt.Println("After update:")
 fmt.Println(cache)
 ```
+{{< /tab >}}
 
-#### 3. Delete a Cache
+{{< tab "Java" >}}
+```java
+// 将 TTL 更新为 2 小时（7200 秒）
+CachedContent updated = client.caches.update(
+    cache.name(),
+    UpdateCachedContentConfig.builder()
+        .ttl(Duration.ofSeconds(7200))
+        .build()
+);
+System.out.println("After update:");
+System.out.println(updated);
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+##### 3. Delete a Cache
 
 If you are completely finished with your queries, it is highly recommended to manually delete the cache immediately to prevent unnecessary storage billing:
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 _, err = client.Caches.Delete(ctx, cache.Name, &genai.DeleteCachedContentConfig{})
 if err != nil {
@@ -740,10 +1143,19 @@ if err != nil {
 }
 fmt.Println("Cache deleted:", cache.Name)
 ```
+{{< /tab >}}
+
+{{< tab "Java" >}}
+```java
+client.caches.delete(cache.name());
+System.out.println("Cache deleted: " + cache.name());
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ---
 
-## Practical Scenario 3: Caching Long Prompt Templates (Per Document Type)
+### Practical Scenario 3: Caching Long Prompt Templates (Per Document Type)
 
 **Background**: You have multiple document types (invoices, bills of lading, contracts, etc.). Each type has a correspondingly **very long** extraction instruction (JSON Schema + validation rules + few-shot examples) that is **fixed and never changes**. For the same document type, every request sends the same long prompt, but the actual document file differs each time.
 
@@ -751,7 +1163,7 @@ fmt.Println("Cache deleted:", cache.Name)
 > - **Scenario 1**: Cache the **large file**, swap the prompt each time → Best for querying one document multiple times
 > - **This Scenario**: Cache the **long prompt template**, swap the file each time → Best for batch-processing different files of the same type
 
-### Design Overview
+#### Design Overview
 
 ```
 【What's inside the cache】
@@ -763,8 +1175,10 @@ fmt.Println("Cache deleted:", cache.Name)
 └── Fresh content:  The actual document file for this specific request
 ```
 
-### Full Go Implementation
+#### Full Go Implementation
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -904,8 +1318,93 @@ func main() {
 	}
 }
 ```
+{{< /tab >}}
 
-### Cost Comparison
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.List;
+
+// 单据类型注册表
+class DocTypeCache {
+    String cacheName;
+    DocTypeCache(String name) { this.cacheName = name; }
+}
+
+public class Main {
+    static final String INVOICE_PROMPT_TEMPLATE =
+        "## 输出格式（必须为合法 JSON）\n" +
+        "{ \"invoice_number\": \"string\", \"invoice_date\": \"YYYY-MM-DD\", ... }\n" +
+        "## 提取规则\n" +
+        "- 日期统一转换为 YYYY-MM-DD 格式\n" +
+        "- 金额统一转为数值型，去除货币符号\n" +
+        "- 如字段不存在，填 null，不得省略 key\n" +
+        "...（实际 prompt 可能长达数千 token）";
+
+    static DocTypeCache buildPromptCache(Client client, String modelName,
+            String docType, String promptTemplate) throws Exception {
+        List<Part> promptParts = List.of(Part.fromText(promptTemplate));
+        List<Content> promptContent = List.of(Content.fromParts(promptParts, "user"));
+
+        CachedContent cache = client.caches.create(
+            modelName,
+            CreateCachedContentConfig.builder()
+                .contents(promptContent)
+                .systemInstruction(Content.fromText(
+                    "你是专业的单据解析引擎，请严格按照已缓存的指令提取字段，输出合法 JSON。",
+                    "user"))
+                .ttl(Duration.ofSeconds(86400))
+                .build()
+        );
+        System.out.printf("[%s] Prompt 模板缓存成功: %s%n", docType, cache.name());
+        return new DocTypeCache(cache.name());
+    }
+
+    static void processDocument(Client client, String modelName,
+            DocTypeCache cache, String filePath) throws Exception {
+        File document = client.files.upload(Paths.get(filePath), null);
+        try {
+            GenerateContentResponse resp = client.models.generateContent(
+                modelName,
+                Part.fromUri(document.uri(), document.mimeType()),
+                GenerateContentConfig.builder()
+                    .cachedContent(cache.cacheName)
+                    .build()
+            );
+            System.out.printf("%n=== 解析结果 [%s] ===%n%s%n", filePath, resp.text());
+        } finally {
+            client.files.delete(document.name());
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+        String modelName = "gemini-2.5-flash";
+
+        DocTypeCache invoiceCache = buildPromptCache(
+            client, modelName, "invoice", INVOICE_PROMPT_TEMPLATE);
+
+        String[] invoiceFiles = {
+            "docs/invoice_2024_001.pdf",
+            "docs/invoice_2024_002.pdf",
+            "docs/invoice_2024_003.pdf"
+        };
+        for (String f : invoiceFiles) {
+            processDocument(client, modelName, invoiceCache, f);
+        }
+        client.caches.delete(invoiceCache.cacheName);
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+#### Cost Comparison
 
 | Strategy | Tokens sent per request | Best For |
 |----------|-------------------------|----------|
@@ -915,7 +1414,7 @@ func main() {
 
 ---
 
-## Practical Scenario 4: ResponseSchema Structured Output (JSON Schema Uses Zero Prompt Tokens)
+### Practical Scenario 4: ResponseSchema Structured Output (JSON Schema Uses Zero Prompt Tokens)
 
 **The Problem**: A large JSON Schema embedded inside the prompt causes two issues:
 1. **Massive token consumption** — the schema itself can be thousands of tokens
@@ -925,7 +1424,7 @@ func main() {
 
 This is Gemini's **Structured Output** feature. The schema is passed as a constraint to the inference engine — it **does not count toward prompt tokens at all** — and the model uses **Constrained Decoding** at the grammar level to **enforce valid JSON output** every single time.
 
-### Comparison: Two Approaches
+#### Comparison: Two Approaches
 
 | | Schema in the Prompt | ResponseSchema |
 |---|---|---|
@@ -934,8 +1433,10 @@ This is Gemini's **Structured Output** feature. The schema is passed as a constr
 | Schema / prompt decoupling | ❌ Mixed together, hard to maintain | ✅ Completely separate, clean code |
 | Works with Context Caching | ✅ | ✅ |
 
-### Go Implementation
+#### Go Implementation
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -1033,8 +1534,82 @@ func main() {
 	processWithSchema(ctx, client, modelName, "invoice", "docs/invoice_002.pdf")
 }
 ```
+{{< /tab >}}
 
-### Optimal Combination: ResponseSchema + Context Caching
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+
+public class Main {
+    // 每种单据类型定义各自的 ResponseSchema
+    static final Schema INVOICE_SCHEMA = Schema.builder()
+        .type(Type.OBJECT)
+        .properties(Map.of(
+            "invoice_number", Schema.builder().type(Type.STRING).build(),
+            "invoice_date",   Schema.builder().type(Type.STRING)
+                                .description("格式: YYYY-MM-DD").build(),
+            "seller_name",    Schema.builder().type(Type.STRING).build(),
+            "buyer_name",     Schema.builder().type(Type.STRING).build(),
+            "total_amount",   Schema.builder().type(Type.NUMBER).build(),
+            "currency",       Schema.builder().type(Type.STRING).build(),
+            "line_items", Schema.builder()
+                .type(Type.ARRAY)
+                .items(Schema.builder()
+                    .type(Type.OBJECT)
+                    .properties(Map.of(
+                        "description", Schema.builder().type(Type.STRING).build(),
+                        "quantity",    Schema.builder().type(Type.NUMBER).build(),
+                        "unit_price",  Schema.builder().type(Type.NUMBER).build(),
+                        "subtotal",    Schema.builder().type(Type.NUMBER).build()
+                    ))
+                    .required(List.of("description","quantity","unit_price","subtotal"))
+                    .build())
+                .build()
+        ))
+        .required(List.of("invoice_number","invoice_date","seller_name",
+                          "buyer_name","total_amount","currency","line_items"))
+        .build();
+
+    static void processWithSchema(Client client, String modelName,
+            String docType, String filePath) throws Exception {
+        File document = client.files.upload(Paths.get(filePath), null);
+        try {
+            GenerateContentResponse resp = client.models.generateContent(
+                modelName,
+                List.of(Content.fromParts(List.of(
+                    Part.fromUri(document.uri(), document.mimeType()),
+                    Part.fromText("请从这张发票中提取所有关键字段，包括卖家、买家、金额和商品行项目。")
+                ), "user")),
+                // ⚠️ 关键：Schema 在这里传入，完全不占 prompt token
+                GenerateContentConfig.builder()
+                    .responseMimeType("application/json")
+                    .responseSchema(INVOICE_SCHEMA)
+                    .build()
+            );
+            System.out.printf("[%s] 解析结果:%n%s%n", filePath, resp.text());
+        } finally {
+            client.files.delete(document.name());
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+        String modelName = "gemini-2.5-flash";
+        processWithSchema(client, modelName, "invoice", "docs/invoice_001.pdf");
+        processWithSchema(client, modelName, "invoice", "docs/invoice_002.pdf");
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+#### Optimal Combination: ResponseSchema + Context Caching
 
 These two features are completely compatible and work perfectly together:
 
@@ -1049,6 +1624,8 @@ These two features are completely compatible and work perfectly together:
 └── ResponseSchema:   Go-defined schema (zero prompt tokens, constrained decoding)
 ```
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 // Optimal final architecture
 resp, err := client.Models.GenerateContent(
@@ -1062,8 +1639,82 @@ resp, err := client.Models.GenerateContent(
 	},
 )
 ```
+{{< /tab >}}
 
-### Summary: What Goes Where?
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+
+public class Main {
+    // 每种单据类型定义各自的 ResponseSchema
+    static final Schema INVOICE_SCHEMA = Schema.builder()
+        .type(Type.OBJECT)
+        .properties(Map.of(
+            "invoice_number", Schema.builder().type(Type.STRING).build(),
+            "invoice_date",   Schema.builder().type(Type.STRING)
+                                .description("格式: YYYY-MM-DD").build(),
+            "seller_name",    Schema.builder().type(Type.STRING).build(),
+            "buyer_name",     Schema.builder().type(Type.STRING).build(),
+            "total_amount",   Schema.builder().type(Type.NUMBER).build(),
+            "currency",       Schema.builder().type(Type.STRING).build(),
+            "line_items", Schema.builder()
+                .type(Type.ARRAY)
+                .items(Schema.builder()
+                    .type(Type.OBJECT)
+                    .properties(Map.of(
+                        "description", Schema.builder().type(Type.STRING).build(),
+                        "quantity",    Schema.builder().type(Type.NUMBER).build(),
+                        "unit_price",  Schema.builder().type(Type.NUMBER).build(),
+                        "subtotal",    Schema.builder().type(Type.NUMBER).build()
+                    ))
+                    .required(List.of("description","quantity","unit_price","subtotal"))
+                    .build())
+                .build()
+        ))
+        .required(List.of("invoice_number","invoice_date","seller_name",
+                          "buyer_name","total_amount","currency","line_items"))
+        .build();
+
+    static void processWithSchema(Client client, String modelName,
+            String docType, String filePath) throws Exception {
+        File document = client.files.upload(Paths.get(filePath), null);
+        try {
+            GenerateContentResponse resp = client.models.generateContent(
+                modelName,
+                List.of(Content.fromParts(List.of(
+                    Part.fromUri(document.uri(), document.mimeType()),
+                    Part.fromText("请从这张发票中提取所有关键字段，包括卖家、买家、金额和商品行项目。")
+                ), "user")),
+                // ⚠️ 关键：Schema 在这里传入，完全不占 prompt token
+                GenerateContentConfig.builder()
+                    .responseMimeType("application/json")
+                    .responseSchema(INVOICE_SCHEMA)
+                    .build()
+            );
+            System.out.printf("[%s] 解析结果:%n%s%n", filePath, resp.text());
+        } finally {
+            client.files.delete(document.name());
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+        String modelName = "gemini-2.5-flash";
+        processWithSchema(client, modelName, "invoice", "docs/invoice_001.pdf");
+        processWithSchema(client, modelName, "invoice", "docs/invoice_002.pdf");
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+#### Summary: What Goes Where?
 
 | Content | Where | Why |
 |---------|-------|-----|
@@ -1074,7 +1725,7 @@ resp, err := client.Models.GenerateContent(
 
 ---
 
-# Document Understanding: PDF Processing in Depth
+## IV. Document Understanding: PDF Processing in Depth
 
 Gemini processes PDFs using **native vision** — it reads the document as a human would, understanding not just text but also images, diagrams, charts, tables, and layout across up to **1000 pages**. This is fundamentally different from traditional OCR: Gemini understands context and structure.
 
@@ -1087,12 +1738,14 @@ Gemini processes PDFs using **native vision** — it reads the document as a hum
 
 ---
 
-## Method 1: Inline Data (Small PDFs, ≤ 50 MB)
+### Method 1: Inline Data (Small PDFs, ≤ 50 MB)
 
 Best for one-off requests on small documents. The raw file bytes are embedded directly in the request payload.
 
-### From URL
+#### From URL
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -1136,9 +1789,51 @@ func main() {
     fmt.Println(result.Text())
 }
 ```
+{{< /tab >}}
 
-### From Local File
+{{< tab "Java" >}}
+```java
+package main;
 
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.List;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+
+        // 1. 从 URL 拉取 PDF 字节
+        URL url = new URL("https://discovery.ucl.ac.uk/id/eprint/10089234/1/343019_3_art_0_py4t4l_convrt.pdf");
+        byte[] pdfBytes;
+        try (InputStream in = url.openStream()) {
+            pdfBytes = in.readAllBytes();
+        }
+
+        List<Part> parts = List.of(
+            // ⚠️ INLINE DATA：字节直接嵌入请求体，无上传步骤，不可复用
+            Part.fromBytes(pdfBytes, "application/pdf"),
+            Part.fromText("请总结这份文档")
+        );
+
+        GenerateContentResponse result = client.models.generateContent(
+            "gemini-2.5-flash",
+            List.of(Content.fromParts(parts, "user")),
+            null
+        );
+        System.out.println(result.text());
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+#### From Local File
+
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 // Same structure — just read bytes from disk instead of HTTP
 pdfBytes, _ := os.ReadFile("path/to/your/file.pdf")
@@ -1149,18 +1844,35 @@ parts := []*genai.Part{
     genai.NewPartFromText("Summarize this document"),
 }
 ```
+{{< /tab >}}
+
+{{< tab "Java" >}}
+```java
+// 同样的结构，改为从磁盘读取字节
+byte[] pdfBytes = Files.readAllBytes(Paths.get("path/to/your/file.pdf"));
+
+List<Part> parts = List.of(
+    // ⚠️ INLINE DATA：本地字节直接嵌入，快但不可复用
+    Part.fromBytes(pdfBytes, "application/pdf"),
+    Part.fromText("请总结这份文档")
+);
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ---
 
-## Method 2: Files API Upload (Large PDFs, Reusable)
+### Method 2: Files API Upload (Large PDFs, Reusable)
 
 Use the Files API when:
 - File size > 50 MB, or combined payload > 100 MB
 - You need to query the same document multiple times (saves bandwidth, reduces latency)
 - Files are stored for **48 hours** at no cost
 
-### From URL (Download → Upload → Query)
+#### From URL (Download → Upload → Query)
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -1211,9 +1923,58 @@ func main() {
     fmt.Println(result.Text())
 }
 ```
+{{< /tab >}}
 
-### From Local File (Direct Upload)
+{{< tab "Java" >}}
+```java
+package main;
 
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.*;
+import java.util.List;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+
+        // 1. 先下载到本地
+        String pdfUrl = "https://www.nasa.gov/wp-content/uploads/static/history/alsj/a17/A17_FlightPlan.pdf";
+        Path localPath = Paths.get("A17_FlightPlan_downloaded.pdf");
+        try (InputStream in = new URL(pdfUrl).openStream()) {
+            Files.copy(in, localPath, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        // ⚠️ FILES API 上传：文件存入 Google 服务器 48 小时
+        File uploadedFile = client.files.upload(
+            localPath,
+            UploadFileConfig.builder().mimeType("application/pdf").build()
+        );
+
+        List<Part> promptParts = List.of(
+            // ⚠️ 通过 URI 引用：不需要重传，模型直接从服务端获取
+            Part.fromUri(uploadedFile.uri(), uploadedFile.mimeType()),
+            Part.fromText("请总结这份文档")
+        );
+
+        GenerateContentResponse result = client.models.generateContent(
+            "gemini-2.5-flash",
+            List.of(Content.fromParts(promptParts, "user")),
+            null
+        );
+        System.out.println(result.text());
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+#### From Local File (Direct Upload)
+
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 // ⚠️ FILES API UPLOAD: upload local PDF to Google's servers
 uploadedFile, _ := client.Files.UploadFromPath(ctx, "/path/to/file.pdf",
@@ -1226,13 +1987,33 @@ promptParts := []*genai.Part{
     genai.NewPartFromText("Give me a summary of this PDF file."),
 }
 ```
+{{< /tab >}}
+
+{{< tab "Java" >}}
+```java
+// ⚠️ FILES API 上传：将本地 PDF 上传至 Google 服务器
+File uploadedFile = client.files.upload(
+    Paths.get("/path/to/file.pdf"),
+    UploadFileConfig.builder().mimeType("application/pdf").build()
+);
+
+// ⚠️ URI 引用：将返回的 URI 传给模型
+List<Part> promptParts = List.of(
+    Part.fromUri(uploadedFile.uri(), uploadedFile.mimeType()),
+    Part.fromText("请给我这份 PDF 的摘要。")
+);
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ---
 
-## Method 3: Multiple PDFs in One Request
+### Method 3: Multiple PDFs in One Request
 
 Gemini can analyze up to **1000 pages** across multiple documents in a single request, as long as the combined size stays within the model's context window. Ideal for cross-document comparison.
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -1288,10 +2069,62 @@ func main() {
     fmt.Println(result.Text())
 }
 ```
+{{< /tab >}}
+
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+
+        // 下载两篇论文
+        Map<String, String> urls = Map.of(
+            "doc1_downloaded.pdf", "https://arxiv.org/pdf/2312.11805",
+            "doc2_downloaded.pdf", "https://arxiv.org/pdf/2403.05530"
+        );
+        for (Map.Entry<String, String> e : urls.entrySet()) {
+            try (InputStream in = new URL(e.getValue()).openStream()) {
+                Files.copy(in, Paths.get(e.getKey()), StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+
+        // ⚠️ 分别上传两份文件（独立的 Files API 调用）
+        File file1 = client.files.upload(Paths.get("doc1_downloaded.pdf"),
+            UploadFileConfig.builder().mimeType("application/pdf").build());
+        File file2 = client.files.upload(Paths.get("doc2_downloaded.pdf"),
+            UploadFileConfig.builder().mimeType("application/pdf").build());
+
+        List<Part> promptParts = List.of(
+            // ⚠️ 两个 URI 放在同一个 Parts 列表 → Gemini 同时读取两份文件
+            Part.fromUri(file1.uri(), file1.mimeType()),
+            Part.fromUri(file2.uri(), file2.mimeType()),
+            Part.fromText("对比这两篇论文的主要基准指标差异，以表格形式输出。")
+        );
+
+        GenerateContentResponse result = client.models.generateContent(
+            "gemini-2.5-flash",
+            List.of(Content.fromParts(promptParts, "user")),
+            null
+        );
+        System.out.println(result.text());
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ---
 
-## Technical Limits & Tips
+### Technical Limits & Tips
 
 | Dimension | Limit / Detail |
 |-----------|----------------|
@@ -1309,7 +2142,7 @@ func main() {
 
 ---
 
-# Structured Outputs: Guaranteed JSON Schema Compliance
+## V. Structured Outputs: Guaranteed JSON Schema Compliance
 
 Structured outputs let you configure Gemini to always return responses that match a provided JSON Schema — enforced at the grammar level via **constrained decoding**.
 
@@ -1322,10 +2155,12 @@ Structured outputs let you configure Gemini to always return responses that matc
 
 ---
 
-## Go Example: Recipe Extraction
+### Go Example: Recipe Extraction
 
 This demonstrates using `ResponseJsonSchema` (raw JSON Schema as `map[string]any`) to extract structured recipe data from free-form text.
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -1402,6 +2237,63 @@ They need 2 and 1/4 cups of all-purpose flour, 1 teaspoon of baking soda...`
     fmt.Println(result.Text())
 }
 ```
+{{< /tab >}}
+
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.util.List;
+import java.util.Map;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+
+        String prompt = "请从以下文本中提取菜谱信息。\n" +
+            "用户想要制作美味的巧克力芯片饼干。\n" +
+            "需要 2 又 1/4 杯中筋面粉、1 茶匙小苏打...";
+
+        // ⚠️ 第一步：强制 JSON 输出模式
+        // ⚠️ 第二步：以 Map（原生 JSON Schema）定义输出结构
+        GenerateContentConfig config = GenerateContentConfig.builder()
+            .responseMimeType("application/json")
+            .responseJsonSchema(Map.of(
+                "type", "object",
+                "properties", Map.of(
+                    "recipe_name", Map.of("type", "string", "description", "菜谱名称"),
+                    "prep_time_minutes", Map.of("type", "integer", "description", "准备时间（分钟），可选"),
+                    "ingredients", Map.of(
+                        "type", "array",
+                        "items", Map.of(
+                            "type", "object",
+                            "properties", Map.of(
+                                "name",     Map.of("type", "string"),
+                                "quantity", Map.of("type", "string")
+                            ),
+                            "required", List.of("name", "quantity")
+                        )
+                    ),
+                    "instructions", Map.of("type", "array", "items", Map.of("type", "string"))
+                ),
+                "required", List.of("recipe_name", "ingredients", "instructions")
+            ))
+            .build();
+
+        // ⚠️ 第三步：GenerateContent — 模型被约束为只能输出符合 Schema 的 JSON
+        GenerateContentResponse result = client.models.generateContent(
+            "gemini-2.5-flash",
+            prompt,
+            config
+        );
+        System.out.println(result.text());
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 **Expected output (guaranteed schema-compliant):**
 ```json
@@ -1420,7 +2312,7 @@ They need 2 and 1/4 cups of all-purpose flour, 1 teaspoon of baking soda...`
 
 ---
 
-## `ResponseSchema` vs `ResponseJsonSchema` — Which to Use?
+### `ResponseSchema` vs `ResponseJsonSchema` — Which to Use?
 
 | | `ResponseSchema` | `ResponseJsonSchema` |
 |---|---|---|
@@ -1430,7 +2322,7 @@ They need 2 and 1/4 cups of all-purpose flour, 1 teaspoon of baking soda...`
 
 ---
 
-## Supported JSON Schema Types
+### Supported JSON Schema Types
 
 | Type | Notes |
 |------|-------|
@@ -1446,7 +2338,7 @@ Use `description` on any field to guide the model on what to extract.
 
 ---
 
-## Best Practices & Limitations
+### Best Practices & Limitations
 
 **Best practices:**
 - Use `description` on each field — this is the primary way to guide extraction accuracy
@@ -1463,7 +2355,7 @@ Use `description` on any field to guide the model on what to extract.
 
 
 
-# Structured outputs
+## VI. Structured Outputs (Advanced Topics)
 
 You can configure Gemini models to generate responses that adhere to a provided JSON Schema. This ensures predictable, type-safe results and simplifies extracting structured data from unstructured text.
 
@@ -1484,6 +2376,8 @@ JavaScript
 Go
 REST
 
+{{< tabs >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -1566,6 +2460,63 @@ func main() {
     fmt.Println(result.Text())
 }
 ```
+{{< /tab >}}
+
+{{< tab "Java" >}}
+```java
+package main;
+
+import com.google.genai.Client;
+import com.google.genai.types.*;
+import java.util.List;
+import java.util.Map;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+
+        String prompt = "请从以下文本中提取菜谱信息。\n" +
+            "用户想要制作美味的巧克力芯片饼干。\n" +
+            "需要 2 又 1/4 杯中筋面粉、1 茶匙小苏打...";
+
+        // ⚠️ 第一步：强制 JSON 输出模式
+        // ⚠️ 第二步：以 Map（原生 JSON Schema）定义输出结构
+        GenerateContentConfig config = GenerateContentConfig.builder()
+            .responseMimeType("application/json")
+            .responseJsonSchema(Map.of(
+                "type", "object",
+                "properties", Map.of(
+                    "recipe_name", Map.of("type", "string", "description", "菜谱名称"),
+                    "prep_time_minutes", Map.of("type", "integer", "description", "准备时间（分钟），可选"),
+                    "ingredients", Map.of(
+                        "type", "array",
+                        "items", Map.of(
+                            "type", "object",
+                            "properties", Map.of(
+                                "name",     Map.of("type", "string"),
+                                "quantity", Map.of("type", "string")
+                            ),
+                            "required", List.of("name", "quantity")
+                        )
+                    ),
+                    "instructions", Map.of("type", "array", "items", Map.of("type", "string"))
+                ),
+                "required", List.of("recipe_name", "ingredients", "instructions")
+            ))
+            .build();
+
+        // ⚠️ 第三步：GenerateContent — 模型被约束为只能输出符合 Schema 的 JSON
+        GenerateContentResponse result = client.models.generateContent(
+            "gemini-2.5-flash",
+            prompt,
+            config
+        );
+        System.out.println(result.text());
+    }
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 Example Response:
 
@@ -1622,7 +2573,7 @@ Example Response:
 }
 ```
 
-## Streaming
+### Streaming
 
 You can stream structured outputs, which allows you to start processing the response as it's being generated, without having to wait for the entire output to be complete. This can improve the perceived performance of your application.
 
@@ -1656,7 +2607,7 @@ for chunk in response_stream:
     print(chunk.candidates[0].content.parts[0].text)
 ```
 
-## Structured outputs with tools
+### Structured outputs with tools
 
 Preview: This feature is available only to Gemini 3 series models, gemini-3.1-pro-preview and gemini-3-flash-preview.
 
@@ -1695,7 +2646,7 @@ result = MatchResult.model_validate_json(response.text)
 print(result)
 ```
 
-## JSON schema support
+### JSON schema support
 
 To generate a JSON object, set the response_mime_type in the generation configuration to application/json and provide a response_json_schema. The schema must be a valid JSON Schema that describes the desired output format.
 
@@ -1718,7 +2669,7 @@ These descriptive properties help guide the model:
 title: A short description of a property.
 description: A longer and more detailed description of a property.
 
-### Type-specific properties
+#### Type-specific properties
 
 For object values:
 
@@ -1744,7 +2695,7 @@ prefixItems: Defines a list of schemas for the first N items, allowing for tuple
 minItems: The minimum number of items in the array.
 maxItems: The maximum number of items in the array.
 
-## Model support
+### Model support
 
 The following models support structured output:
 
@@ -1759,7 +2710,7 @@ Gemini 2.0 Flash-Lite	✔️*
 
 * Note that Gemini 2.0 requires an explicit propertyOrdering list within the JSON input to define the preferred structure. You can find an example in this cookbook.
 
-## Structured outputs vs. function calling
+### Structured outputs vs. function calling
 
 Both structured outputs and function calling use JSON schemas, but they serve different purposes:
 
@@ -1767,7 +2718,7 @@ Feature	Primary Use Case
 Structured Outputs	Formatting the final response to the user. Use this when you want the model's answer to be in a specific format (e.g., extracting data from a document to save to a database).
 Function Calling	Taking action during the conversation. Use this when the model needs to ask you to perform a task (e.g., "get current weather") before it can provide a final answer.
 
-## Best practices
+### Best practices
 
 Clear descriptions: Use the description field in your schema to provide clear instructions to the model about what each property represents. This is crucial for guiding the model's output.
 Strong typing: Use specific types (integer, string, enum) whenever possible. If a parameter has a limited set of valid values, use an enum.
@@ -1775,7 +2726,7 @@ Prompt engineering: Clearly state in your prompt what you want the model to do. 
 Validation: While structured output guarantees syntactically correct JSON, it does not guarantee the values are semantically correct. Always validate the final output in your application code before using it.
 Error handling: Implement robust error handling in your application to gracefully manage cases where the model's output, while schema-compliant, may not meet your business logic requirements.
 
-## Limitations
+### Limitations
 
 Schema subset: Not all features of the JSON Schema specification are supported. The model ignores unsupported properties.
 Schema complexity: The API may reject very large or deeply nested schemas. If you encounter errors, try simplifying your schema by shortening property names, reducing nesting, or limiting the number of constraints.
