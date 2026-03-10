@@ -1,3 +1,93 @@
+<!-- Hugo Tabs Shortcode Styles -->
+<style>
+  .hugo-tabs {
+    margin: 1.5em 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--card-border-color, #e5e7eb);
+  }
+
+  .hugo-tabs__nav {
+    display: flex;
+    background: var(--card-background, #f9fafb);
+    border-bottom: 1px solid var(--card-border-color, #e5e7eb);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .hugo-tabs__nav::-webkit-scrollbar { display: none; }
+
+  .hugo-tabs__nav button {
+    padding: 0.55em 1.2em;
+    font-size: 1.1rem ;
+    font-weight: 500;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--card-text-color-secondary, #6b7280);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+    font-family: inherit;
+  }
+
+  .hugo-tabs__nav button:hover {
+    color: var(--accent-color, #3b82f6);
+  }
+
+  .hugo-tabs__nav button.active {
+    color: var(--accent-color, #3b82f6);
+    border-bottom-color: var(--accent-color, #3b82f6);
+  }
+
+  .hugo-tabs__content .hugo-tab__panel {
+    display: none;
+    padding: 0;
+  }
+
+  .hugo-tabs__content .hugo-tab__panel.active {
+    display: block;
+  }
+
+  /* Remove double border on code blocks inside tabs */
+  .hugo-tab__panel > .highlight:first-child,
+  .hugo-tab__panel > div:first-child > .highlight {
+    margin-top: 0;
+    border-radius: 0;
+  }
+  .hugo-tab__panel .highlight {
+    margin: 0;
+    border-radius: 0;
+  }
+</style>
+
+<!-- Hugo Tabs Shortcode Script -->
+<script>
+  function initHugoTabs() {
+    document.querySelectorAll(".hugo-tabs").forEach(function (tabsEl) {
+      const nav = tabsEl.querySelector(".hugo-tabs__nav");
+      const panels = Array.from(tabsEl.querySelectorAll(".hugo-tab__panel"));
+
+      function activateTab(btn, panel) {
+        nav.querySelectorAll("button").forEach(function (b) { b.classList.remove("active"); });
+        panels.forEach(function (p) { p.classList.remove("active"); });
+        btn.classList.add("active");
+        panel.classList.add("active");
+      }
+
+      panels.forEach(function (panel, i) {
+        const name = panel.dataset.tabName || ("Tab " + (i + 1));
+        const btn = document.createElement("button");
+        btn.textContent = name;
+        btn.setAttribute("role", "tab");
+        if (i === 0) { btn.classList.add("active"); panel.classList.add("active"); }
+        btn.addEventListener("click", function () { activateTab(btn, panel); });
+        nav.appendChild(btn);
+      });
+    });
+  }
+  document.addEventListener("DOMContentLoaded", initHugoTabs);
+</script>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const MAX_HEIGHT = 300; // Max height in pixels before collapsing
