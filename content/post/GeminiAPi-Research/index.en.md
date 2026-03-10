@@ -1071,3 +1071,711 @@ resp, err := client.Models.GenerateContent(
 | Descriptive task prompt ("Extract invoice fields, pay attention to...") | `Contents` (cacheable) | Semantic description, varies by doc type |
 | JSON Schema structure definition | `ResponseSchema` | Zero prompt tokens, constrained decoding guarantees valid JSON |
 | Actual document file | Fresh `Contents` each call | Different every time |
+
+---
+
+# Document Understanding: PDF Processing in Depth
+
+Gemini processes PDFs using **native vision** — it reads the document as a human would, understanding not just text but also images, diagrams, charts, tables, and layout across up to **1000 pages**. This is fundamentally different from traditional OCR: Gemini understands context and structure.
+
+**Key capabilities:**
+- Extract data into structured output (JSON, tables)
+- Summarize and answer questions based on visual + textual elements
+- Transcribe documents preserving layout/formatting for downstream apps
+
+> ⚠️ Non-PDF types (TXT, HTML, Markdown, XML) are supported but are extracted as **plain text only** — charts, diagrams, and formatting are lost.
+
+---
+
+## Method 1: Inline Data (Small PDFs, ≤ 50 MB)
+
+Best for one-off requests on small documents. The raw file bytes are embedded directly in the request payload.
+
+### From URL
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
+
+    "google.golang.org/genai"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := genai.NewClient(ctx, &genai.ClientConfig{
+        APIKey:  os.Getenv("GEMINI_API_KEY"),
+        Backend: genai.BackendGeminiAPI,
+    })
+
+    // 1. Fetch the PDF bytes from a URL
+    pdfResp, _ := http.Get("https://discovery.ucl.ac.uk/id/eprint/10089234/1/343019_3_art_0_py4t4l_convrt.pdf")
+    pdfBytes, _ := io.ReadAll(pdfResp.Body)
+    pdfResp.Body.Close()
+
+    parts := []*genai.Part{
+        // ⚠️ INLINE DATA: raw bytes go directly into the request (no upload step)
+        {InlineData: &genai.Blob{
+            MIMEType: "application/pdf",
+            Data:     pdfBytes,
+        }},
+        genai.NewPartFromText("Summarize this document"),
+    }
+
+    result, _ := client.Models.GenerateContent(
+        ctx,
+        "gemini-2.5-flash",
+        []*genai.Content{genai.NewContentFromParts(parts, genai.RoleUser)},
+        nil,
+    )
+    fmt.Println(result.Text())
+}
+```
+
+### From Local File
+
+```go
+// Same structure — just read bytes from disk instead of HTTP
+pdfBytes, _ := os.ReadFile("path/to/your/file.pdf")
+
+parts := []*genai.Part{
+    // ⚠️ INLINE DATA: local bytes embedded directly — fast but not reusable
+    {InlineData: &genai.Blob{MIMEType: "application/pdf", Data: pdfBytes}},
+    genai.NewPartFromText("Summarize this document"),
+}
+```
+
+---
+
+## Method 2: Files API Upload (Large PDFs, Reusable)
+
+Use the Files API when:
+- File size > 50 MB, or combined payload > 100 MB
+- You need to query the same document multiple times (saves bandwidth, reduces latency)
+- Files are stored for **48 hours** at no cost
+
+### From URL (Download → Upload → Query)
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
+
+    "google.golang.org/genai"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := genai.NewClient(ctx, &genai.ClientConfig{
+        APIKey:  os.Getenv("GEMINI_API_KEY"),
+        Backend: genai.BackendGeminiAPI,
+    })
+
+    // 1. Download the PDF locally
+    pdfURL := "https://www.nasa.gov/wp-content/uploads/static/history/alsj/a17/A17_FlightPlan.pdf"
+    localPath := "A17_FlightPlan_downloaded.pdf"
+    respHttp, _ := http.Get(pdfURL)
+    defer respHttp.Body.Close()
+    outFile, _ := os.Create(localPath)
+    io.Copy(outFile, respHttp.Body)
+    outFile.Close()
+
+    // ⚠️ FILES API UPLOAD: file stored in Google's servers for 48h
+    // Returns a URI you can reuse in multiple GenerateContent calls
+    uploadedFile, _ := client.Files.UploadFromPath(ctx, localPath,
+        &genai.UploadFileConfig{MIMEType: "application/pdf"},
+    )
+
+    promptParts := []*genai.Part{
+        // ⚠️ REFERENCE BY URI: no re-uploading, model fetches from cache
+        genai.NewPartFromURI(uploadedFile.URI, uploadedFile.MIMEType),
+        genai.NewPartFromText("Summarize this document"),
+    }
+
+    result, _ := client.Models.GenerateContent(
+        ctx,
+        "gemini-2.5-flash",
+        []*genai.Content{genai.NewContentFromParts(promptParts, genai.RoleUser)},
+        nil,
+    )
+    fmt.Println(result.Text())
+}
+```
+
+### From Local File (Direct Upload)
+
+```go
+// ⚠️ FILES API UPLOAD: upload local PDF to Google's servers
+uploadedFile, _ := client.Files.UploadFromPath(ctx, "/path/to/file.pdf",
+    &genai.UploadFileConfig{MIMEType: "application/pdf"},
+)
+
+// ⚠️ REFERENCE BY URI: pass the returned URI to the model
+promptParts := []*genai.Part{
+    genai.NewPartFromURI(uploadedFile.URI, uploadedFile.MIMEType),
+    genai.NewPartFromText("Give me a summary of this PDF file."),
+}
+```
+
+---
+
+## Method 3: Multiple PDFs in One Request
+
+Gemini can analyze up to **1000 pages** across multiple documents in a single request, as long as the combined size stays within the model's context window. Ideal for cross-document comparison.
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
+
+    "google.golang.org/genai"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := genai.NewClient(ctx, &genai.ClientConfig{
+        APIKey:  os.Getenv("GEMINI_API_KEY"),
+        Backend: genai.BackendGeminiAPI,
+    })
+
+    // Download the two papers
+    urls := map[string]string{
+        "doc1_downloaded.pdf": "https://arxiv.org/pdf/2312.11805",
+        "doc2_downloaded.pdf": "https://arxiv.org/pdf/2403.05530",
+    }
+    for localPath, url := range urls {
+        resp, _ := http.Get(url)
+        f, _ := os.Create(localPath)
+        io.Copy(f, resp.Body)
+        f.Close()
+        resp.Body.Close()
+    }
+
+    // ⚠️ UPLOAD BOTH FILES separately via Files API
+    file1, _ := client.Files.UploadFromPath(ctx, "doc1_downloaded.pdf",
+        &genai.UploadFileConfig{MIMEType: "application/pdf"})
+    file2, _ := client.Files.UploadFromPath(ctx, "doc2_downloaded.pdf",
+        &genai.UploadFileConfig{MIMEType: "application/pdf"})
+
+    promptParts := []*genai.Part{
+        // ⚠️ BOTH FILE URIs in the same Parts array — Gemini reads them together
+        genai.NewPartFromURI(file1.URI, file1.MIMEType),
+        genai.NewPartFromURI(file2.URI, file2.MIMEType),
+        genai.NewPartFromText("Compare the main benchmark results between these two papers. Output a table."),
+    }
+
+    result, _ := client.Models.GenerateContent(
+        ctx,
+        "gemini-2.5-flash",
+        []*genai.Content{genai.NewContentFromParts(promptParts, genai.RoleUser)},
+        nil,
+    )
+    fmt.Println(result.Text())
+}
+```
+
+---
+
+## Technical Limits & Tips
+
+| Dimension | Limit / Detail |
+|-----------|----------------|
+| Max file size | 50 MB (inline) / 2 GB (Files API) |
+| Max pages | 1000 pages per request |
+| Token cost per page | 258 tokens |
+| Page resolution | Scaled to max 3072×3072 (no discount for lower res) |
+| Storage (Files API) | 48 hours, free |
+
+**Best practices:**
+- Rotate pages to correct orientation before uploading
+- Avoid blurry or low-contrast scans
+- For single-page documents, place the text prompt **after** the page part
+- Use Files API for anything you need to query more than once
+
+---
+
+# Structured Outputs: Guaranteed JSON Schema Compliance
+
+Structured outputs let you configure Gemini to always return responses that match a provided JSON Schema — enforced at the grammar level via **constrained decoding**.
+
+**Ideal for:**
+- **Data extraction** — pull specific fields (names, dates, amounts) from unstructured text
+- **Classification** — categorize documents into predefined enum values
+- **Agentic workflows** — generate structured inputs for tools or APIs
+
+> **Note**: This differs from `ResponseSchema` used in earlier scenarios in one way — you can also pass the schema as raw `map[string]any` JSON Schema (`ResponseJsonSchema`) instead of the typed `*genai.Schema` Go struct. Both approaches achieve the same constrained decoding result.
+
+---
+
+## Go Example: Recipe Extraction
+
+This demonstrates using `ResponseJsonSchema` (raw JSON Schema as `map[string]any`) to extract structured recipe data from free-form text.
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+
+    "google.golang.org/genai"
+)
+
+func main() {
+    ctx := context.Background()
+    // Uses GEMINI_API_KEY env var automatically
+    client, err := genai.NewClient(ctx, nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    prompt := `Please extract the recipe from the following text.
+The user wants to make delicious chocolate chip cookies.
+They need 2 and 1/4 cups of all-purpose flour, 1 teaspoon of baking soda...`
+
+    config := &genai.GenerateContentConfig{
+        // ⚠️ STEP 1: Force JSON output mode
+        ResponseMIMEType: "application/json",
+
+        // ⚠️ STEP 2: Define the schema as raw map[string]any (JSON Schema spec)
+        // Unlike ResponseSchema (*genai.Schema), this accepts raw JSON Schema directly.
+        // Both achieve the same constrained decoding — choose based on your preference.
+        ResponseJsonSchema: map[string]any{
+            "type": "object",
+            "properties": map[string]any{
+                "recipe_name": map[string]any{
+                    "type":        "string",
+                    "description": "The name of the recipe.",
+                },
+                "prep_time_minutes": map[string]any{
+                    "type":        "integer",
+                    "description": "Optional prep time in minutes.",
+                },
+                "ingredients": map[string]any{
+                    "type": "array",
+                    "items": map[string]any{
+                        "type": "object",
+                        "properties": map[string]any{
+                            "name":     map[string]any{"type": "string"},
+                            "quantity": map[string]any{"type": "string"},
+                        },
+                        "required": []string{"name", "quantity"},
+                    },
+                },
+                "instructions": map[string]any{
+                    "type":  "array",
+                    "items": map[string]any{"type": "string"},
+                },
+            },
+            "required": []string{"recipe_name", "ingredients", "instructions"},
+        },
+    }
+
+    // ⚠️ STEP 3: GenerateContent — model is constrained to output valid JSON
+    result, err := client.Models.GenerateContent(
+        ctx,
+        "gemini-2.5-flash",
+        genai.Text(prompt),
+        config,
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // result.Text() is guaranteed to be a valid JSON string matching the schema
+    fmt.Println(result.Text())
+}
+```
+
+**Expected output (guaranteed schema-compliant):**
+```json
+{
+  "recipe_name": "Delicious Chocolate Chip Cookies",
+  "ingredients": [
+    {"name": "all-purpose flour", "quantity": "2 and 1/4 cups"},
+    {"name": "baking soda", "quantity": "1 teaspoon"}
+  ],
+  "instructions": [
+    "Preheat the oven to 375°F (190°C).",
+    "Whisk together flour, baking soda, and salt..."
+  ]
+}
+```
+
+---
+
+## `ResponseSchema` vs `ResponseJsonSchema` — Which to Use?
+
+| | `ResponseSchema` | `ResponseJsonSchema` |
+|---|---|---|
+| Input type | `*genai.Schema` (typed Go struct) | `map[string]any` (raw JSON Schema) |
+| Constrained decoding | ✅ | ✅ |
+| Best for | When you have a strongly typed Go model | When schema comes from config/DB or is dynamic |
+
+---
+
+## Supported JSON Schema Types
+
+| Type | Notes |
+|------|-------|
+| `string` | Supports `enum` (fixed values), `format` (date-time, date) |
+| `number` | Floating-point; supports `minimum`, `maximum`, `enum` |
+| `integer` | Whole numbers; supports `minimum`, `maximum`, `enum` |
+| `boolean` | `true`/`false` |
+| `object` | Uses `properties`, `required`, `additionalProperties` |
+| `array` | Uses `items`, `minItems`, `maxItems`, `prefixItems` |
+| `null` | Allow null via `{"type": ["string", "null"]}` |
+
+Use `description` on any field to guide the model on what to extract.
+
+---
+
+## Best Practices & Limitations
+
+**Best practices:**
+- Use `description` on each field — this is the primary way to guide extraction accuracy
+- Use `enum` for classification fields to restrict to known values
+- State clearly in your prompt what you want extracted ("Extract the following fields from the text...")
+- **Always validate semantics in your app code** — structured output guarantees valid JSON *syntax*, not business-logic correctness
+
+**Limitations:**
+- Unsupported JSON Schema features are silently ignored
+- Very large or deeply nested schemas may be rejected — simplify by shortening names, reducing nesting, or limiting constraints
+- Structured outputs work with most Gemini models: `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.0-flash`, and the Gemini 3 series
+
+
+
+
+
+# Structured outputs
+
+You can configure Gemini models to generate responses that adhere to a provided JSON Schema. This ensures predictable, type-safe results and simplifies extracting structured data from unstructured text.
+
+Using structured outputs is ideal for:
+
+Data extraction: Pull specific information like names and dates from text.
+Structured classification: Classify text into predefined categories.
+Agentic workflows: Generate structured inputs for tools or APIs.
+
+In addition to supporting JSON Schema in the REST API, the Google GenAI SDKs make it easy to define schemas using Pydantic (Python) and Zod (JavaScript).
+
+Recipe Extractor Content Moderation Recursive Structures
+
+This example demonstrates how to extract structured data from text using basic JSON Schema types like object, array, string, and integer.
+
+Python
+JavaScript
+Go
+REST
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+
+    "google.golang.org/genai"
+)
+
+func main() {
+    ctx := context.Background()
+    client, err := genai.NewClient(ctx, nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    prompt := `
+  Please extract the recipe from the following text.
+  The user wants to make delicious chocolate chip cookies.
+  They need 2 and 1/4 cups of all-purpose flour, 1 teaspoon of baking soda,
+  1 teaspoon of salt, 1 cup of unsalted butter (softened), 3/4 cup of granulated sugar,
+  3/4 cup of packed brown sugar, 1 teaspoon of vanilla extract, and 2 large eggs.
+  For the best part, they'll need 2 cups of semisweet chocolate chips.
+  First, preheat the oven to 375°F (190°C). Then, in a small bowl, whisk together the flour,
+  baking soda, and salt. In a large bowl, cream together the butter, granulated sugar, and brown sugar
+  until light and fluffy. Beat in the vanilla and eggs, one at a time. Gradually beat in the dry
+  ingredients until just combined. Finally, stir in the chocolate chips. Drop by rounded tablespoons
+  onto ungreased baking sheets and bake for 9 to 11 minutes.
+  `
+    config := &genai.GenerateContentConfig{
+        ResponseMIMEType: "application/json",
+        ResponseJsonSchema: map[string]any{
+            "type": "object",
+            "properties": map[string]any{
+                "recipe_name": map[string]any{
+                    "type":        "string",
+                    "description": "The name of the recipe.",
+                },
+                "prep_time_minutes": map[string]any{
+                    "type":        "integer",
+                    "description": "Optional time in minutes to prepare the recipe.",
+                },
+                "ingredients": map[string]any{
+                    "type": "array",
+                    "items": map[string]any{
+                        "type": "object",
+                        "properties": map[string]any{
+                            "name": map[string]any{
+                                "type":        "string",
+                                "description": "Name of the ingredient.",
+                            },
+                            "quantity": map[string]any{
+                                "type":        "string",
+                                "description": "Quantity of the ingredient, including units.",
+                            },
+                        },
+                        "required": []string{"name", "quantity"},
+                    },
+                },
+                "instructions": map[string]any{
+                    "type":  "array",
+                    "items": map[string]any{"type": "string"},
+                },
+            },
+            "required": []string{"recipe_name", "ingredients", "instructions"},
+        },
+    }
+
+    result, err := client.Models.GenerateContent(
+        ctx,
+        "gemini-3-flash-preview",
+        genai.Text(prompt),
+        config,
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println(result.Text())
+}
+```
+
+Example Response:
+
+```json
+{
+  "recipe_name": "Delicious Chocolate Chip Cookies",
+  "ingredients": [
+    {
+      "name": "all-purpose flour",
+      "quantity": "2 and 1/4 cups"
+    },
+    {
+      "name": "baking soda",
+      "quantity": "1 teaspoon"
+    },
+    {
+      "name": "salt",
+      "quantity": "1 teaspoon"
+    },
+    {
+      "name": "unsalted butter (softened)",
+      "quantity": "1 cup"
+    },
+    {
+      "name": "granulated sugar",
+      "quantity": "3/4 cup"
+    },
+    {
+      "name": "packed brown sugar",
+      "quantity": "3/4 cup"
+    },
+    {
+      "name": "vanilla extract",
+      "quantity": "1 teaspoon"
+    },
+    {
+      "name": "large eggs",
+      "quantity": "2"
+    },
+    {
+      "name": "semisweet chocolate chips",
+      "quantity": "2 cups"
+    }
+  ],
+  "instructions": [
+    "Preheat the oven to 375°F (190°C).",
+    "In a small bowl, whisk together the flour, baking soda, and salt.",
+    "In a large bowl, cream together the butter, granulated sugar, and brown sugar until light and fluffy.",
+    "Beat in the vanilla and eggs, one at a time.",
+    "Gradually beat in the dry ingredients until just combined.",
+    "Stir in the chocolate chips.",
+    "Drop by rounded tablespoons onto ungreased baking sheets and bake for 9 to 11 minutes."
+  ]
+}
+```
+
+## Streaming
+
+You can stream structured outputs, which allows you to start processing the response as it's being generated, without having to wait for the entire output to be complete. This can improve the perceived performance of your application.
+
+The streamed chunks will be valid partial JSON strings, which can be concatenated to form the final, complete JSON object.
+
+Python
+JavaScript
+
+```python
+from google import genai
+from pydantic import BaseModel, Field
+from typing import Literal
+
+class Feedback(BaseModel):
+    sentiment: Literal["positive", "neutral", "negative"]
+    summary: str
+
+client = genai.Client()
+prompt = "The new UI is incredibly intuitive and visually appealing. Great job. Add a very long summary to test streaming!"
+
+response_stream = client.models.generate_content_stream(
+    model="gemini-3-flash-preview",
+    contents=prompt,
+    config={
+        "response_mime_type": "application/json",
+        "response_json_schema": Feedback.model_json_schema(),
+    },
+)
+
+for chunk in response_stream:
+    print(chunk.candidates[0].content.parts[0].text)
+```
+
+## Structured outputs with tools
+
+Preview: This feature is available only to Gemini 3 series models, gemini-3.1-pro-preview and gemini-3-flash-preview.
+
+Gemini 3 lets you combine Structured Outputs with built-in tools, including Grounding with Google Search, URL Context, Code Execution, File Search, and Function Calling.
+
+Python
+JavaScript
+REST
+
+```python
+from google import genai
+from pydantic import BaseModel, Field
+from typing import List
+
+class MatchResult(BaseModel):
+    winner: str = Field(description="The name of the winner.")
+    final_match_score: str = Field(description="The final match score.")
+    scorers: List[str] = Field(description="The name of the scorer.")
+
+client = genai.Client()
+
+response = client.models.generate_content(
+    model="gemini-3.1-pro-preview",
+    contents="Search for all details for the latest Euro.",
+    config={
+        "tools": [
+            {"google_search": {}},
+            {"url_context": {}}
+        ],
+        "response_mime_type": "application/json",
+        "response_json_schema": MatchResult.model_json_schema(),
+    },
+)
+
+result = MatchResult.model_validate_json(response.text)
+print(result)
+```
+
+## JSON schema support
+
+To generate a JSON object, set the response_mime_type in the generation configuration to application/json and provide a response_json_schema. The schema must be a valid JSON Schema that describes the desired output format.
+
+The model will then generate a response that is a syntactically valid JSON string matching the provided schema. When using structured outputs, the model will produce outputs in the same order as the keys in the schema.
+
+Gemini's structured output mode supports a subset of the JSON Schema specification.
+
+The following values of type are supported:
+
+string: For text.
+number: For floating-point numbers.
+integer: For whole numbers.
+boolean: For true/false values.
+object: For structured data with key-value pairs.
+array: For lists of items.
+null: To allow a property to be null, include "null" in the type array (e.g., {"type": ["string", "null"]}).
+
+These descriptive properties help guide the model:
+
+title: A short description of a property.
+description: A longer and more detailed description of a property.
+
+### Type-specific properties
+
+For object values:
+
+properties: An object where each key is a property name and each value is a schema for that property.
+required: An array of strings, listing which properties are mandatory.
+additionalProperties: Controls whether properties not listed in properties are allowed. Can be a boolean or a schema.
+
+For string values:
+
+enum: Lists a specific set of possible strings for classification tasks.
+format: Specifies a syntax for the string, such as date-time, date, time.
+
+For number and integer values:
+
+enum: Lists a specific set of possible numeric values.
+minimum: The minimum inclusive value.
+maximum: The maximum inclusive value.
+
+For array values:
+
+items: Defines the schema for all items in the array.
+prefixItems: Defines a list of schemas for the first N items, allowing for tuple-like structures.
+minItems: The minimum number of items in the array.
+maxItems: The maximum number of items in the array.
+
+## Model support
+
+The following models support structured output:
+
+Model	Structured Outputs
+Gemini 3.1 Pro Preview	✔️
+Gemini 3 Flash Preview	✔️
+Gemini 2.5 Pro	✔️
+Gemini 2.5 Flash	✔️
+Gemini 2.5 Flash-Lite	✔️
+Gemini 2.0 Flash	✔️*
+Gemini 2.0 Flash-Lite	✔️*
+
+* Note that Gemini 2.0 requires an explicit propertyOrdering list within the JSON input to define the preferred structure. You can find an example in this cookbook.
+
+## Structured outputs vs. function calling
+
+Both structured outputs and function calling use JSON schemas, but they serve different purposes:
+
+Feature	Primary Use Case
+Structured Outputs	Formatting the final response to the user. Use this when you want the model's answer to be in a specific format (e.g., extracting data from a document to save to a database).
+Function Calling	Taking action during the conversation. Use this when the model needs to ask you to perform a task (e.g., "get current weather") before it can provide a final answer.
+
+## Best practices
+
+Clear descriptions: Use the description field in your schema to provide clear instructions to the model about what each property represents. This is crucial for guiding the model's output.
+Strong typing: Use specific types (integer, string, enum) whenever possible. If a parameter has a limited set of valid values, use an enum.
+Prompt engineering: Clearly state in your prompt what you want the model to do. For example, "Extract the following information from the text..." or "Classify this feedback according to the provided schema...".
+Validation: While structured output guarantees syntactically correct JSON, it does not guarantee the values are semantically correct. Always validate the final output in your application code before using it.
+Error handling: Implement robust error handling in your application to gracefully manage cases where the model's output, while schema-compliant, may not meet your business logic requirements.
+
+## Limitations
+
+Schema subset: Not all features of the JSON Schema specification are supported. The model ignores unsupported properties.
+Schema complexity: The API may reject very large or deeply nested schemas. If you encounter errors, try simplifying your schema by shortening property names, reducing nesting, or limiting the number of constraints.

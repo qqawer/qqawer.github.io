@@ -1075,3 +1075,390 @@ resp, err := client.Models.GenerateContent(
 | 描述性任务 prompt（"请提取发票字段，注意..."） | `Contents`（可缓存） | 有意义的语义描述，可随单据类型变化 |
 | JSON Schema 结构定义 | `ResponseSchema` | 不占 prompt token，约束解码保证合法 JSON |
 | 实际单据文件 | 每次新鲜传入 `Contents` | 每次不同 |
+
+---
+
+# PDF 文档理解：深度解析
+
+Gemini 使用**原生视觉**处理 PDF，像人类一样阅读文档，不仅理解文字，还能理解图像、图表、表格和排版结构，支持最多 **1000 页**。这与传统 OCR 有本质区别：Gemini 能理解上下文和结构。
+
+**核心能力：**
+- 提取数据为结构化输出（JSON、表格）
+- 基于视觉 + 文本元素进行问答和摘要
+- 转录文档内容（如 HTML），保留排版供下游使用
+
+> ⚠️ 非 PDF 类型（TXT、HTML、Markdown、XML 等）虽然可以传入，但只会被当作**纯文本**提取，图表、格式信息全部丢失。
+
+---
+
+## 方式一：Inline Data 内联传入（小文件 ≤ 50 MB）
+
+适合一次性、临时性处理的小文档。文件字节直接嵌入请求 payload，无需上传步骤。
+
+### 从 URL 获取 PDF
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
+
+    "google.golang.org/genai"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := genai.NewClient(ctx, &genai.ClientConfig{
+        APIKey:  os.Getenv("GEMINI_API_KEY"),
+        Backend: genai.BackendGeminiAPI,
+    })
+
+    // 1. 从 URL 拉取 PDF 字节
+    pdfResp, _ := http.Get("https://discovery.ucl.ac.uk/id/eprint/10089234/1/343019_3_art_0_py4t4l_convrt.pdf")
+    pdfBytes, _ := io.ReadAll(pdfResp.Body)
+    pdfResp.Body.Close()
+
+    parts := []*genai.Part{
+        // ⚠️ INLINE DATA：字节直接嵌入请求体，无上传步骤，不可复用
+        {InlineData: &genai.Blob{
+            MIMEType: "application/pdf",
+            Data:     pdfBytes,
+        }},
+        genai.NewPartFromText("请总结这份文档"),
+    }
+
+    result, _ := client.Models.GenerateContent(
+        ctx,
+        "gemini-2.5-flash",
+        []*genai.Content{genai.NewContentFromParts(parts, genai.RoleUser)},
+        nil,
+    )
+    fmt.Println(result.Text())
+}
+```
+
+### 从本地文件读取
+
+```go
+// 同样的结构，改为从磁盘读取字节
+pdfBytes, _ := os.ReadFile("path/to/your/file.pdf")
+
+parts := []*genai.Part{
+    // ⚠️ INLINE DATA：本地字节直接嵌入，快但不可复用
+    {InlineData: &genai.Blob{MIMEType: "application/pdf", Data: pdfBytes}},
+    genai.NewPartFromText("请总结这份文档"),
+}
+```
+
+---
+
+## 方式二：Files API 上传（大文件 / 可复用）
+
+以下情况必须使用 Files API：
+- 文件超过 50 MB，或整体 payload 超过 100 MB
+- 需要多次查询同一份文件（节省带宽、降低延迟）
+- 文件存储于 Google 服务器 **48 小时**，免费
+
+### 从 URL 下载后上传
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
+
+    "google.golang.org/genai"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := genai.NewClient(ctx, &genai.ClientConfig{
+        APIKey:  os.Getenv("GEMINI_API_KEY"),
+        Backend: genai.BackendGeminiAPI,
+    })
+
+    // 1. 先下载到本地
+    pdfURL := "https://www.nasa.gov/wp-content/uploads/static/history/alsj/a17/A17_FlightPlan.pdf"
+    localPath := "A17_FlightPlan_downloaded.pdf"
+    respHttp, _ := http.Get(pdfURL)
+    defer respHttp.Body.Close()
+    outFile, _ := os.Create(localPath)
+    io.Copy(outFile, respHttp.Body)
+    outFile.Close()
+
+    // ⚠️ FILES API 上传：文件存入 Google 服务器 48 小时
+    // 返回的 URI 可在后续多次 GenerateContent 中复用
+    uploadedFile, _ := client.Files.UploadFromPath(ctx, localPath,
+        &genai.UploadFileConfig{MIMEType: "application/pdf"},
+    )
+
+    promptParts := []*genai.Part{
+        // ⚠️ 通过 URI 引用：不需要重传，模型直接从服务端获取
+        genai.NewPartFromURI(uploadedFile.URI, uploadedFile.MIMEType),
+        genai.NewPartFromText("请总结这份文档"),
+    }
+
+    result, _ := client.Models.GenerateContent(
+        ctx,
+        "gemini-2.5-flash",
+        []*genai.Content{genai.NewContentFromParts(promptParts, genai.RoleUser)},
+        nil,
+    )
+    fmt.Println(result.Text())
+}
+```
+
+### 直接上传本地文件
+
+```go
+// ⚠️ FILES API 上传：将本地 PDF 上传至 Google 服务器
+uploadedFile, _ := client.Files.UploadFromPath(ctx, "/path/to/file.pdf",
+    &genai.UploadFileConfig{MIMEType: "application/pdf"},
+)
+
+// ⚠️ URI 引用：将返回的 URI 传给模型
+promptParts := []*genai.Part{
+    genai.NewPartFromURI(uploadedFile.URI, uploadedFile.MIMEType),
+    genai.NewPartFromText("请给我这份 PDF 的摘要。"),
+}
+```
+
+---
+
+## 方式三：多 PDF 合并分析
+
+Gemini 支持在**单次请求**中传入多份 PDF（总计最多 1000 页，在模型上下文窗口内），适合跨文档对比分析。
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
+
+    "google.golang.org/genai"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := genai.NewClient(ctx, &genai.ClientConfig{
+        APIKey:  os.Getenv("GEMINI_API_KEY"),
+        Backend: genai.BackendGeminiAPI,
+    })
+
+    // 下载两篇论文
+    urls := map[string]string{
+        "doc1_downloaded.pdf": "https://arxiv.org/pdf/2312.11805",
+        "doc2_downloaded.pdf": "https://arxiv.org/pdf/2403.05530",
+    }
+    for localPath, url := range urls {
+        resp, _ := http.Get(url)
+        f, _ := os.Create(localPath)
+        io.Copy(f, resp.Body)
+        f.Close()
+        resp.Body.Close()
+    }
+
+    // ⚠️ 分别上传两份文件（独立的 Files API 调用）
+    file1, _ := client.Files.UploadFromPath(ctx, "doc1_downloaded.pdf",
+        &genai.UploadFileConfig{MIMEType: "application/pdf"})
+    file2, _ := client.Files.UploadFromPath(ctx, "doc2_downloaded.pdf",
+        &genai.UploadFileConfig{MIMEType: "application/pdf"})
+
+    promptParts := []*genai.Part{
+        // ⚠️ 两个 URI 放在同一个 Parts 数组 → Gemini 同时读取两份文件
+        genai.NewPartFromURI(file1.URI, file1.MIMEType),
+        genai.NewPartFromURI(file2.URI, file2.MIMEType),
+        genai.NewPartFromText("对比这两篇论文的主要基准指标差异，以表格形式输出。"),
+    }
+
+    result, _ := client.Models.GenerateContent(
+        ctx,
+        "gemini-2.5-flash",
+        []*genai.Content{genai.NewContentFromParts(promptParts, genai.RoleUser)},
+        nil,
+    )
+    fmt.Println(result.Text())
+}
+```
+
+---
+
+## 技术限制与最佳实践
+
+| 维度 | 限制 / 说明 |
+|------|-------------|
+| 最大文件大小 | 50 MB（内联）/ 2 GB（Files API）|
+| 最多页数 | 每次请求 1000 页 |
+| 每页 token 消耗 | 258 tokens |
+| 页面分辨率 | 最大缩放至 3072×3072（低分辨率无折扣）|
+| Files API 存储 | 48 小时，免费 |
+
+**最佳实践：**
+- 上传前将页面旋转至正确方向
+- 避免模糊或低对比度的扫描件
+- 单页文档时，将文字 prompt 放在页面 Part **之后**
+- 凡是需要多次查询的文件，一律使用 Files API
+
+---
+
+# 结构化输出：JSON Schema 约束合规
+
+结构化输出功能允许你为 Gemini 指定一个 JSON Schema，模型通过底层**约束解码（Constrained Decoding）**，在语法层面强制保证输出严格符合该 Schema。
+
+**适用场景：**
+- **数据提取** — 从非结构化文本中提取指定字段（姓名、日期、金额）
+- **文本分类** — 将内容归类为预定义的枚举值
+- **智能体工作流** — 为工具或 API 生成结构化输入
+
+> **注意**：与此前场景中的 `ResponseSchema`（传 `*genai.Schema` Go 类型对象）相比，`ResponseJsonSchema` 允许直接传原生 `map[string]any` JSON Schema，两种方式都触发相同的约束解码机制，按需选择即可。
+
+---
+
+## Go 示例：菜谱提取
+
+以下代码演示使用 `ResponseJsonSchema`（原生 JSON Schema）从无格式文本中提取结构化菜谱数据。
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+
+    "google.golang.org/genai"
+)
+
+func main() {
+    ctx := context.Background()
+    // 自动读取 GEMINI_API_KEY 环境变量
+    client, err := genai.NewClient(ctx, nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    prompt := `请从以下文本中提取菜谱信息。
+用户想要制作美味的巧克力芯片饼干。
+需要 2 又 1/4 杯中筋面粉、1 茶匙小苏打...`
+
+    config := &genai.GenerateContentConfig{
+        // ⚠️ 第一步：强制 JSON 输出模式
+        ResponseMIMEType: "application/json",
+
+        // ⚠️ 第二步：以 map[string]any（原生 JSON Schema）定义输出结构
+        // 与 ResponseSchema(*genai.Schema) 的区别：这里直接传 JSON Schema 规范格式。
+        // 两者均触发约束解码，根据你的偏好选择即可。
+        ResponseJsonSchema: map[string]any{
+            "type": "object",
+            "properties": map[string]any{
+                "recipe_name": map[string]any{
+                    "type":        "string",
+                    "description": "菜谱名称",
+                },
+                "prep_time_minutes": map[string]any{
+                    "type":        "integer",
+                    "description": "准备时间（分钟），可选",
+                },
+                "ingredients": map[string]any{
+                    "type": "array",
+                    "items": map[string]any{
+                        "type": "object",
+                        "properties": map[string]any{
+                            "name":     map[string]any{"type": "string"},
+                            "quantity": map[string]any{"type": "string"},
+                        },
+                        "required": []string{"name", "quantity"},
+                    },
+                },
+                "instructions": map[string]any{
+                    "type":  "array",
+                    "items": map[string]any{"type": "string"},
+                },
+            },
+            "required": []string{"recipe_name", "ingredients", "instructions"},
+        },
+    }
+
+    // ⚠️ 第三步：GenerateContent — 模型被约束为只能输出符合 Schema 的 JSON
+    result, err := client.Models.GenerateContent(
+        ctx,
+        "gemini-2.5-flash",
+        genai.Text(prompt),
+        config,
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // result.Text() 保证是与 Schema 完全匹配的合法 JSON 字符串
+    fmt.Println(result.Text())
+}
+```
+
+**预期输出（保证符合 Schema 规范）：**
+```json
+{
+  "recipe_name": "美味巧克力芯片饼干",
+  "ingredients": [
+    {"name": "中筋面粉", "quantity": "2 又 1/4 杯"},
+    {"name": "小苏打", "quantity": "1 茶匙"}
+  ],
+  "instructions": [
+    "预热烤箱至 190°C。",
+    "将面粉、小苏打和盐搅拌均匀..."
+  ]
+}
+```
+
+---
+
+## `ResponseSchema` vs `ResponseJsonSchema` — 如何选择？
+
+| | `ResponseSchema` | `ResponseJsonSchema` |
+|---|---|---|
+| 输入类型 | `*genai.Schema`（强类型 Go 结构体）| `map[string]any`（原生 JSON Schema）|
+| 约束解码 | ✅ | ✅ |
+| 适合场景 | 有强类型 Go 模型时 | Schema 来自配置/数据库或动态生成时 |
+
+---
+
+## 支持的 JSON Schema 类型
+
+| 类型 | 说明 |
+|------|------|
+| `string` | 支持 `enum`（固定枚举值）、`format`（date-time, date）|
+| `number` | 浮点数；支持 `minimum`、`maximum`、`enum` |
+| `integer` | 整数；支持 `minimum`、`maximum`、`enum` |
+| `boolean` | `true`/`false` |
+| `object` | 使用 `properties`、`required`、`additionalProperties` |
+| `array` | 使用 `items`、`minItems`、`maxItems`、`prefixItems` |
+| `null` | 通过 `{"type": ["string", "null"]}` 允许空值 |
+
+在任意字段上使用 `description` 可引导模型精准提取对应内容。
+
+---
+
+## 最佳实践与限制
+
+**最佳实践：**
+- 每个字段都写 `description` — 这是引导提取精度的最主要手段
+- 分类字段使用 `enum` 限制候选值集合
+- prompt 里明确说明要做什么（"请从文本中提取以下字段..."）
+- **在应用代码里始终进行业务语义校验** — 结构化输出只保证 JSON 语法合法，不保证业务逻辑正确
+
+**限制：**
+- 不支持的 JSON Schema 特性会被静默忽略
+- 过大或深度嵌套的 Schema 可能被拒绝 — 尝试简化字段名、减少嵌套或减少约束条件
+- 结构化输出支持大多数 Gemini 模型：`gemini-2.5-flash`、`gemini-2.5-pro`、`gemini-2.0-flash` 以及 Gemini 3 系列
