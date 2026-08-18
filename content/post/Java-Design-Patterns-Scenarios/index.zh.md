@@ -1,25 +1,26 @@
 ---
-title: "8 大高频设计模式・Java 版：业务场景 + 痛点 + 代码，一表看懂"
-description: "8 大高频设计模式 + 4 个第二梯队模式：典型业务场景、痛点、什么时候不用，全部配上可运行的 Java 示例；开头一张总结表帮你一眼分清 12 个模式。"
+title: "8 大高频设计模式・Java / Go 双语言版：业务场景 + 痛点 + 代码，一表看懂"
+description: "8 大高频设计模式 + 4 个第二梯队模式：典型业务场景、痛点、什么时候不用；每个模式一个代码框，Java / Go 页签一键切换对照，开头一张总结表帮你一眼分清 12 个模式。"
 date: 2026-08-18T00:00:00+08:00
 slug: "java-design-patterns-scenarios"
 categories:
     - Programming
 tags:
     - Java
+    - Go
     - Design Patterns
     - Architecture
     - 面试
 toc: true
 ---
 
-# 🧩 8 大高频设计模式・Java 版：场景、痛点、代码一表看懂
+# 🧩 8 大高频设计模式・Java / Go 双语言版：场景、痛点、代码一表看懂
 
 > 这篇博客整理自一份《8 大高频设计模式・详细业务场景 + 痛点 + 什么时候不用》的笔记，并做了三件事：
 >
 > 1. **内容审核**：逐个核对了模式归类、场景描述和结论，与经典 GoF 设计模式分类一致，细节核对结果放在文末「内容审核与补充说明」；
-> 2. **补充 Java 代码**：原文是 Go 示例，这里为每个模式补上**可直接运行的 Java 版本**，重点展示和 Go 示例一一对应的写法；
-> 3. **保留原文**：场景、痛点、口诀一字不删，原版 Go 完整代码放在文末附录，方便对照，想看哪份看哪份。
+> 2. **双语言代码**：每个模式的代码框里都有 **Java / Go 两个页签，一键切换对照**，想用哪种语言看哪种；
+> 3. **保留原文**：场景、痛点、口诀一字不删；原文 Go 代码全部保留，直接放在每个模式的代码页签里，不再单独设附录。
 
 先看总表，再逐一看细节，最后看「易混模式对照」和「工厂 + 策略组合实战」。
 
@@ -65,10 +66,12 @@ toc: true
 - 需要多份独立状态；
 - 单元测试很难 mock 单例。
 
-### ☕ Java 示例
+### ☕ 双语言示例（Java / Go 页签切换）
 
 原版 Go 用 `sync.Once` 保证「只初始化一次」，Java 最接近的等价写法是**双重检查锁（DCL）**：
 
+{{< tabs >}}
+{{< tab "Java" >}}
 ```java
 public class Config {
     // volatile：防止“先返回半初始化对象”的指令重排问题
@@ -99,6 +102,42 @@ public class Config {
     }
 }
 ```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+type Config struct {
+	DBHost string
+}
+
+var (
+	instance *Config
+	once     sync.Once
+)
+
+func GetConfig() *Config {
+	once.Do(func() {
+		fmt.Println("初始化配置")
+		instance = &Config{DBHost: "127.0.0.1"}
+	})
+	return instance
+}
+
+func main() {
+	c1 := GetConfig()
+	c2 := GetConfig()
+	fmt.Println(c1 == c2)
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 > 补充：Java 里线程安全的单例还有「静态内部类」和「枚举」两种写法，其中**枚举**天然线程安全、防反射、防序列化破坏，最推荐：
 >
@@ -134,8 +173,10 @@ public class Config {
 - 产品列表经常新增，且不想修改工厂代码 → 改用工厂方法模式。
 - 需要运行中途更换行为 → 用策略模式，不是工厂。
 
-### ☕ Java 示例
+### ☕ 双语言示例（Java / Go 页签切换）
 
+{{< tabs >}}
+{{< tab "Java" >}}
 ```java
 // 支付接口：所有支付方式都实现它
 interface Payment {
@@ -173,6 +214,46 @@ public class Main {
     }
 }
 ```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+type Payment interface {
+	Pay(amount float64)
+}
+
+type Alipay struct{}
+func (a Alipay) Pay(amount float64) {
+	fmt.Printf("支付宝支付 %.2f\n", amount)
+}
+
+type WechatPay struct{}
+func (w WechatPay) Pay(amount float64) {
+	fmt.Printf("微信支付 %.2f\n", amount)
+}
+
+func NewPayment(typ string) Payment {
+	switch typ {
+	case "alipay":
+		return Alipay{}
+	case "wechat":
+		return WechatPay{}
+	default:
+		return nil
+	}
+}
+
+func main() {
+	pay := NewPayment("alipay")
+	pay.Pay(100)
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ### 一句话口诀（原文）
 
@@ -201,8 +282,10 @@ public class Main {
 
 - 对象属性很少（2-3 个字段），直接赋值就行，builder 属于过度设计。
 
-### ☕ Java 示例
+### ☕ 双语言示例（Java / Go 页签切换）
 
+{{< tabs >}}
+{{< tab "Java" >}}
 ```java
 public class Order {
     // 字段多、可选参数多：构造函数根本写不过来
@@ -253,6 +336,62 @@ public class Order {
     }
 }
 ```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+type Order struct {
+	OrderNo  string
+	UserID   int
+	GoodsID  int
+	Discount float64
+}
+
+type OrderBuilder struct {
+	order Order
+}
+
+func NewOrderBuilder() *OrderBuilder {
+	return &OrderBuilder{}
+}
+
+func (b *OrderBuilder) SetOrderNo(no string) *OrderBuilder {
+	b.order.OrderNo = no
+	return b
+}
+func (b *OrderBuilder) SetUserID(id int) *OrderBuilder {
+	b.order.UserID = id
+	return b
+}
+func (b *OrderBuilder) SetGoodsID(id int) *OrderBuilder {
+	b.order.GoodsID = id
+	return b
+}
+func (b *OrderBuilder) SetDiscount(d float64) *OrderBuilder {
+	b.order.Discount = d
+	return b
+}
+
+func (b *OrderBuilder) Build() Order {
+	return b.order
+}
+
+func main() {
+	order := NewOrderBuilder().
+		SetOrderNo("O1001").
+		SetUserID(123).
+		SetGoodsID(456).
+		SetDiscount(0.9).
+		Build()
+	fmt.Println(order)
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 > 补充：实际项目中常用 Lombok 的 `@Builder` 注解自动生成这套代码，写法不变、省掉样板代码。
 
@@ -283,8 +422,10 @@ public class Order {
 
 - 接口本身就一致，不需要转换；不要为了适配而适配增加无用代码。
 
-### ☕ Java 示例
+### ☕ 双语言示例（Java / Go 页签切换）
 
+{{< tabs >}}
+{{< tab "Java" >}}
 ```java
 // 目标接口：上层业务只认这一个
 interface Target {
@@ -319,6 +460,38 @@ public class Main {
     }
 }
 ```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+type Target interface {
+	Request() string
+}
+
+type OldSDK struct{}
+func (o *OldSDK) OldRequest() string {
+	return "第三方返回数据"
+}
+
+type Adapter struct {
+	old *OldSDK
+}
+
+func (a *Adapter) Request() string {
+	return a.old.OldRequest()
+}
+
+func main() {
+	client := &Adapter{old: &OldSDK{}}
+	fmt.Println(client.Request())
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ### 一句话口诀（原文）
 
@@ -349,10 +522,12 @@ public class Main {
 
 - 需要完全替换掉原有业务逻辑；替换用策略模式，增强用装饰器。
 
-### ☕ Java 示例
+### ☕ 双语言示例（Java / Go 页签切换）
 
 原版 Go 用「函数包函数」实现装饰，Java 里对应的是「装饰器类持有原对象、实现同一接口」：
 
+{{< tabs >}}
+{{< tab "Java" >}}
 ```java
 interface Handler {
     void execute();
@@ -388,6 +563,35 @@ public class Main {
     }
 }
 ```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+type Handler func()
+
+func WithLog(h Handler) Handler {
+	return func() {
+		fmt.Println("开始执行")
+		h()
+		fmt.Println("执行结束")
+	}
+}
+
+func BizTask() {
+	fmt.Println("执行业务逻辑")
+}
+
+func main() {
+	task := WithLog(BizTask)
+	task()
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 > 补充：JDK 里的 `BufferedInputStream` 包 `FileInputStream`、`InflaterInputStream` 包普通输入流，就是文件流多层包装的现成例子；Spring 的 `@Transactional`、切面日志本质上也是同一思想。
 
@@ -419,8 +623,10 @@ public class Main {
 
 - 单纯给函数加日志计时 → 优先装饰器。
 
-### ☕ Java 示例
+### ☕ 双语言示例（Java / Go 页签切换）
 
+{{< tabs >}}
+{{< tab "Java" >}}
 ```java
 interface Subject {
     void doWork();
@@ -453,6 +659,43 @@ public class Main {
     }
 }
 ```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+type Subject interface {
+	Do()
+}
+
+type RealService struct{}
+func (r *RealService) Do() {
+	fmt.Println("真实业务操作")
+}
+
+type Proxy struct {
+	real *RealService
+}
+
+func (p *Proxy) Do() {
+	fmt.Println("权限校验")
+	if p.real == nil {
+		p.real = &RealService{}
+	}
+	p.real.Do()
+	fmt.Println("记录操作日志")
+}
+
+func main() {
+	proxy := &Proxy{}
+	proxy.Do()
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 > 补充：代理**可以不调用真实对象**——权限校验不通过时直接 return，真实服务根本不会执行，这就是它和装饰器最本质的区别。Java 里的 JDK 动态代理、CGLIB、Spring AOP 都是代理思想的实现。
 
@@ -484,8 +727,10 @@ public class Main {
 
 - 创建完对象，后面永远不会更换实现 → 简单工厂就够了，不需要策略。
 
-### ☕ Java 示例
+### ☕ 双语言示例（Java / Go 页签切换）
 
+{{< tabs >}}
+{{< tab "Java" >}}
 ```java
 // 策略接口：同一目标，多种算法
 interface Discount {
@@ -532,6 +777,52 @@ public class Main {
     }
 }
 ```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+type Discount interface {
+	Calc(price float64) float64
+}
+
+type FullReduction struct{}
+func (f FullReduction) Calc(price float64) float64 {
+	if price >= 100 {
+		return price - 20
+	}
+	return price
+}
+
+type PercentOff struct{}
+func (p PercentOff) Calc(price float64) float64 {
+	return price * 0.9
+}
+
+type Order struct {
+	discount Discount
+}
+func (o *Order) SetDiscount(d Discount) {
+	o.discount = d
+}
+func (o *Order) GetPrice(origin float64) float64 {
+	return o.discount.Calc(origin)
+}
+
+func main() {
+	order := &Order{}
+	order.SetDiscount(FullReduction{})
+	fmt.Println(order.GetPrice(150))
+
+	order.SetDiscount(PercentOff{})
+	fmt.Println(order.GetPrice(150))
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ### 一句话口诀（原文）
 
@@ -562,8 +853,10 @@ public class Main {
 
 - 流程是强依赖、必须顺序执行；不要用观察者，直接串行调用。
 
-### ☕ Java 示例
+### ☕ 双语言示例（Java / Go 页签切换）
 
+{{< tabs >}}
+{{< tab "Java" >}}
 ```java
 import java.util.ArrayList;
 import java.util.List;
@@ -611,6 +904,52 @@ public class Main {
     }
 }
 ```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+type Observer interface {
+	Update(msg string)
+}
+
+type Subject struct {
+	observers []Observer
+}
+
+func (s *Subject) Attach(o Observer) {
+	s.observers = append(s.observers, o)
+}
+
+func (s *Subject) Notify(msg string) {
+	for _, o := range s.observers {
+		o.Update(msg)
+	}
+}
+
+type SmsNotify struct{}
+func (s SmsNotify) Update(msg string) {
+	fmt.Println("短信收到事件：", msg)
+}
+
+type StockService struct{}
+func (s StockService) Update(msg string) {
+	fmt.Println("库存收到事件：", msg)
+}
+
+func main() {
+	subject := &Subject{}
+	subject.Attach(SmsNotify{})
+	subject.Attach(StockService{})
+
+	subject.Notify("订单创建成功")
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 > 补充：Java 内置的 `Observable/Observer` 已废弃；Spring 的 `ApplicationEventPublisher` + `@EventListener` 就是观察者模式的现成实现。进程内观察者默认同步执行，MQ/Kafka 是它思想在分布式场景下的实现（异步、削峰）。
 
@@ -641,7 +980,7 @@ public class Main {
 - **状态模式**：状态之间可以互相转换，由「状态自己」决定下一个状态（订单：待支付 → 已支付 → 已发货）；
 - **策略模式**：策略之间互相独立，由「上下文 Context」决定什么时候换（折扣：9 折 ↔ 满减，互不关联）。
 
-## 🚀 工厂 + 策略 组合完整示例（Java）
+## 🚀 工厂 + 策略 组合完整示例（Java / Go 页签切换）
 
 业务中最常一起搭配使用：**工厂负责创建策略对象，上下文负责使用、切换策略对象**。
 
@@ -652,6 +991,8 @@ public class Main {
 - 上下文 Context（Order）：持有策略，运行时可以随时更换支付策略；
 - 职责拆分：工厂 = 创建策略对象；上下文 = 使用、切换策略对象。
 
+{{< tabs >}}
+{{< tab "Java" >}}
 ```java
 // ---------------------- 策略层：定义多种支付行为 ----------------------
 interface Payment {
@@ -713,906 +1054,9 @@ public class Main {
     }
 }
 ```
+{{< /tab >}}
 
-运行输出：
-
-```text
-支付宝支付：100.00 元
-微信支付：200.00 元
-```
-
-三者角色对比：
-
-| 组件 | 干什么 |
-|---|---|
-| 策略接口 & 实现 | 定义多种支付行为 |
-| 工厂 | 统一创建策略实例，把 if-else 创建逻辑收拢 |
-| Order 上下文 | 持有策略引用，随时调用、随时替换 |
-
-业务好处：
-
-- 上层业务不用到处 `new Alipay()`；
-- 如果后面新增银行卡支付，只需要：新增一个类实现 `Payment`，工厂 `switch` 加一条 `case`，业务代码（上下文 Order）无需改动。
-
-> 再进一步：把工厂的 `switch` 换成「注册表 + 工厂方法」，新增渠道时连工厂都不改，就完全满足开闭原则了（本文先不过度展开）。
-
----
-
-# 三、第二梯队 4 个高频模式
-
-## 9. 外观模式 Facade（结构型）
-
-**作用：对外提供一个简单入口，隐藏内部一堆复杂子系统**
-
-**场景：下单入口，内部依次调用库存、支付、物流；上层只调用一个 `createOrder()`，不用关心内部多个子服务。**
-
-### ⚠️ 什么时候不要用（补充）
-
-- 子系统调用关系本来就简单、只有一两个类，加门面属于过度设计；
-- 门面不要越做越大变成「上帝类」——它只负责编排入口，不负责塞业务逻辑。
-
-### ☕ Java 示例
-
-```java
-// 子系统 1：库存
-class StockService {
-    public void deduct(int goodsId) {
-        System.out.println("扣减商品 " + goodsId + " 库存");
-    }
-}
-
-// 子系统 2：支付
-class PayService {
-    public void pay(double amount) {
-        System.out.printf("支付金额 %.2f%n", amount);
-    }
-}
-
-// 子系统 3：物流
-class LogisticsService {
-    public void createShipment(String orderNo) {
-        System.out.println("创建物流单：" + orderNo);
-    }
-}
-
-// 外观门面：对外一个简单方法，封装所有复杂流程
-class OrderFacade {
-    private final StockService stock = new StockService();
-    private final PayService pay = new PayService();
-    private final LogisticsService logistics = new LogisticsService();
-
-    public void createOrder(int goodsId, double amount, String orderNo) {
-        stock.deduct(goodsId);
-        pay.pay(amount);
-        logistics.createShipment(orderNo);
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        OrderFacade facade = new OrderFacade();
-        // 上层只需要调用一个方法，无需关心内部子系统
-        facade.createOrder(1001, 99.0, "ORD-001");
-    }
-}
-```
-
-### 一句话口诀（补充）
-
-> 复杂一堆子系统 → 一个入口调用
-
----
-
-## 10. 责任链 Chain of Responsibility（行为型）
-
-**作用：一条处理链条，请求依次经过每个处理器，可中断**
-
-**场景：接口校验链路 → 参数校验 → 权限校验 → 限流校验 → 执行业务；审批流（员工 → 主管 → 经理）**
-
-### ⚠️ 什么时候不要用（补充）
-
-- 环节顺序不固定、职责经常增删，链条会很难维护；
-- 只有两三个简单 `if` 校验，直接写就行，不需要责任链。
-
-### ☕ Java 示例
-
-```java
-// 处理器抽象：定义链式结构
-abstract class Handler {
-    private Handler next;
-
-    // 返回 next 方便链式串接：new ParamCheck().setNext(new AuthCheck())...
-    public Handler setNext(Handler next) {
-        this.next = next;
-        return next;
-    }
-
-    public abstract boolean handle(int request);
-
-    // 传给下一个处理器；没有下一个就返回 true（放行）
-    protected boolean pass(int request) {
-        if (next != null) {
-            return next.handle(request);
-        }
-        return true;
-    }
-}
-
-// 参数校验
-class ParamCheck extends Handler {
-    public boolean handle(int request) {
-        if (request <= 0) {
-            System.out.println("参数非法，终止");
-            return false;
-        }
-        System.out.println("参数校验通过");
-        return pass(request);
-    }
-}
-
-// 权限校验
-class AuthCheck extends Handler {
-    public boolean handle(int request) {
-        if (request < 100) {
-            System.out.println("权限不足，终止");
-            return false;
-        }
-        System.out.println("权限校验通过");
-        return pass(request);
-    }
-}
-
-// 业务执行
-class BizHandler extends Handler {
-    public boolean handle(int request) {
-        System.out.println("执行业务逻辑，请求值：" + request);
-        return true;
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        // 串起链条：参数校验 → 权限校验 → 业务执行
-        new ParamCheck()
-                .setNext(new AuthCheck())
-                .setNext(new BizHandler())
-                .handle(200);
-    }
-}
-```
-
-### 一句话口诀（补充）
-
-> 校验 / 审批一条流水线，中途失败就截断
-
----
-
-## 11. 状态模式 State（行为型）
-
-**作用：对象行为随内部状态自动变化；大量 if-else 状态判断的替代品**
-
-**场景：订单状态流转：待支付 → 已支付 → 已发货 → 已完成；工单、审批。**
-
-**和策略区别：状态之间可以互相转换，策略之间互相独立。**
-
-### ⚠️ 什么时候不要用（补充）
-
-- 状态很少（2-3 个）且流转逻辑简单，用 if-else 反而更直白；
-- 状态固定不变、没有「自动流转」的需求，不需要引入状态对象。
-
-### ☕ Java 示例
-
-```java
-// 状态接口
-interface OrderState {
-    void next(Order order);
-}
-
-// 上下文订单：持有当前状态
-class Order {
-    private OrderState state;
-
-    public Order(OrderState state) {
-        this.state = state;
-    }
-
-    public void setState(OrderState state) {
-        this.state = state;
-    }
-
-    public void action() {
-        state.next(this);
-    }
-}
-
-// 待支付
-class WaitPay implements OrderState {
-    public void next(Order order) {
-        System.out.println("订单：待支付 → 切换到已支付");
-        order.setState(new Paid());
-    }
-}
-
-// 已支付
-class Paid implements OrderState {
-    public void next(Order order) {
-        System.out.println("订单：已支付 → 切换到已发货");
-        order.setState(new Shipped());
-    }
-}
-
-// 已发货
-class Shipped implements OrderState {
-    public void next(Order order) {
-        System.out.println("订单：已发货 → 切换到已完成");
-        order.setState(new Completed());
-    }
-}
-
-// 已完成
-class Completed implements OrderState {
-    public void next(Order order) {
-        System.out.println("订单已完成，不可变更");
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        Order order = new Order(new WaitPay());
-        order.action();   // 待支付 → 已支付
-        order.action();   // 已支付 → 已发货
-        order.action();   // 已发货 → 已完成
-        order.action();   // 已完成，不可变更
-    }
-}
-```
-
-### 一句话口诀（补充）
-
-> 一个对象内部状态流转、自动切换行为（订单状态）
-
----
-
-## 12. 模板方法 Template-Method（行为型）
-
-**作用：父类定义固定流程骨架，子类重写部分步骤实现不同逻辑；流程顺序不可变**
-
-**场景：报表导出，固定流程：加载数据 → 格式化 → 保存文件；导出 Excel 和 PDF 只是格式化步骤不一样。**
-
-### ⚠️ 什么时候不要用（补充）
-
-- 流程本身不固定、经常要调整步骤顺序，模板方法反而束缚；
-- 只有一个实现、短期内没有第二个变体，不需要先抽象模板。
-
-### ☕ Java 示例
-
-原版 Go 用「接口 + 外部函数」模拟模板，Java 里更贴切的写法是**抽象类 + final 模板方法**：公共步骤写死在基类，可变步骤留成抽象方法。
-
-```java
-// 抽象模板：定义整套算法骨架
-abstract class ExportTemplate {
-
-    // final：流程顺序不可被子类改变
-    public final void runExport() {
-        loadData();   // 公共步骤：基类实现
-        format();     // 可变步骤：子类实现
-        save();       // 可变步骤：子类实现
-    }
-
-    // 公共步骤写死在基类，子类不用重复写
-    protected void loadData() {
-        System.out.println("统一加载数据库报表数据");
-    }
-
-    protected abstract void format();
-    protected abstract void save();
-}
-
-// Excel 导出：只需要实现“不同”的部分
-class ExcelExport extends ExportTemplate {
-    protected void format() {
-        System.out.println("格式化为Excel表格");
-    }
-
-    protected void save() {
-        System.out.println("保存为 .xlsx 文件");
-    }
-}
-
-// PDF 导出
-class PdfExport extends ExportTemplate {
-    protected void format() {
-        System.out.println("格式化为PDF版式");
-    }
-
-    protected void save() {
-        System.out.println("保存为 .pdf 文件");
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        new ExcelExport().runExport();
-        System.out.println("----");
-        new PdfExport().runExport();
-    }
-}
-```
-
-### 一句话口诀（补充）
-
-> 流程骨架固定不变，只有部分步骤子类自定义
-
----
-
-# 四、4 个第二梯队模式速记区分（原文保留）
-
-- **外观 Facade**：复杂一堆子系统 → 一个入口调用；
-- **责任链**：校验 / 审批一条流水线，中途失败就截断；
-- **状态 State**：一个对象内部状态流转、自动切换行为（订单状态）；
-- **模板方法**：流程骨架固定不变，只有部分步骤子类自定义。
-
----
-
-# 五、内容审核与补充说明
-
-对照 GoF 经典分类逐条核对过，原稿结论基本正确，这里把几处容易混淆的点明确一下：
-
-1. **分类核对**：单例、简单工厂、建造者 = 创建型；适配器、装饰器、代理、外观 = 结构型；策略、观察者、责任链、状态、模板方法 = 行为型。
-2. **简单工厂**严格说不在 GoF 23 个经典模式里，它是「工厂方法 / 抽象工厂」的简化教学版本，教程里常把它单列出来讲，本文按原稿保留。
-3. **观察者 vs MQ**：进程内观察者默认是同步通知；MQ / Kafka 是「发布-订阅」思想在分布式下的实现，可以异步、削峰，但核心思路一致。
-4. **装饰器 vs 代理**：装饰器一定会执行目标对象；代理可能直接拦截不调用真实对象（原稿结论正确）。
-5. **适配器 vs 外观**：适配器是「接口翻译」，解决两个接口不兼容；外观是「简化入口」，隐藏内部编排。场景里「接入多个支付 SDK」是适配器，「下单聚合库存/支付/物流」是外观。
-6. **模板方法**：Go 版用「接口 + 外部函数」模拟，Java 版用「抽象类 + final 模板方法」表达，语义更严格。
-7. **代码语言**：正文 Java 示例与原文 Go 示例一一对应；原版 Go 完整代码在下方附录，**未删减**。
-
----
-
-# 附录：原版 Go 完整代码（保留原文）
-
-> 以下代码全部来自原稿，未做删改，方便对照学习。
-
-## 1. 单例 Singleton
-
-```go
-package main
-
-import (
-	"fmt"
-	"sync"
-)
-
-type Config struct {
-	DBHost string
-}
-
-var (
-	instance *Config
-	once     sync.Once
-)
-
-func GetConfig() *Config {
-	once.Do(func() {
-		fmt.Println("初始化配置")
-		instance = &Config{DBHost: "127.0.0.1"}
-	})
-	return instance
-}
-
-func main() {
-	c1 := GetConfig()
-	c2 := GetConfig()
-	fmt.Println(c1 == c2)
-}
-```
-
-## 2. 简单工厂 Simple Factory
-
-```go
-package main
-
-import "fmt"
-
-type Payment interface {
-	Pay(amount float64)
-}
-
-type Alipay struct{}
-func (a Alipay) Pay(amount float64) {
-	fmt.Printf("支付宝支付 %.2f\n", amount)
-}
-
-type WechatPay struct{}
-func (w WechatPay) Pay(amount float64) {
-	fmt.Printf("微信支付 %.2f\n", amount)
-}
-
-func NewPayment(typ string) Payment {
-	switch typ {
-	case "alipay":
-		return Alipay{}
-	case "wechat":
-		return WechatPay{}
-	default:
-		return nil
-	}
-}
-
-func main() {
-	pay := NewPayment("alipay")
-	pay.Pay(100)
-}
-```
-
-## 3. 建造者 Builder
-
-```go
-package main
-
-import "fmt"
-
-type Order struct {
-	OrderNo  string
-	UserID   int
-	GoodsID  int
-	Discount float64
-}
-
-type OrderBuilder struct {
-	order Order
-}
-
-func NewOrderBuilder() *OrderBuilder {
-	return &OrderBuilder{}
-}
-
-func (b *OrderBuilder) SetOrderNo(no string) *OrderBuilder {
-	b.order.OrderNo = no
-	return b
-}
-func (b *OrderBuilder) SetUserID(id int) *OrderBuilder {
-	b.order.UserID = id
-	return b
-}
-func (b *OrderBuilder) SetGoodsID(id int) *OrderBuilder {
-	b.order.GoodsID = id
-	return b
-}
-func (b *OrderBuilder) SetDiscount(d float64) *OrderBuilder {
-	b.order.Discount = d
-	return b
-}
-
-func (b *OrderBuilder) Build() Order {
-	return b.order
-}
-
-func main() {
-	order := NewOrderBuilder().
-		SetOrderNo("O1001").
-		SetUserID(123).
-		SetGoodsID(456).
-		SetDiscount(0.9).
-		Build()
-	fmt.Println(order)
-}
-```
-
-## 4. 适配器 Adapter
-
-```go
-package main
-
-import "fmt"
-
-type Target interface {
-	Request() string
-}
-
-type OldSDK struct{}
-func (o *OldSDK) OldRequest() string {
-	return "第三方返回数据"
-}
-
-type Adapter struct {
-	old *OldSDK
-}
-
-func (a *Adapter) Request() string {
-	return a.old.OldRequest()
-}
-
-func main() {
-	client := &Adapter{old: &OldSDK{}}
-	fmt.Println(client.Request())
-}
-```
-
-## 5. 装饰器 Decorator
-
-```go
-package main
-
-import "fmt"
-
-type Handler func()
-
-func WithLog(h Handler) Handler {
-	return func() {
-		fmt.Println("开始执行")
-		h()
-		fmt.Println("执行结束")
-	}
-}
-
-func BizTask() {
-	fmt.Println("执行业务逻辑")
-}
-
-func main() {
-	task := WithLog(BizTask)
-	task()
-}
-```
-
-## 6. 代理 Proxy
-
-```go
-package main
-
-import "fmt"
-
-type Subject interface {
-	Do()
-}
-
-type RealService struct{}
-func (r *RealService) Do() {
-	fmt.Println("真实业务操作")
-}
-
-type Proxy struct {
-	real *RealService
-}
-
-func (p *Proxy) Do() {
-	fmt.Println("权限校验")
-	if p.real == nil {
-		p.real = &RealService{}
-	}
-	p.real.Do()
-	fmt.Println("记录操作日志")
-}
-
-func main() {
-	proxy := &Proxy{}
-	proxy.Do()
-}
-```
-
-## 7. 策略 Strategy
-
-```go
-package main
-
-import "fmt"
-
-type Discount interface {
-	Calc(price float64) float64
-}
-
-type FullReduction struct{}
-func (f FullReduction) Calc(price float64) float64 {
-	if price >= 100 {
-		return price - 20
-	}
-	return price
-}
-
-type PercentOff struct{}
-func (p PercentOff) Calc(price float64) float64 {
-	return price * 0.9
-}
-
-type Order struct {
-	discount Discount
-}
-func (o *Order) SetDiscount(d Discount) {
-	o.discount = d
-}
-func (o *Order) GetPrice(origin float64) float64 {
-	return o.discount.Calc(origin)
-}
-
-func main() {
-	order := &Order{}
-	order.SetDiscount(FullReduction{})
-	fmt.Println(order.GetPrice(150))
-
-	order.SetDiscount(PercentOff{})
-	fmt.Println(order.GetPrice(150))
-}
-```
-
-## 8. 观察者 Observer（发布-订阅）
-
-```go
-package main
-
-import "fmt"
-
-type Observer interface {
-	Update(msg string)
-}
-
-type Subject struct {
-	observers []Observer
-}
-
-func (s *Subject) Attach(o Observer) {
-	s.observers = append(s.observers, o)
-}
-
-func (s *Subject) Notify(msg string) {
-	for _, o := range s.observers {
-		o.Update(msg)
-	}
-}
-
-type SmsNotify struct{}
-func (s SmsNotify) Update(msg string) {
-	fmt.Println("短信收到事件：", msg)
-}
-
-type StockService struct{}
-func (s StockService) Update(msg string) {
-	fmt.Println("库存收到事件：", msg)
-}
-
-func main() {
-	subject := &Subject{}
-	subject.Attach(SmsNotify{})
-	subject.Attach(StockService{})
-
-	subject.Notify("订单创建成功")
-}
-```
-
-## 9. 外观模式 Facade
-
-```go
-package main
-
-import "fmt"
-
-// 子系统1：库存
-type StockService struct{}
-func (s *StockService) Deduct(goodsId int) {
-	fmt.Printf("扣减商品 %d 库存\n", goodsId)
-}
-
-// 子系统2：支付
-type PayService struct{}
-func (p *PayService) Pay(amount float64) {
-	fmt.Printf("支付金额 %.2f\n", amount)
-}
-
-// 子系统3：物流
-type LogisticsService struct{}
-func (l *LogisticsService) CreateShipment(orderNo string) {
-	fmt.Printf("创建物流单：%s\n", orderNo)
-}
-
-// 外观门面
-type OrderFacade struct {
-	stock  *StockService
-	pay    *PayService
-	logist *LogisticsService
-}
-
-func NewOrderFacade() *OrderFacade {
-	return &OrderFacade{
-		stock:  &StockService{},
-		pay:    &PayService{},
-		logist: &LogisticsService{},
-	}
-}
-
-// 对外一个简单方法，封装所有复杂流程
-func (f *OrderFacade) CreateOrder(goodsId int, amount float64, orderNo string) {
-	f.stock.Deduct(goodsId)
-	f.pay.Pay(amount)
-	f.logist.CreateShipment(orderNo)
-}
-
-func main() {
-	facade := NewOrderFacade()
-	// 上层只需要调用一个方法，无需关心内部子系统
-	facade.CreateOrder(1001, 99.0, "ORD-001")
-}
-```
-
-## 10. 责任链 Chain of Responsibility
-
-```go
-package main
-
-import "fmt"
-
-// 处理器接口
-type Handler interface {
-	Handle(request int) bool
-	SetNext(h Handler)
-}
-
-// 基础处理器
-type BaseHandler struct {
-	next Handler
-}
-func (b *BaseHandler) SetNext(h Handler) {
-	b.next = h
-}
-func (b *BaseHandler) pass(req int) bool {
-	if b.next != nil {
-		return b.next.Handle(req)
-	}
-	return true
-}
-
-// 参数校验
-type ParamCheck struct{ BaseHandler }
-func (p *ParamCheck) Handle(request int) bool {
-	if request <= 0 {
-		fmt.Println("参数非法，终止")
-		return false
-	}
-	fmt.Println("参数校验通过")
-	return p.pass(request)
-}
-
-// 权限校验
-type AuthCheck struct{ BaseHandler }
-func (a *AuthCheck) Handle(request int) bool {
-	if request < 100 {
-		fmt.Println("权限不足，终止")
-		return false
-	}
-	fmt.Println("权限校验通过")
-	return a.pass(request)
-}
-
-// 业务执行
-type BizHandler struct{ BaseHandler }
-func (b *BizHandler) Handle(request int) bool {
-	fmt.Println("执行业务逻辑，请求值：", request)
-	return true
-}
-
-func main() {
-	param := &ParamCheck{}
-	auth := &AuthCheck{}
-	biz := &BizHandler{}
-	// 串起链条
-	param.SetNext(auth)
-	auth.SetNext(biz)
-
-	param.Handle(200)
-}
-```
-
-## 11. 状态模式 State
-
-```go
-package main
-
-import "fmt"
-
-// 状态接口
-type OrderState interface {
-	Next(order *Order)
-}
-
-// 上下文订单
-type Order struct {
-	state OrderState
-}
-func (o *Order) SetState(s OrderState) {
-	o.state = s
-}
-func (o *Order) Action() {
-	o.state.Next(o)
-}
-
-// 待支付
-type WaitPay struct{}
-func (w *WaitPay) Next(order *Order) {
-	fmt.Println("订单：待支付 → 切换到已支付")
-	order.SetState(&Paid{})
-}
-
-// 已支付
-type Paid struct{}
-func (p *Paid) Next(order *Order) {
-	fmt.Println("订单：已支付 → 切换到已发货")
-	order.SetState(&Shipped{})
-}
-
-// 已发货
-type Shipped struct{}
-func (s *Shipped) Next(order *Order) {
-	fmt.Println("订单：已发货 → 切换到已完成")
-	order.SetState(&Completed{})
-}
-
-// 已完成
-type Completed struct{}
-func (c *Completed) Next(order *Order) {
-	fmt.Println("订单已完成，不可变更")
-}
-
-func main() {
-	order := &Order{state:&WaitPay{}}
-	order.Action()
-	order.Action()
-	order.Action()
-	order.Action()
-}
-```
-
-## 12. 模板方法 Template-Method
-
-```go
-package main
-
-import "fmt"
-
-// 抽象模板，定义整套算法骨架
-type ExportTemplate interface {
-	LoadData()
-	Format()
-	Save()
-}
-
-// 模板骨架，固定流程顺序
-func RunExport(t ExportTemplate) {
-	t.LoadData()
-	t.Format()
-	t.Save()
-}
-
-// Excel导出
-type ExcelExport struct{}
-func (e *ExcelExport) LoadData() {
-	fmt.Println("统一加载数据库报表数据")
-}
-func (e *ExcelExport) Format() {
-	fmt.Println("格式化为Excel表格")
-}
-func (e *ExcelExport) Save() {
-	fmt.Println("保存为 .xlsx 文件")
-}
-
-// PDF导出
-type PdfExport struct{}
-func (p *PdfExport) LoadData() {
-	fmt.Println("统一加载数据库报表数据")
-}
-func (p *PdfExport) Format() {
-	fmt.Println("格式化为PDF版式")
-}
-func (p *PdfExport) Save() {
-	fmt.Println("保存为 .pdf 文件")
-}
-
-func main() {
-	RunExport(&ExcelExport{})
-	fmt.Println("----")
-	RunExport(&PdfExport{})
-}
-```
-
-## 附加：工厂 + 策略组合完整示例（Go 原版）
-
+{{< tab "Go（原版）" >}}
 ```go
 package main
 
@@ -1683,6 +1127,8 @@ func main() {
 	order.Checkout(200)
 }
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 运行输出：
 
@@ -1690,3 +1136,597 @@ func main() {
 支付宝支付：100.00 元
 微信支付：200.00 元
 ```
+
+三者角色对比：
+
+| 组件 | 干什么 |
+|---|---|
+| 策略接口 & 实现 | 定义多种支付行为 |
+| 工厂 | 统一创建策略实例，把 if-else 创建逻辑收拢 |
+| Order 上下文 | 持有策略引用，随时调用、随时替换 |
+
+业务好处：
+
+- 上层业务不用到处 `new Alipay()`；
+- 如果后面新增银行卡支付，只需要：新增一个类实现 `Payment`，工厂 `switch` 加一条 `case`，业务代码（上下文 Order）无需改动。
+
+> 再进一步：把工厂的 `switch` 换成「注册表 + 工厂方法」，新增渠道时连工厂都不改，就完全满足开闭原则了（本文先不过度展开）。
+
+---
+
+# 三、第二梯队 4 个高频模式
+
+## 9. 外观模式 Facade（结构型）
+
+**作用：对外提供一个简单入口，隐藏内部一堆复杂子系统**
+
+**场景：下单入口，内部依次调用库存、支付、物流；上层只调用一个 `createOrder()`，不用关心内部多个子服务。**
+
+### ⚠️ 什么时候不要用（补充）
+
+- 子系统调用关系本来就简单、只有一两个类，加门面属于过度设计；
+- 门面不要越做越大变成「上帝类」——它只负责编排入口，不负责塞业务逻辑。
+
+### ☕ 双语言示例（Java / Go 页签切换）
+
+{{< tabs >}}
+{{< tab "Java" >}}
+```java
+// 子系统 1：库存
+class StockService {
+    public void deduct(int goodsId) {
+        System.out.println("扣减商品 " + goodsId + " 库存");
+    }
+}
+
+// 子系统 2：支付
+class PayService {
+    public void pay(double amount) {
+        System.out.printf("支付金额 %.2f%n", amount);
+    }
+}
+
+// 子系统 3：物流
+class LogisticsService {
+    public void createShipment(String orderNo) {
+        System.out.println("创建物流单：" + orderNo);
+    }
+}
+
+// 外观门面：对外一个简单方法，封装所有复杂流程
+class OrderFacade {
+    private final StockService stock = new StockService();
+    private final PayService pay = new PayService();
+    private final LogisticsService logistics = new LogisticsService();
+
+    public void createOrder(int goodsId, double amount, String orderNo) {
+        stock.deduct(goodsId);
+        pay.pay(amount);
+        logistics.createShipment(orderNo);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        OrderFacade facade = new OrderFacade();
+        // 上层只需要调用一个方法，无需关心内部子系统
+        facade.createOrder(1001, 99.0, "ORD-001");
+    }
+}
+```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+// 子系统1：库存
+type StockService struct{}
+func (s *StockService) Deduct(goodsId int) {
+	fmt.Printf("扣减商品 %d 库存\n", goodsId)
+}
+
+// 子系统2：支付
+type PayService struct{}
+func (p *PayService) Pay(amount float64) {
+	fmt.Printf("支付金额 %.2f\n", amount)
+}
+
+// 子系统3：物流
+type LogisticsService struct{}
+func (l *LogisticsService) CreateShipment(orderNo string) {
+	fmt.Printf("创建物流单：%s\n", orderNo)
+}
+
+// 外观门面
+type OrderFacade struct {
+	stock  *StockService
+	pay    *PayService
+	logist *LogisticsService
+}
+
+func NewOrderFacade() *OrderFacade {
+	return &OrderFacade{
+		stock:  &StockService{},
+		pay:    &PayService{},
+		logist: &LogisticsService{},
+	}
+}
+
+// 对外一个简单方法，封装所有复杂流程
+func (f *OrderFacade) CreateOrder(goodsId int, amount float64, orderNo string) {
+	f.stock.Deduct(goodsId)
+	f.pay.Pay(amount)
+	f.logist.CreateShipment(orderNo)
+}
+
+func main() {
+	facade := NewOrderFacade()
+	// 上层只需要调用一个方法，无需关心内部子系统
+	facade.CreateOrder(1001, 99.0, "ORD-001")
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+### 一句话口诀（补充）
+
+> 复杂一堆子系统 → 一个入口调用
+
+---
+
+## 10. 责任链 Chain of Responsibility（行为型）
+
+**作用：一条处理链条，请求依次经过每个处理器，可中断**
+
+**场景：接口校验链路 → 参数校验 → 权限校验 → 限流校验 → 执行业务；审批流（员工 → 主管 → 经理）**
+
+### ⚠️ 什么时候不要用（补充）
+
+- 环节顺序不固定、职责经常增删，链条会很难维护；
+- 只有两三个简单 `if` 校验，直接写就行，不需要责任链。
+
+### ☕ 双语言示例（Java / Go 页签切换）
+
+{{< tabs >}}
+{{< tab "Java" >}}
+```java
+// 处理器抽象：定义链式结构
+abstract class Handler {
+    private Handler next;
+
+    // 返回 next 方便链式串接：new ParamCheck().setNext(new AuthCheck())...
+    public Handler setNext(Handler next) {
+        this.next = next;
+        return next;
+    }
+
+    public abstract boolean handle(int request);
+
+    // 传给下一个处理器；没有下一个就返回 true（放行）
+    protected boolean pass(int request) {
+        if (next != null) {
+            return next.handle(request);
+        }
+        return true;
+    }
+}
+
+// 参数校验
+class ParamCheck extends Handler {
+    public boolean handle(int request) {
+        if (request <= 0) {
+            System.out.println("参数非法，终止");
+            return false;
+        }
+        System.out.println("参数校验通过");
+        return pass(request);
+    }
+}
+
+// 权限校验
+class AuthCheck extends Handler {
+    public boolean handle(int request) {
+        if (request < 100) {
+            System.out.println("权限不足，终止");
+            return false;
+        }
+        System.out.println("权限校验通过");
+        return pass(request);
+    }
+}
+
+// 业务执行
+class BizHandler extends Handler {
+    public boolean handle(int request) {
+        System.out.println("执行业务逻辑，请求值：" + request);
+        return true;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // 串起链条：参数校验 → 权限校验 → 业务执行
+        new ParamCheck()
+                .setNext(new AuthCheck())
+                .setNext(new BizHandler())
+                .handle(200);
+    }
+}
+```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+// 处理器接口
+type Handler interface {
+	Handle(request int) bool
+	SetNext(h Handler)
+}
+
+// 基础处理器
+type BaseHandler struct {
+	next Handler
+}
+func (b *BaseHandler) SetNext(h Handler) {
+	b.next = h
+}
+func (b *BaseHandler) pass(req int) bool {
+	if b.next != nil {
+		return b.next.Handle(req)
+	}
+	return true
+}
+
+// 参数校验
+type ParamCheck struct{ BaseHandler }
+func (p *ParamCheck) Handle(request int) bool {
+	if request <= 0 {
+		fmt.Println("参数非法，终止")
+		return false
+	}
+	fmt.Println("参数校验通过")
+	return p.pass(request)
+}
+
+// 权限校验
+type AuthCheck struct{ BaseHandler }
+func (a *AuthCheck) Handle(request int) bool {
+	if request < 100 {
+		fmt.Println("权限不足，终止")
+		return false
+	}
+	fmt.Println("权限校验通过")
+	return a.pass(request)
+}
+
+// 业务执行
+type BizHandler struct{ BaseHandler }
+func (b *BizHandler) Handle(request int) bool {
+	fmt.Println("执行业务逻辑，请求值：", request)
+	return true
+}
+
+func main() {
+	param := &ParamCheck{}
+	auth := &AuthCheck{}
+	biz := &BizHandler{}
+	// 串起链条
+	param.SetNext(auth)
+	auth.SetNext(biz)
+
+	param.Handle(200)
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+### 一句话口诀（补充）
+
+> 校验 / 审批一条流水线，中途失败就截断
+
+---
+
+## 11. 状态模式 State（行为型）
+
+**作用：对象行为随内部状态自动变化；大量 if-else 状态判断的替代品**
+
+**场景：订单状态流转：待支付 → 已支付 → 已发货 → 已完成；工单、审批。**
+
+**和策略区别：状态之间可以互相转换，策略之间互相独立。**
+
+### ⚠️ 什么时候不要用（补充）
+
+- 状态很少（2-3 个）且流转逻辑简单，用 if-else 反而更直白；
+- 状态固定不变、没有「自动流转」的需求，不需要引入状态对象。
+
+### ☕ 双语言示例（Java / Go 页签切换）
+
+{{< tabs >}}
+{{< tab "Java" >}}
+```java
+// 状态接口
+interface OrderState {
+    void next(Order order);
+}
+
+// 上下文订单：持有当前状态
+class Order {
+    private OrderState state;
+
+    public Order(OrderState state) {
+        this.state = state;
+    }
+
+    public void setState(OrderState state) {
+        this.state = state;
+    }
+
+    public void action() {
+        state.next(this);
+    }
+}
+
+// 待支付
+class WaitPay implements OrderState {
+    public void next(Order order) {
+        System.out.println("订单：待支付 → 切换到已支付");
+        order.setState(new Paid());
+    }
+}
+
+// 已支付
+class Paid implements OrderState {
+    public void next(Order order) {
+        System.out.println("订单：已支付 → 切换到已发货");
+        order.setState(new Shipped());
+    }
+}
+
+// 已发货
+class Shipped implements OrderState {
+    public void next(Order order) {
+        System.out.println("订单：已发货 → 切换到已完成");
+        order.setState(new Completed());
+    }
+}
+
+// 已完成
+class Completed implements OrderState {
+    public void next(Order order) {
+        System.out.println("订单已完成，不可变更");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Order order = new Order(new WaitPay());
+        order.action();   // 待支付 → 已支付
+        order.action();   // 已支付 → 已发货
+        order.action();   // 已发货 → 已完成
+        order.action();   // 已完成，不可变更
+    }
+}
+```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+// 状态接口
+type OrderState interface {
+	Next(order *Order)
+}
+
+// 上下文订单
+type Order struct {
+	state OrderState
+}
+func (o *Order) SetState(s OrderState) {
+	o.state = s
+}
+func (o *Order) Action() {
+	o.state.Next(o)
+}
+
+// 待支付
+type WaitPay struct{}
+func (w *WaitPay) Next(order *Order) {
+	fmt.Println("订单：待支付 → 切换到已支付")
+	order.SetState(&Paid{})
+}
+
+// 已支付
+type Paid struct{}
+func (p *Paid) Next(order *Order) {
+	fmt.Println("订单：已支付 → 切换到已发货")
+	order.SetState(&Shipped{})
+}
+
+// 已发货
+type Shipped struct{}
+func (s *Shipped) Next(order *Order) {
+	fmt.Println("订单：已发货 → 切换到已完成")
+	order.SetState(&Completed{})
+}
+
+// 已完成
+type Completed struct{}
+func (c *Completed) Next(order *Order) {
+	fmt.Println("订单已完成，不可变更")
+}
+
+func main() {
+	order := &Order{state:&WaitPay{}}
+	order.Action()
+	order.Action()
+	order.Action()
+	order.Action()
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+### 一句话口诀（补充）
+
+> 一个对象内部状态流转、自动切换行为（订单状态）
+
+---
+
+## 12. 模板方法 Template-Method（行为型）
+
+**作用：父类定义固定流程骨架，子类重写部分步骤实现不同逻辑；流程顺序不可变**
+
+**场景：报表导出，固定流程：加载数据 → 格式化 → 保存文件；导出 Excel 和 PDF 只是格式化步骤不一样。**
+
+### ⚠️ 什么时候不要用（补充）
+
+- 流程本身不固定、经常要调整步骤顺序，模板方法反而束缚；
+- 只有一个实现、短期内没有第二个变体，不需要先抽象模板。
+
+### ☕ 双语言示例（Java / Go 页签切换）
+
+原版 Go 用「接口 + 外部函数」模拟模板，Java 里更贴切的写法是**抽象类 + final 模板方法**：公共步骤写死在基类，可变步骤留成抽象方法。
+
+{{< tabs >}}
+{{< tab "Java" >}}
+```java
+// 抽象模板：定义整套算法骨架
+abstract class ExportTemplate {
+
+    // final：流程顺序不可被子类改变
+    public final void runExport() {
+        loadData();   // 公共步骤：基类实现
+        format();     // 可变步骤：子类实现
+        save();       // 可变步骤：子类实现
+    }
+
+    // 公共步骤写死在基类，子类不用重复写
+    protected void loadData() {
+        System.out.println("统一加载数据库报表数据");
+    }
+
+    protected abstract void format();
+    protected abstract void save();
+}
+
+// Excel 导出：只需要实现“不同”的部分
+class ExcelExport extends ExportTemplate {
+    protected void format() {
+        System.out.println("格式化为Excel表格");
+    }
+
+    protected void save() {
+        System.out.println("保存为 .xlsx 文件");
+    }
+}
+
+// PDF 导出
+class PdfExport extends ExportTemplate {
+    protected void format() {
+        System.out.println("格式化为PDF版式");
+    }
+
+    protected void save() {
+        System.out.println("保存为 .pdf 文件");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        new ExcelExport().runExport();
+        System.out.println("----");
+        new PdfExport().runExport();
+    }
+}
+```
+{{< /tab >}}
+
+{{< tab "Go（原版）" >}}
+```go
+package main
+
+import "fmt"
+
+// 抽象模板，定义整套算法骨架
+type ExportTemplate interface {
+	LoadData()
+	Format()
+	Save()
+}
+
+// 模板骨架，固定流程顺序
+func RunExport(t ExportTemplate) {
+	t.LoadData()
+	t.Format()
+	t.Save()
+}
+
+// Excel导出
+type ExcelExport struct{}
+func (e *ExcelExport) LoadData() {
+	fmt.Println("统一加载数据库报表数据")
+}
+func (e *ExcelExport) Format() {
+	fmt.Println("格式化为Excel表格")
+}
+func (e *ExcelExport) Save() {
+	fmt.Println("保存为 .xlsx 文件")
+}
+
+// PDF导出
+type PdfExport struct{}
+func (p *PdfExport) LoadData() {
+	fmt.Println("统一加载数据库报表数据")
+}
+func (p *PdfExport) Format() {
+	fmt.Println("格式化为PDF版式")
+}
+func (p *PdfExport) Save() {
+	fmt.Println("保存为 .pdf 文件")
+}
+
+func main() {
+	RunExport(&ExcelExport{})
+	fmt.Println("----")
+	RunExport(&PdfExport{})
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+### 一句话口诀（补充）
+
+> 流程骨架固定不变，只有部分步骤子类自定义
+
+---
+
+# 四、4 个第二梯队模式速记区分（原文保留）
+
+- **外观 Facade**：复杂一堆子系统 → 一个入口调用；
+- **责任链**：校验 / 审批一条流水线，中途失败就截断；
+- **状态 State**：一个对象内部状态流转、自动切换行为（订单状态）；
+- **模板方法**：流程骨架固定不变，只有部分步骤子类自定义。
+
+---
+
+# 五、内容审核与补充说明
+
+对照 GoF 经典分类逐条核对过，原稿结论基本正确，这里把几处容易混淆的点明确一下：
+
+1. **分类核对**：单例、简单工厂、建造者 = 创建型；适配器、装饰器、代理、外观 = 结构型；策略、观察者、责任链、状态、模板方法 = 行为型。
+2. **简单工厂**严格说不在 GoF 23 个经典模式里，它是「工厂方法 / 抽象工厂」的简化教学版本，教程里常把它单列出来讲，本文按原稿保留。
+3. **观察者 vs MQ**：进程内观察者默认是同步通知；MQ / Kafka 是「发布-订阅」思想在分布式下的实现，可以异步、削峰，但核心思路一致。
+4. **装饰器 vs 代理**：装饰器一定会执行目标对象；代理可能直接拦截不调用真实对象（原稿结论正确）。
+5. **适配器 vs 外观**：适配器是「接口翻译」，解决两个接口不兼容；外观是「简化入口」，隐藏内部编排。场景里「接入多个支付 SDK」是适配器，「下单聚合库存/支付/物流」是外观。
+6. **模板方法**：Go 版用「接口 + 外部函数」模拟，Java 版用「抽象类 + final 模板方法」表达，语义更严格。
+7. **代码语言**：每个模式的代码框都带 **Java / Go 页签**，两者一一对应，Go 代码为原稿版本，未做删改。
