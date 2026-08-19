@@ -108,9 +108,9 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     margin: 20px 0;
 
-    /* 上下对称留白：去掉顶部 40px / 底部 10px 的不对称间距，
-       让灰色代码区上下居中 */
-    padding: 10px 0 10px 0 !important;
+    /* 上下对称留白：顶部留出复制按钮的空间（按钮嵌在留白里，
+       不压代码），底部同样大小，灰色代码区上下居中 */
+    padding: 22px 0 22px 0 !important;
 
     position: relative;
     border: 1px solid rgba(0, 0, 0, 0.05);
@@ -225,12 +225,14 @@
 }
 
 /* --- COPY BUTTON FIX --- */
-.copyCodeButton {
+/* 选择器带足够优先级，覆盖主题的 .article-content .copyCodeButton，
+   让按钮缩进顶部留白内、不压住代码 */
+.article-content .highlight .copyCodeButton {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    padding: 5px 10px;
-    font-size: 12px;
+    top: 3px;
+    right: 3px;
+    padding: 3px 10px;
+    font-size: 11px;
     font-weight: 600;
     line-height: 1;
     border-radius: 4px;
@@ -243,7 +245,7 @@
     border: none !important;
 }
 
-[data-scheme="dark"] .copyCodeButton {
+[data-scheme="dark"] .article-content .highlight .copyCodeButton {
     background-color: #2d2d2d !important;
     /* Match Dark Mode Header */
     color: #c9d1d9 !important;
