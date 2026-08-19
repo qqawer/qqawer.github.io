@@ -260,28 +260,28 @@ import (
 
 ### 1. `strings`：处理字符串
 
-| 方法签名 | 输入 → 输出 | 作用 |
-|---|---|---|
-| `HasPrefix(s, prefix string) bool` | `string, string → bool` | 是否以指定前缀开头 |
-| `HasSuffix(s, suffix string) bool` | `string, string → bool` | 是否以指定后缀结尾 |
-| `Index(s, substr string) int` | `string, string → int` | 首次出现位置；不存在返回 `-1` |
-| `LastIndex(s, substr string) int` | `string, string → int` | 最后一次出现位置；不存在返回 `-1` |
-| `Replace(s, old, new string, n int) string` | `string, string, string, int → string` | 替换前 `n` 个匹配；`n < 0` 表示全部 |
-| `ReplaceAll(s, old, new string) string` | `string, string, string → string` | 替换全部匹配 |
-| `Count(s, substr string) int` | `string, string → int` | 统计不重叠匹配次数 |
-| `Repeat(s string, count int) string` | `string, int → string` | 重复字符串 `count` 次 |
-| `ToLower(s string) string` | `string → string` | 转为小写 |
-| `ToUpper(s string) string` | `string → string` | 转为大写 |
-| `TrimSpace(s string) string` | `string → string` | 删除首尾 Unicode 空白 |
-| `Trim(s, cutset string) string` | `string, string → string` | 删除首尾所有属于 `cutset` 的字符 |
-| `TrimLeft(s, cutset string) string` | `string, string → string` | 只清理左侧 `cutset` 字符 |
-| `TrimRight(s, cutset string) string` | `string, string → string` | 只清理右侧 `cutset` 字符 |
-| `Split(s, sep string) []string` | `string, string → []string` | 按分隔符拆分全部 |
-| `SplitN(s, sep string, n int) []string` | `string, string, int → []string` | 最多拆成 `n` 段；`n < 0` 表示不限 |
-| `Join(elems []string, sep string) string` | `[]string, string → string` | 用分隔符连接 |
-| `Contains(s, substr string) bool` | `string, string → bool` | 是否包含子串 |
-| `ContainsAny(s, chars string) bool` | `string, string → bool` | 是否包含 `chars` 中任意字符 |
-| `Fields(s string) []string` | `string → []string` | 按连续空白分词 |
+| 方法签名 | 输入 → 输出 | 作用 | 示例 |
+|---|---|---|---|
+| `HasPrefix(s, prefix string) bool` | `string, string → bool` | 是否以指定前缀开头 | `strings.HasPrefix("leetcode", "leet")` → `true` |
+| `HasSuffix(s, suffix string) bool` | `string, string → bool` | 是否以指定后缀结尾 | `strings.HasSuffix("main.go", ".go")` → `true` |
+| `Index(s, substr string) int` | `string, string → int` | 首次出现位置；不存在返回 `-1` | `strings.Index("go gopher", "goph")` → `3` |
+| `LastIndex(s, substr string) int` | `string, string → int` | 最后一次出现位置；不存在返回 `-1` | `strings.LastIndex("go gopher go", "go")` → `10` |
+| `Replace(s, old, new string, n int) string` | `string, string, string, int → string` | 替换前 `n` 个匹配；`n < 0` 表示全部 | `strings.Replace("a-a-a", "a", "x", 2)` → `"x-x-a"` |
+| `ReplaceAll(s, old, new string) string` | `string, string, string → string` | 替换全部匹配 | `strings.ReplaceAll("a-a-a", "a", "x")` → `"x-x-x"` |
+| `Count(s, substr string) int` | `string, string → int` | 统计不重叠匹配次数 | `strings.Count("banana", "an")` → `2` |
+| `Repeat(s string, count int) string` | `string, int → string` | 重复字符串 `count` 次 | `strings.Repeat("ab", 3)` → `"ababab"` |
+| `ToLower(s string) string` | `string → string` | 转为小写 | `strings.ToLower("Go")` → `"go"` |
+| `ToUpper(s string) string` | `string → string` | 转为大写 | `strings.ToUpper("go")` → `"GO"` |
+| `TrimSpace(s string) string` | `string → string` | 删除首尾 Unicode 空白 | `strings.TrimSpace(" hi ")` → `"hi"` |
+| `Trim(s, cutset string) string` | `string, string → string` | 删除首尾所有属于 `cutset` 的字符 | `strings.Trim("--go--", "-")` → `"go"` |
+| `TrimLeft(s, cutset string) string` | `string, string → string` | 只清理左侧 `cutset` 字符 | `strings.TrimLeft("--go--", "-")` → `"go--"` |
+| `TrimRight(s, cutset string) string` | `string, string → string` | 只清理右侧 `cutset` 字符 | `strings.TrimRight("--go--", "-")` → `"--go"` |
+| `Split(s, sep string) []string` | `string, string → []string` | 按分隔符拆分全部 | `strings.Split("a,b,c", ",")` → `["a" "b" "c"]` |
+| `SplitN(s, sep string, n int) []string` | `string, string, int → []string` | 最多拆成 `n` 段；`n < 0` 表示不限 | `strings.SplitN("a,b,c", ",", 2)` → `["a" "b,c"]` |
+| `Join(elems []string, sep string) string` | `[]string, string → string` | 用分隔符连接 | `strings.Join([]string{"a", "b"}, "-")` → `"a-b"` |
+| `Contains(s, substr string) bool` | `string, string → bool` | 是否包含子串 | `strings.Contains("gopher", "ph")` → `true` |
+| `ContainsAny(s, chars string) bool` | `string, string → bool` | 是否包含 `chars` 中任意字符 | `strings.ContainsAny("team", "xyzm")` → `true` |
+| `Fields(s string) []string` | `string → []string` | 按连续空白分词 | `strings.Fields("a b\tc")` → `["a" "b" "c"]` |
 
 ```go
 s := "  go,java,python  "
@@ -312,13 +312,13 @@ strings.ContainsAny("team", "xyzm")          // true，因为包含 m
 
 ### 2. `strconv`：字符串与数字互转
 
-| 方法签名 | 输入 → 输出 | 作用 |
-|---|---|---|
-| `Atoi(s string) (int, error)` | `string → int, error` | 十进制字符串转 `int` |
-| `Itoa(i int) string` | `int → string` | `int` 转十进制字符串 |
-| `ParseInt(s string, base, bitSize int) (int64, error)` | `string, int, int → int64, error` | 按指定进制解析有符号整数 |
-| `ParseFloat(s string, bitSize int) (float64, error)` | `string, int → float64, error` | 字符串转浮点数 |
-| `FormatInt(i int64, base int) string` | `int64, int → string` | 整数按指定进制转字符串 |
+| 方法签名 | 输入 → 输出 | 作用 | 示例 |
+|---|---|---|---|
+| `Atoi(s string) (int, error)` | `string → int, error` | 十进制字符串转 `int` | `strconv.Atoi("123")` → `123, nil` |
+| `Itoa(i int) string` | `int → string` | `int` 转十进制字符串 | `strconv.Itoa(-42)` → `"-42"` |
+| `ParseInt(s string, base, bitSize int) (int64, error)` | `string, int, int → int64, error` | 按指定进制解析有符号整数 | `strconv.ParseInt("1011", 2, 64)` → `11` |
+| `ParseFloat(s string, bitSize int) (float64, error)` | `string, int → float64, error` | 字符串转浮点数 | `strconv.ParseFloat("3.14", 64)` → `3.14` |
+| `FormatInt(i int64, base int) string` | `int64, int → string` | 整数按指定进制转字符串 | `strconv.FormatInt(255, 16)` → `"ff"` |
 
 ```go
 n, err := strconv.Atoi("123")
@@ -344,14 +344,14 @@ hex := strconv.FormatInt(255, 16)            // "ff"
 
 ### 3. `sort`：排序与二分定位
 
-| 方法签名 | 输入 → 输出 | 作用 |
-|---|---|---|
-| `Ints(x []int)` | `[]int → 无返回值` | 原地升序排列整数 |
-| `Float64s(x []float64)` | `[]float64 → 无返回值` | 原地升序排列浮点数 |
-| `Strings(x []string)` | `[]string → 无返回值` | 原地按字典序升序排列字符串 |
-| `Slice(x any, less func(i, j int) bool)` | `切片, 比较函数 → 无返回值` | 按自定义规则原地排序 |
-| `Search(n int, f func(int) bool) int` | `int, func(int) bool → int` | 返回 `[0,n)` 中第一个使 `f(i)` 为真的位置；没有则返回 `n` |
-| `SearchInts(a []int, x int) int` | `[]int, int → int` | 在升序切片中返回第一个 `>= x` 的位置 |
+| 方法签名 | 输入 → 输出 | 作用 | 示例 |
+|---|---|---|---|
+| `Ints(x []int)` | `[]int → 无返回值` | 原地升序排列整数 | `sort.Ints([]int{3, 1, 2})` → `[1 2 3]` |
+| `Float64s(x []float64)` | `[]float64 → 无返回值` | 原地升序排列浮点数 | `sort.Float64s(scores)` |
+| `Strings(x []string)` | `[]string → 无返回值` | 原地按字典序升序排列字符串 | `sort.Strings(words)` |
+| `Slice(x any, less func(i, j int) bool)` | `切片, 比较函数 → 无返回值` | 按自定义规则原地排序 | `sort.Slice(pairs, func(i, j int) bool { return pairs[i].Value < pairs[j].Value })` |
+| `Search(n int, f func(int) bool) int` | `int, func(int) bool → int` | 返回 `[0,n)` 中第一个使 `f(i)` 为真的位置；没有则返回 `n` | `sort.Search(30, func(i int) bool { return i*i >= 30 })` → `6` |
+| `SearchInts(a []int, x int) int` | `[]int, int → int` | 在升序切片中返回第一个 `>= x` 的位置 | `sort.SearchInts([]int{1, 3, 3, 7}, 3)` → `1` |
 
 这些排序方法会**直接修改原切片**：
 
@@ -404,16 +404,16 @@ x := sort.Search(30, func(i int) bool {
 
 `unicode` 处理的是 `rune`，适合字母、数字、空白和大小写判断，也能正确处理非 ASCII 字符。
 
-| 方法签名 | 输入 → 输出 | 作用 |
-|---|---|---|
-| `IsDigit(r rune) bool` | `rune → bool` | 是否为 Unicode 十进制数字 |
-| `IsLetter(r rune) bool` | `rune → bool` | 是否为 Unicode 字母 |
-| `IsLower(r rune) bool` | `rune → bool` | 是否为小写字母 |
-| `IsUpper(r rune) bool` | `rune → bool` | 是否为大写字母 |
-| `IsNumber(r rune) bool` | `rune → bool` | 是否为 Unicode 数字，范围比 `IsDigit` 更广 |
-| `IsSpace(r rune) bool` | `rune → bool` | 是否为空白字符 |
-| `ToLower(r rune) rune` | `rune → rune` | 转为小写字符 |
-| `ToUpper(r rune) rune` | `rune → rune` | 转为大写字符 |
+| 方法签名 | 输入 → 输出 | 作用 | 示例 |
+|---|---|---|---|
+| `IsDigit(r rune) bool` | `rune → bool` | 是否为 Unicode 十进制数字 | `unicode.IsDigit('5')` → `true` |
+| `IsLetter(r rune) bool` | `rune → bool` | 是否为 Unicode 字母 | `unicode.IsLetter('中')` → `true` |
+| `IsLower(r rune) bool` | `rune → bool` | 是否为小写字母 | `unicode.IsLower('a')` → `true` |
+| `IsUpper(r rune) bool` | `rune → bool` | 是否为大写字母 | `unicode.IsUpper('A')` → `true` |
+| `IsNumber(r rune) bool` | `rune → bool` | 是否为 Unicode 数字，范围比 `IsDigit` 更广 | `unicode.IsNumber('Ⅻ')` → `true` |
+| `IsSpace(r rune) bool` | `rune → bool` | 是否为空白字符 | `unicode.IsSpace('\t')` → `true` |
+| `ToLower(r rune) rune` | `rune → rune` | 转为小写字符 | `unicode.ToLower('A')` → `'a'` |
+| `ToUpper(r rune) rune` | `rune → rune` | 转为大写字符 | `unicode.ToUpper('a')` → `'A'` |
 
 ```go
 for _, r := range "Go语言 123" {
@@ -452,26 +452,26 @@ func normalize(s string) []rune {
 
 表中的 `E` 表示元素类型，`S` 表示形如 `[]E` 的切片类型。
 
-| 方法签名（简化） | 输入 → 输出 | 作用 |
-|---|---|---|
-| `Max(x S) E` | `[]E → E` | 返回最大元素；空切片会 panic |
-| `Min(x S) E` | `[]E → E` | 返回最小元素；空切片会 panic |
-| `Index(s S, v E) int` | `[]E, E → int` | 首次出现位置；不存在返回 `-1` |
-| `Contains(s S, v E) bool` | `[]E, E → bool` | 判断元素是否存在 |
-| `BinarySearch(x S, target E) (int, bool)` | `有序 []E, E → int, bool` | 返回匹配位置或插入位置，以及是否找到 |
-| `Clone(s S) S` | `[]E → []E` | 浅拷贝切片 |
-| `Delete(s S, i, j int) S` | `[]E, int, int → []E` | 删除半开区间 `[i,j)`，必须接收返回值 |
-| `Sort(x S)` | `[]E → 无返回值` | 原地升序排序 |
-| `Reverse(s S)` | `[]E → 无返回值` | 原地反转 |
-| `IsSorted(x S) bool` | `[]E → bool` | 是否按升序排列 |
-| `Concat(slices ...S) S` | `多个 []E → []E` | 连接多个切片并返回新切片 |
-| `Grow(s S, n int) S` | `[]E, int → []E` | 保证还能追加至少 `n` 个元素而不重新分配 |
-| `Insert(s S, i int, v ...E) S` | `[]E, int, 若干 E → []E` | 在下标 `i` 前插入元素 |
-| `Equal(s1, s2 S) bool` | `[]E, []E → bool` | 长度和对应元素是否都相等 |
-| `Compare(s1, s2 S) int` | `[]E, []E → int` | 字典序比较，返回负数、`0` 或正数 |
-| `Compact(s S) S` | `[]E → []E` | 合并连续重复元素 |
-| `CompactFunc(s S, eq func(E, E) bool) S` | `[]E, 相等函数 → []E` | 按自定义相等规则合并连续元素 |
-| `SortFunc(x S, cmp func(E, E) int)` | `[]E, 比较函数 → 无返回值` | 按比较函数原地排序 |
+| 方法签名（简化） | 输入 → 输出 | 作用 | 示例 |
+|---|---|---|---|
+| `Max(x S) E` | `[]E → E` | 返回最大元素；空切片会 panic | `slices.Max([]int{3, 1, 2})` → `3` |
+| `Min(x S) E` | `[]E → E` | 返回最小元素；空切片会 panic | `slices.Min([]int{3, 1, 2})` → `1` |
+| `Index(s S, v E) int` | `[]E, E → int` | 首次出现位置；不存在返回 `-1` | `slices.Index([]int{3, 1, 2}, 2)` → `2` |
+| `Contains(s S, v E) bool` | `[]E, E → bool` | 判断元素是否存在 | `slices.Contains([]int{3, 1, 2}, 4)` → `false` |
+| `BinarySearch(x S, target E) (int, bool)` | `有序 []E, E → int, bool` | 返回匹配位置或插入位置，以及是否找到 | `slices.BinarySearch([]int{1, 3, 3, 7}, 3)` → `(1, true)` |
+| `Clone(s S) S` | `[]E → []E` | 浅拷贝切片 | `copyNums := slices.Clone(nums)` |
+| `Delete(s S, i, j int) S` | `[]E, int, int → []E` | 删除半开区间 `[i,j)`，必须接收返回值 | `slices.Delete([]int{1, 2, 3, 4}, 1, 3)` → `[1 4]` |
+| `Sort(x S)` | `[]E → 无返回值` | 原地升序排序 | `slices.Sort(nums)` |
+| `Reverse(s S)` | `[]E → 无返回值` | 原地反转 | `slices.Reverse(nums)` |
+| `IsSorted(x S) bool` | `[]E → bool` | 是否按升序排列 | `slices.IsSorted([]int{1, 2, 3})` → `true` |
+| `Concat(slices ...S) S` | `多个 []E → []E` | 连接多个切片并返回新切片 | `slices.Concat([]int{1, 2}, []int{3})` → `[1 2 3]` |
+| `Grow(s S, n int) S` | `[]E, int → []E` | 保证还能追加至少 `n` 个元素而不重新分配 | `nums = slices.Grow(nums, 10)` |
+| `Insert(s S, i int, v ...E) S` | `[]E, int, 若干 E → []E` | 在下标 `i` 前插入元素 | `slices.Insert([]int{1, 4}, 1, 9)` → `[1 9 4]` |
+| `Equal(s1, s2 S) bool` | `[]E, []E → bool` | 长度和对应元素是否都相等 | `slices.Equal([]int{1, 2}, []int{1, 2})` → `true` |
+| `Compare(s1, s2 S) int` | `[]E, []E → int` | 字典序比较，返回负数、`0` 或正数 | `slices.Compare([]int{1, 2}, []int{1, 3})` → `-1` |
+| `Compact(s S) S` | `[]E → []E` | 合并连续重复元素 | `slices.Compact([]int{1, 1, 2})` → `[1 2]` |
+| `CompactFunc(s S, eq func(E, E) bool) S` | `[]E, 相等函数 → []E` | 按自定义相等规则合并连续元素 | `slices.CompactFunc(words, strings.EqualFold)` |
+| `SortFunc(x S, cmp func(E, E) int)` | `[]E, 比较函数 → 无返回值` | 按比较函数原地排序 | `slices.SortFunc(nums, func(a, b int) int { return b - a })` |
 
 > `slices` 包中没有 `Cut`。如果你想“切片”，直接使用 `s[i:j]`；如果你想删除一段，使用 `slices.Delete(s, i, j)`。`strings.Cut` 才是按分隔符把字符串切成前后两部分的方法。
 
@@ -533,6 +533,19 @@ slices.SortFunc(words, func(a, b string) int {
 // []string{"a", "pear", "apple"}：先按长度，再按字典序
 ```
 
+`cmp` 返回负数 / 0 / 正数，分别表示 `a` 排前面、二者相等、`b` 排前面；想倒序就把比较方向反过来。给区间按起点排序是 56 合并区间的前置技能：
+
+```go
+intervals := [][]int{{3, 4}, {1, 2}, {1, 5}, {2, 6}}
+slices.SortFunc(intervals, func(a, b []int) int {
+    if a[0] != b[0] {
+        return a[0] - b[0] // 主关键字：起点升序
+    }
+    return a[1] - b[1] // 次关键字：终点升序
+})
+// [[1,2] [1,5] [2,6] [3,4]]
+```
+
 二分查找前必须先升序排序：
 
 ```go
@@ -568,12 +581,12 @@ math：MinInt、MaxInt、Max、Min、Pow、Sqrt
 
 #### 整数极值（最常用）
 
-| 常量 | 64 位平台上的值 | 用途 |
-|---|---|---|
-| `math.MaxInt` | 9223372036854775807 | 求最小值时初始化 `ans` |
-| `math.MinInt` | -9223372036854775808 | 求最大值时初始化 `ans` |
-| `math.MaxInt32` / `math.MinInt32` | ±2147483647 / -2147483648 | 题目范围是 32 位时 |
-| `math.MaxInt64` / `math.MinInt64` | 64 位极值 | 显式指定位宽 |
+| 常量 | 64 位平台上的值 | 用途 | 示例 |
+|---|---|---|---|
+| `math.MaxInt` | 9223372036854775807 | 求最小值时初始化 `ans` | `ans := math.MaxInt` |
+| `math.MinInt` | -9223372036854775808 | 求最大值时初始化 `ans` | `ans := math.MinInt` |
+| `math.MaxInt32` / `math.MinInt32` | ±2147483647 / -2147483648 | 题目范围是 32 位时 | `x := math.MinInt32` |
+| `math.MaxInt64` / `math.MinInt64` | 64 位极值 | 显式指定位宽 | `x := math.MaxInt64` |
 
 用法：
 
@@ -593,16 +606,16 @@ for _, x := range nums {
 
 #### 浮点常量与常用函数
 
-| 函数 / 常量 | 说明 |
-|---|---|
-| `Inf(1)` / `Inf(-1)` | 正 / 负无穷（float64），浮点最值初始化 |
-| `NaN()` | 非数字 |
-| `Max(x, y)` / `Min(x, y)` | **只接受 float64**，返回较大 / 较小值 |
-| `Abs(x)` | 绝对值（float64） |
-| `Pow(x, y)` / `Sqrt(x)` | 幂 / 平方根（float64） |
-| `Floor` / `Ceil` / `Round` / `Trunc` | 向下 / 向上 / 四舍五入 / 截断取整 |
-| `Mod(x, y)` | 浮点取模 |
-| `Log` / `Log2` / `Log10` / `Exp` | 对数与指数 |
+| 函数 / 常量 | 说明 | 示例 |
+|---|---|---|
+| `Inf(1)` / `Inf(-1)` | 正 / 负无穷（float64），浮点最值初始化 | `math.Inf(-1)` |
+| `NaN()` | 非数字 | `math.NaN()` |
+| `Max(x, y)` / `Min(x, y)` | **只接受 float64**，返回较大 / 较小值 | `math.Max(1.5, 2.5)` → `2.5` |
+| `Abs(x)` | 绝对值（float64） | `math.Abs(-3.5)` → `3.5` |
+| `Pow(x, y)` / `Sqrt(x)` | 幂 / 平方根（float64） | `math.Pow(2, 10)` → `1024`；`math.Sqrt(16)` → `4` |
+| `Floor` / `Ceil` / `Round` / `Trunc` | 向下 / 向上 / 四舍五入 / 截断取整 | `math.Floor(2.7)` → `2` |
+| `Mod(x, y)` | 浮点取模 | `math.Mod(7.5, 2)` → `1.5` |
+| `Log` / `Log2` / `Log10` / `Exp` | 对数与指数 | `math.Log2(8)` → `3` |
 
 #### 刷题最容易踩的坑
 
@@ -618,6 +631,30 @@ for _, x := range nums {
 2. **`math.Pow` 返回 `float64`**：转回 `int` 可能因浮点精度丢精度。小整数幂可用，大整数幂优先用循环乘法。
 3. **初始化和“比较方向”要配套**：求最大值用 `math.MinInt` 当起点，求最小值用 `math.MaxInt` 当起点；写反了答案可能整体偏移。
 4. **`math.MaxInt` 需要 Go 1.17+**：LeetCode 当前 Go 版本（1.21+）没问题；老环境可以用 `math.MaxInt64` 或 `int(^uint(0) >> 1)`。
+
+### 8. 刷题高频小抄：常用方法一行示例
+
+把最常用的方法压成一行，方便抄：
+
+| 场景 | 一行示例 |
+|---|---|
+| 去首尾空白 | `s = strings.TrimSpace(s)` |
+| 按逗号拆分 | `parts := strings.Split(s, ",")` |
+| 字符串切片连接 | `joined := strings.Join(parts, ",")` |
+| 判断是否包含 | `strings.Contains(s, "go")` |
+| 字符串转 int | `n, _ := strconv.Atoi(s)` |
+| int 转字符串 | `s := strconv.Itoa(n)` |
+| 升序排序 | `slices.Sort(nums)` |
+| 降序排序 | `slices.SortFunc(nums, func(a, b int) int { return b - a })` |
+| 按区间起点排序 | `slices.SortFunc(intervals, func(a, b []int) int { return a[0] - b[0] })` |
+| 取最大 / 最小 | `slices.Max(nums)` / `slices.Min(nums)` |
+| 相邻去重 | `nums = slices.Compact(nums)` |
+| 反转 | `slices.Reverse(nums)` |
+| 二分查找 | `i, ok := slices.BinarySearch(nums, target)` |
+| 求最大值问题的起点 | `ans := math.MinInt` |
+| 判断字母 / 数字 | `unicode.IsLetter(r)` / `unicode.IsDigit(r)` |
+
+注意：`SortFunc` 里写 `b - a` 这类比较在值域极大时可能溢出，追求稳妥就用显式 `if` 比较（参考上文“给区间按起点排序”的写法）。
 
 ## 专题一：哈希与双指针
 
