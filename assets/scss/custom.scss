@@ -108,11 +108,9 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     margin: 20px 0;
 
-    /* PADDING for Copy Button Header */
-    padding-top: 40px !important;
-    padding-bottom: 10px !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    /* 上下对称留白：去掉顶部 40px / 底部 10px 的不对称间距，
+       让灰色代码区上下居中 */
+    padding: 10px 0 10px 0 !important;
 
     position: relative;
     border: 1px solid rgba(0, 0, 0, 0.05);
