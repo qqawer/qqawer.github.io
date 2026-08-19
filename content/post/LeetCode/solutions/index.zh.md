@@ -250,6 +250,7 @@ fmt.Printf("%c\n", []rune(s)[1]) // 中
 ```go
 import (
     "math"
+    "maps"
     "slices"
     "sort"
     "strconv"
@@ -556,7 +557,57 @@ i, found := slices.BinarySearch(nums, 3)
 // i == 1，found == true
 ```
 
-### 6. `sort` 和 `slices` 怎么选
+### 6. `maps`：Map 工具函数
+
+`maps` 从 Go 1.21 起进入标准库（1.23 起新增迭代器函数）。常用的有拷贝、批量删除、比较，以及配合 `for range` 的键/值遍历。
+
+| 方法签名（简化） | 输入 → 输出 | 作用 | 示例 |
+|---|---|---|---|
+| `Keys(m map[K]V) iter.Seq[K]` | `map → 迭代器` | 遍历所有键（Go 1.23+） | `for k := range maps.Keys(m)` |
+| `Values(m map[K]V) iter.Seq[V]` | `map → 迭代器` | 遍历所有值（Go 1.23+） | `for v := range maps.Values(m)` |
+| `All(m map[K]V) iter.Seq2[K, V]` | `map → 键值迭代器` | 同时遍历键和值（Go 1.23+） | `for k, v := range maps.All(m)` |
+| `Collect(seq iter.Seq2[K, V]) map[K]V` | `键值序列 → map` | 把键值对收集成 map（Go 1.23+） | `m := maps.Collect(maps.All(src))` |
+| `Insert(m map[K]V, seq iter.Seq2[K, V])` | `map, 键值序列 → 无返回值` | 把键值对写入 map，同名键覆盖（Go 1.23+） | `maps.Insert(m, maps.All(src))` |
+| `Clone(m map[K]V) map[K]V` | `map → map` | 浅拷贝 | `copyMap := maps.Clone(m)` |
+| `Copy(dst, src map[K]V)` | `两个 map → 无返回值` | 把 src 全部键值写入 dst | `maps.Copy(dst, src)` |
+| `DeleteFunc(m map[K]V, del func(K, V) bool)` | `map, 条件函数 → 无返回值` | 删除所有满足 `del` 的键值对 | `maps.DeleteFunc(m, func(k string, v int) bool { return v == 0 })` |
+| `Equal(m1, m2 map[K]V) bool` | `两个 map → bool` | 长度和所有键值是否相同 | `maps.Equal(m1, m2)` → `true` |
+
+```go
+m := map[string]int{"go": 1, "java": 2, "python": 3}
+
+// 遍历键 / 值 / 键值（Go 1.23+，顺序不固定）
+for k := range maps.Keys(m) {
+    fmt.Println(k)
+}
+for _, v := range maps.Values(m) {
+    fmt.Println(v)
+}
+for k, v := range maps.All(m) {
+    fmt.Println(k, v)
+}
+
+// 想拿到键切片：用 slices.Collect 收集
+keys := slices.Collect(maps.Keys(m)) // []string
+
+// 删除满足条件的键值对
+maps.DeleteFunc(m, func(k string, v int) bool {
+    return v == 1 // 删掉 go
+})
+// m 剩下 {"java": 2, "python": 3}
+
+// 比较两个 map
+same := maps.Equal(map[string]int{"a": 1}, map[string]int{"a": 1}) // true
+```
+
+注意：
+
+- `Keys` / `Values` / `All` 返回**迭代器**，惰性求值，不会预先分配切片；需要切片时用 `slices.Collect` 收集。
+- 遍历顺序不固定，和 `for k := range m` 一样，不能依赖顺序。
+- `Clone` 是**浅拷贝**：值是引用类型（切片、map）时，内层仍然共享。
+- 版本：`Clone` / `Copy` / `DeleteFunc` / `Equal` 需要 Go 1.21+；`Keys` / `Values` / `All` / `Collect` / `Insert` 需要 Go 1.23+。
+
+### 7. `sort` 和 `slices` 怎么选
 
 - 题目环境使用 Go 1.21+：普通切片操作优先使用 `slices`，写法更统一。
 - 旧版 Go 环境：使用 `sort.Ints`、`sort.Strings` 和 `sort.Slice`。
@@ -571,11 +622,12 @@ sort：Ints、Slice、Search
 unicode：IsLetter、IsDigit、ToLower
 slices：Sort、Contains、Clone、Reverse、BinarySearch
 math：MinInt、MaxInt、Max、Min、Pow、Sqrt
+maps：Keys、Values、All、DeleteFunc、Equal
 ```
 
-完整方法签名可查阅 Go 官方文档：[strings](https://pkg.go.dev/strings)、[strconv](https://pkg.go.dev/strconv)、[sort](https://pkg.go.dev/sort)、[unicode](https://pkg.go.dev/unicode)、[slices](https://pkg.go.dev/slices)、[math](https://pkg.go.dev/math)。
+完整方法签名可查阅 Go 官方文档：[strings](https://pkg.go.dev/strings)、[strconv](https://pkg.go.dev/strconv)、[sort](https://pkg.go.dev/sort)、[unicode](https://pkg.go.dev/unicode)、[slices](https://pkg.go.dev/slices)、[math](https://pkg.go.dev/math)、[maps](https://pkg.go.dev/maps)。
 
-### 7. `math`：数学常量与常用函数
+### 8. `math`：数学常量与常用函数
 
 刷题中 `math` 用得最多的不是复杂公式，而是**整数极值常量**（初始化 `ans`）和少量浮点函数。本专题的 53、560 都用到了 `math.MinInt` 初始化答案。
 
@@ -632,7 +684,7 @@ for _, x := range nums {
 3. **初始化和“比较方向”要配套**：求最大值用 `math.MinInt` 当起点，求最小值用 `math.MaxInt` 当起点；写反了答案可能整体偏移。
 4. **`math.MaxInt` 需要 Go 1.17+**：LeetCode 当前 Go 版本（1.21+）没问题；老环境可以用 `math.MaxInt64` 或 `int(^uint(0) >> 1)`。
 
-### 8. 刷题高频小抄：常用方法一行示例
+### 9. 刷题高频小抄：常用方法一行示例
 
 把最常用的方法压成一行，方便抄：
 
@@ -651,6 +703,9 @@ for _, x := range nums {
 | 相邻去重 | `nums = slices.Compact(nums)` |
 | 反转 | `slices.Reverse(nums)` |
 | 二分查找 | `i, ok := slices.BinarySearch(nums, target)` |
+| 遍历 map 的键 | `for k := range maps.Keys(m)` |
+| 收集键切片 | `keys := slices.Collect(maps.Keys(m))` |
+| 删除满足条件的键值对 | `maps.DeleteFunc(m, func(k string, v int) bool { return v == 0 })` |
 | 求最大值问题的起点 | `ans := math.MinInt` |
 | 判断字母 / 数字 | `unicode.IsLetter(r)` / `unicode.IsDigit(r)` |
 
