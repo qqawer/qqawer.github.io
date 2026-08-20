@@ -4634,9 +4634,9 @@ type ListNode struct {
 
 | 状态 | 分组 | 题号 | 题目 | 核心训练点 | 笔记 |
 |:---:|:---:|---:|---|---|---|
-| ⬜ | A | 206 | [反转链表](https://leetcode.cn/problems/reverse-linked-list/) | 三指针迭代、保存 Next | [查看](#题目-206反转链表) |
-| ⬜ | A | 141 | [环形链表](https://leetcode.cn/problems/linked-list-cycle/) | 快慢指针、Floyd 环检测 | [查看](#题目-141环形链表) |
-| ⬜ | A | 142 | [环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/) | 快慢指针 + 数学推导入口 | [查看](#题目-142环形链表-ii) |
+| ✅ | A | 206 | [反转链表](https://leetcode.cn/problems/reverse-linked-list/) | 三指针迭代、保存 Next | [查看](#题目-206反转链表) |
+| ✅ | A | 141 | [环形链表](https://leetcode.cn/problems/linked-list-cycle/) | 快慢指针、Floyd 环检测 | [查看](#题目-141环形链表) |
+| ✅ | A | 142 | [环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/) | 快慢指针 + 数学推导入口 | [查看](#题目-142环形链表-ii) |
 | ⬜ | A | 21 | [合并两个有序链表](https://leetcode.cn/problems/merge-two-sorted-lists/) | dummy、双指针归并 | [查看](#题目-21合并两个有序链表) |
 | ⬜ | A | 19 | [删除链表的倒数第 N 个结点](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/) | 快慢指针、dummy 删头 | [查看](#题目-19删除链表的倒数第-n-个结点) |
 | ⬜ | B | 2 | [两数相加](https://leetcode.cn/problems/add-two-numbers/) | 模拟加法、carry | [查看](#题目-2两数相加) |
@@ -4725,31 +4725,183 @@ type ListNode struct {
 
 #### 我的第一反应
 
-> 待补充：不看题解时，最先想到什么？
+> 第一反应是迭代三指针：先保存 `next`，再改 `cur.Next` 指向前驱。写的时候盯住“改指针前先备份”这条纪律，避免丢失后继；循环结束后返回 `pre`。递归版一开始没看懂，本质是“递到末尾拿新头，归的路上往新链表末尾接”。
 
-#### 解法一：直觉 / 暴力解法
+#### 解法一：迭代（头插法）
 
-> 待补充：思路、代码、复杂度。
+##### 优化突破口
 
-#### 解法二：优化解法
+反转 = 把每个节点依次“头插”到一个新链表。用 `pre` 保存已经反转好的部分，`cur` 指向当前要处理的节点，`nxt` 先保存 `cur` 的后继（否则改完 `cur.Next` 就找不到了）。
 
-> 待补充：优化突破口、代码、复杂度、关键不变量。
+##### 代码（我的写法）
+
+```go
+func reverseList(head *ListNode) *ListNode {
+    var pre, cur *ListNode = nil, head
+    for cur != nil {
+        nxt := cur.Next
+        cur.Next = pre
+        pre = cur
+        cur = nxt
+    }
+    return pre
+}
+```
+
+##### 逐行理解
+
+- `pre`：已经反转好的链表的头（初始 `nil`，因为新链表最初是空的）；
+- `cur`：当前要处理的节点（初始 `head`）；
+- 每轮三步：
+  1. `nxt := cur.Next`——先保存后继，不保存就丢了；
+  2. `cur.Next = pre`——把 `cur` 插到 `pre` 链表头部（头插法）；
+  3. `pre = cur`、`cur = nxt`——指针前进。
+- 循环结束后 `cur == nil`，`pre` 指向反转后的头，返回 `pre`。
+
+##### 完整运行示例：`1→2→3`
+
+| 轮 | 处理前 | `nxt` | 接线后 | `pre` | `cur` |
+|---|---|---|---|---|---|
+| 1 | `cur=1, pre=nil` | 2 | `1→nil` | 1 | 2 |
+| 2 | `cur=2, pre=1` | 3 | `2→1` | 2 | 3 |
+| 3 | `cur=3, pre=2` | nil | `3→2` | 3 | nil |
+
+结果 `3→2→1`。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。
+- **空间复杂度：\(O(1)\)**。
+
+#### 解法二：递归（尾插法）
+
+##### 核心思路
+
+先“递”到链表末尾，把末尾节点作为新链表的头 `revHead`；再在“归”的过程中，把经过的每个节点依次插到新链表的末尾。
+
+##### 代码
+
+```go
+func reverseList(head *ListNode) *ListNode {
+    if head == nil || head.Next == nil {
+        return head // 原链表的末尾 = 新链表的头
+    }
+    revHead := reverseList(head.Next) // 递：反转 head.Next 开头的子链表
+    tail := head.Next                 // 归：head.Next 就是新链表的末尾
+    tail.Next = head                  // 把 head 接到新链表末尾
+    head.Next = nil                   // 断开旧指针，防止成环
+    return revHead
+}
+```
+
+##### 递的过程：一路走到末尾
+
+`reverseList(head.Next)` 返回“以 `head.Next` 开头那段子链表反转后的新头”，也就是原链表的**尾节点**。最深一层 `head.Next == nil` 时返回 `head` 自己。
+
+##### 归的过程：为什么 `head.Next` 就是新链表的末尾
+
+当递归返回时，`head.Next` 开头的那段已经反转好：新头 = `revHead`，新尾 = `head.Next` 这个节点本身。所以：
+
+- `tail := head.Next`——拿到新链表末尾；
+- `tail.Next = head`——把当前节点接上去；
+- `head.Next = nil`——断开旧指针，防止成环。
+
+##### 完整运行示例：`1→2→3→4`
+
+递：
+
+```text
+reverseList(1)
+  └─ reverseList(2)
+       └─ reverseList(3)
+            └─ reverseList(4) → head.Next==nil，返回 4
+```
+
+归（每层 `revHead` 都是 4）：
+
+```text
+head=3：tail=4，4→3，3→nil → 4→3→nil
+head=2：tail=3，3→2，2→nil → 4→3→2→nil
+head=1：tail=2，2→1，1→nil → 4→3→2→1→nil
+```
+
+##### 为什么 `head.Next = nil` 不能省
+
+省略后 `tail.Next = head` 让 4 指向 3，而 3 还指向 4，两个节点互相指，成环。判题机比对答案时要把链表转成字符串，环会让字符串无限增长，**先报“超出内存限制”**（不是超时，内存先爆）。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。
+- **空间复杂度：\(O(n)\)**。递归调用栈。
 
 #### 对比与复盘
 
-> 待补充：两种解法的时间 / 空间复杂度对比。
+| 对比项 | 迭代（头插法） | 递归（尾插法） |
+|---|---|---|
+| 方向 | 从头往后 | 从尾往前 |
+| 核心动作 | `cur.Next = pre` | `tail.Next = head` |
+| 空间复杂度 | \(O(1)\) | \(O(n)\) 栈 |
+| 优点 | 空间小、面试首选 | 代码短、思路优雅 |
+| 局限 | 需要想清三个指针 | 链表很长时可能栈溢出 |
+
+#### 本地测试（Day 3 要求：表驱动 + 无环验证）
+
+```go
+func TestReverseList(t *testing.T) {
+    tests := []struct {
+        name string
+        in   []int
+        want []int
+    }{
+        {"empty", []int{}, []int{}},
+        {"one", []int{1}, []int{1}},
+        {"two", []int{1, 2}, []int{2, 1}},
+        {"multi", []int{1, 2, 3, 4}, []int{4, 3, 2, 1}},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got := toSlice(reverseList(fromSlice(tt.in)))
+            if !slices.Equal(got, tt.want) {
+                t.Errorf("got %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
 
 #### 易错点
 
-> 待补充。
+1. 改 `cur.Next` 前不保存 `nxt`，后继丢失。
+2. 循环结束后返回 `pre` 而不是 `cur`（`cur` 已是 `nil`）。
+3. 递归里漏写 `head.Next = nil`，链表成环。
+4. 空链表 / 单节点：两种解法都要能直接返回 `head`。
+5. 递归终止条件只写 `head == nil` 不够：单节点时 `head.Next` 为 nil，还需要 `head.Next == nil`，否则会解引用空指针。
+
+#### 建议测试案例
+
+```text
+[]           → []
+[1]          → [1]
+[1,2]        → [2,1]
+[1,2,3]      → [3,2,1]
+[1,2,3,4]    → [4,3,2,1]
+```
 
 #### 可迁移的规律
 
-> 待补充。
+- **头插法 / 尾插法**：反转、重排链表问题的基础（25 K 个一组翻转、92 反转区间）。
+- **“改指针前先保存”**是链表题的通用纪律。
+- **递归“递到边界、归时接线”**的思路可迁移到树的前序/后续处理。
+
+#### 来源说明
+
+- [LeetCode 206. 反转链表题解列表](https://leetcode.cn/problems/reverse-linked-list/solutions/)
+- [代码随想录：0206.翻转链表](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0206.翻转链表.md)
+- 参考视频：灵茶山艾府《两种方法：递归 / 迭代，本质是尾插法和头插法》（基础算法精讲 06）。
 
 #### 重做记录
 
-> 待补充。
+> 2026-08-20：完成迭代头插 + 递归尾插；重做时重点检查递归里 `head.Next = nil` 的成环问题和返回 `pre`。
 
 ---
 
@@ -4767,31 +4919,190 @@ type ListNode struct {
 
 #### 我的第一反应
 
-> 待补充：不看题解时，最先想到什么？
+> 第一反应是哈希表：把走过的节点指针记下来，重复出现就是有环。后来想到快慢指针：一个走 1 步、一个走 2 步，有环必相遇，空间还能降到 O(1)。写的时候主要在想“为什么必相遇”和“循环条件怎么避免 nil 解引用”。
 
-#### 解法一：直觉 / 暴力解法
+#### 解法一：哈希表（直观，O(n) 空间）
 
-> 待补充：思路、代码、复杂度。
+##### 思路
 
-#### 解法二：优化解法
+遍历链表，把访问过的**节点指针**存进 `map[*ListNode]bool`。如果某个节点已经出现过，说明绕回来了，有环。
 
-> 待补充：优化突破口、代码、复杂度、关键不变量。
+##### 代码
+
+```go
+func hasCycle(head *ListNode) bool {
+    seen := map[*ListNode]bool{}
+    for head != nil {
+        if seen[head] {
+            return true
+        }
+        seen[head] = true
+        head = head.Next
+    }
+    return false
+}
+```
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。
+- **空间复杂度：\(O(n)\)**。哈希表存所有走过的节点。
+
+哈希表思路正确但空间多花 \(O(n)\)，面试通常要求 O(1) 空间——这就是快慢指针的用武之地。
+
+#### 解法二：快慢指针（Floyd 判圈）
+
+##### 优化突破口：乌龟和兔子
+
+想象乌龟和兔子在同一跑道：乌龟每轮走 1 步，兔子每轮走 2 步。如果跑道是环，兔子必然追上乌龟（套圈）。链表同理：`slow` 走 1 步、`fast` 走 2 步，有环必相遇，无环时 `fast` 先走到末尾。
+
+##### 代码（我的写法）
+
+```go
+func hasCycle(head *ListNode) bool {
+    slow, fast := head, head // 乌龟和兔子同时从起点出发
+    for fast != nil && fast.Next != nil {
+        slow = slow.Next      // 乌龟走一步
+        fast = fast.Next.Next // 兔子走两步
+        if slow == fast {     // 兔子追上乌龟（套圈），说明有环
+            return true
+        }
+    }
+    return false // fast 走到了链表末尾，无环
+}
+```
+
+##### 为什么快慢指针必相遇（面试必须说清）
+
+分两种情况：
+
+- **无环**：`fast` 每轮走 2 步，会先到达 `nil`，循环退出，返回 `false`。
+- **有环**：两个指针最终都会进入环。进入环后改用**相对速度**思考：把 `slow` 当作不动，`fast` 相对 `slow` 每轮只前进 1 步（`2 - 1 = 1`）。环长有限，两者的相对距离每轮减 1，从某个正数一路减到 0——**一定会“踩中”而不是跳过**，所以必然相遇。
+
+##### 为什么循环条件不判断 `slow`
+
+`slow` 走的路都是 `fast` 走过的：`fast` 每轮走 2 步，必然经过 `slow` 下一轮要走的节点。好比快人先探路，慢人走的是快人走过的路——只要 `fast` 不是 `nil`，`slow` 就肯定不是 `nil`。
+
+`fast.Next != nil` 则是必须的：`fast` 每次要跳 2 步，需要先确认 `fast.Next` 存在，否则访问 `fast.Next.Next` 会 nil 解引用。
+
+##### 比较的是地址，不是值
+
+`slow == fast` 比较的是两个**指针是否指向同一个节点**（内存地址），不是节点的 `Val`。两个节点值相同但地址不同，不算相遇。
+
+##### 完整运行示例：有环 `1→2→3→4→2`（入口是 2）
+
+| 轮 | slow | fast | 相遇？ |
+|---|---|---|---|
+| 0 | 1 | 1 | 起点相同，不判 |
+| 1 | 2 | 3 | 否 |
+| 2 | 3 | 2 | 否 |
+| 3 | 4 | 4 | ✅ 返回 true |
+
+无环 `1→2→3→nil`：
+
+| 轮 | slow | fast | 说明 |
+|---|---|---|---|
+| 1 | 2 | 3 | 本轮结束，`fast.Next == nil` |
+| 2 | — | — | 循环条件不满足，退出 → false |
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。无环时 `fast` 走完链表；有环时两者进入环后追及，总步数仍为 \(O(n)\)。
+- **空间复杂度：\(O(1)\)**。只用两个指针。
 
 #### 对比与复盘
 
-> 待补充：两种解法的时间 / 空间复杂度对比。
+| 对比项 | 哈希表 | 快慢指针 |
+|---|---|---|
+| 时间复杂度 | \(O(n)\) | \(O(n)\) |
+| 空间复杂度 | \(O(n)\) | \(O(1)\) |
+| 核心操作 | 记录访问过的节点 | 速度差 1，有环必相遇 |
+| 优点 | 直观、好写 | 空间最优，可扩展到 142 找入口 |
+| 局限 | 空间大 | 需要理解“相对速度”论证 |
+
+#### 本地测试（Day 3 要求：表驱动 + 构造环）
+
+`fromSlice` 只能建无环链表，还要一个造环的辅助函数：
+
+```go
+func makeCycle(vals []int, pos int) *ListNode {
+    head := fromSlice(vals)
+    if pos < 0 || head == nil {
+        return head
+    }
+    var entry, tail *ListNode
+    cur, i := head, 0
+    for cur != nil {
+        if i == pos {
+            entry = cur
+        }
+        tail = cur
+        cur = cur.Next
+        i++
+    }
+    tail.Next = entry // 尾节点连回入口
+    return head
+}
+
+func TestHasCycle(t *testing.T) {
+    tests := []struct {
+        name string
+        vals []int
+        pos  int
+        want bool
+    }{
+        {"no-cycle", []int{1, 2, 3, 4}, -1, false},
+        {"tail-to-head", []int{1, 2, 3}, 0, true},
+        {"tail-to-middle", []int{1, 2, 3, 4}, 1, true},
+        {"self-loop", []int{1}, 0, true},
+        {"empty", []int{}, -1, false},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got := hasCycle(makeCycle(tt.vals, tt.pos))
+            if got != tt.want {
+                t.Errorf("got %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
 
 #### 易错点
 
-> 待补充。
+1. 漏掉 `fast.Next != nil`：访问 `fast.Next.Next` 时 nil 解引用。
+2. 把相遇判断写在移动之前：初始 `slow == fast == head`，会误判为有环。必须先移动再比较。
+3. 比较写成 `slow.Val == fast.Val`：不同节点值相同会被误判。
+4. 空链表 / 单节点无环：`fast == nil` 或 `fast.Next == nil`，不进循环，返回 false，正确。
+5. 忘记“有环时 fast 一定不会越界”：环内 `fast.Next` 永远存在，循环条件天然成立。
+
+#### 建议测试案例
+
+```text
+[]              → false
+[1]             → false
+[1,2,3,4]       → false
+[1,2,3,4] 环在 1 → true   // 尾连头
+[1,2,3,4] 环在 2 → true   // 尾连中间
+[1]       自环    → true   // head.Next = head
+```
 
 #### 可迁移的规律
 
-> 待补充。
+- **快慢指针三连**：141 判环 → 142 找入口 → 找环长度，都是同一套“相对速度”思想。
+- **速度差为 1 保证必相遇且不会跳过**：相对距离每轮减 1，最终精确减到 0。
+- **快指针先探路**：慢指针永远走在快指针走过的安全路径上。
+- **变形题**：[876. 链表的中间结点](https://leetcode.cn/problems/middle-of-the-linked-list/)（快 2 慢 1，fast 到末尾时 slow 在中点）、[142. 环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/)（相遇后再找入口）。
+
+#### 来源说明
+
+- [LeetCode 141. 环形链表题解列表](https://leetcode.cn/problems/linked-list-cycle/solutions/)
+- [代码随想录：0141.环形链表](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0141.环形链表.md)
+- 参考视频：灵茶山艾府《一个视频讲透快慢指针！》（基础算法精讲 07）。
 
 #### 重做记录
 
-> 待补充。
+> 2026-08-20：完成哈希表 + 快慢指针；重做时重点检查“为什么必相遇”的相对速度论证和 `fast.Next` 判空。
 
 ---
 
@@ -4809,31 +5120,280 @@ type ListNode struct {
 
 #### 我的第一反应
 
-> 待补充：不看题解时，最先想到什么？
+> 141 学会了快慢指针判环，142 自然想到组合拳：先让快慢指针相遇判环，然后「一个从头、一个从相遇点同速走」，再次相遇就是入口。代码写出来了，但「为什么同速走会在入口相遇」当时没想明白，是靠记住结论写的——这正是本题要补上的距离式推导。
 
-#### 解法一：直觉 / 暴力解法
+#### 解法一：哈希表（直观，O(n) 空间）
 
-> 待补充：思路、代码、复杂度。
+##### 思路
 
-#### 解法二：优化解法
+遍历链表，把访问过的**节点指针**记录在哈希表里（官方用 `map[*ListNode]struct{}`，value 用零开销的 `struct{}`）。第一次遇到「已经出现过的节点」，这个节点就是环入口——因为它是绕了一圈之后第一个被重复访问的节点。
 
-> 待补充：优化突破口、代码、复杂度、关键不变量。
+##### 代码（LeetCode 官方写法）
+
+```go
+func detectCycle(head *ListNode) *ListNode {
+    seen := map[*ListNode]struct{}{}
+    for head != nil {
+        if _, ok := seen[head]; ok {
+            return head // 第一次重复访问的节点就是入口
+        }
+        seen[head] = struct{}{}
+        head = head.Next
+    }
+    return nil
+}
+```
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。每个节点至多访问一次。
+- **空间复杂度：\(O(n)\)**。哈希表存所有访问过的节点。
+
+哈希表思路直观、正确，但空间多花 \(O(n)\)。面试通常会追问 O(1) 空间的做法——快慢指针。
+
+#### 解法二：快慢指针 + 距离式推导（Floyd 判圈 + 找入口）
+
+##### 优化突破口
+
+沿用 141 的快慢指针判环：`slow` 走 1 步、`fast` 走 2 步，有环必相遇。关键的新问题是：**相遇点并不是入口**，怎么从相遇点再推出入口？
+
+答案藏在距离式里：设出几个距离，用「fast 的路程 = 2 × slow 的路程」列方程，就能解出「从头走 \(a\) 步 = 从相遇点绕环走 \((L-b)\) 步」，两者落在同一个点——入口。
+
+##### 代码（我的写法）
+
+```go
+func detectCycle(head *ListNode) *ListNode {
+    slow, fast := head, head
+    for fast != nil && fast.Next != nil {
+        slow = slow.Next
+        fast = fast.Next.Next
+        if slow == fast { // 有环，slow 停在相遇点
+            for slow != head { // 一个从头、一个从相遇点，同速走
+                head = head.Next
+                slow = slow.Next
+            }
+            return slow // 再次相遇 = 环入口
+        }
+    }
+    return nil
+}
+```
+
+##### LeetCode 官方写法
+
+官方题解把「从头出发的指针」单独命名为 `p`，不直接改写形参 `head`；判环循环也写得不一样（循环条件只判 `fast != nil`，在循环体内兜底无环情况），但核心逻辑与我的写法完全一致：
+
+```go
+func detectCycle(head *ListNode) *ListNode {
+    slow, fast := head, head
+    for fast != nil {
+        slow = slow.Next
+        if fast.Next == nil {
+            return nil // fast 走到链表末尾，无环
+        }
+        fast = fast.Next.Next
+        if fast == slow { // 第一次相遇
+            p := head
+            for p != slow {
+                p = p.Next
+                slow = slow.Next
+            }
+            return p
+        }
+    }
+    return nil
+}
+```
+
+两种循环结构对比：
+
+| | 我的写法 | 官方写法 |
+|---|---|---|
+| 判环循环条件 | `fast != nil && fast.Next != nil` | `fast != nil` |
+| 无环兜底 | 循环条件天然退出 | 循环体内 `if fast.Next == nil { return nil }` |
+| 移动顺序 | 先移动 `slow`/`fast`，再比较 | 先走 `slow`，兜底后走 `fast`，再比较 |
+| 找入口指针 | 直接改写形参 `head` | 新变量 `p := head` |
+
+两种结构完全等价：官方写法把「无环退出」写得更显式，我的写法把判空集中到循环条件上。面试时写哪一种都可以，关键是说清两者对应关系。
+
+##### 距离式推导（面试必须说清，Day 3 要求手绘）
+
+把链表抽象成「一段直线 + 一个环」：
+
+```text
+直线段 a 步:        head ──► 入口
+环 L 步（从入口出发）: 入口 ──► …… ──► 相遇点 ──► …… ──► 回到入口
+                          │◄─ b ─►│◄── L−b ──►│
+```
+
+定义三个量：
+
+- \(a\)：头节点到环入口的距离（直线段长度）；
+- \(b\)：从入口出发、沿前进方向到相遇点的距离；
+- \(L\)：环的长度。
+
+再设 `fast` 在环里比 `slow` 多跑了 \(n\) 整圈（\(n \ge 1\)，至少要追上必须多绕至少一圈）。相遇时：
+
+- `slow` 走了 \(a + b\)；
+- `fast` 走了 \(a + nL + b\)（直线段 + 完整的 \(n\) 圈 + 追上之前最后一段 \(b\)）。
+
+`fast` 速度是 `slow` 的 2 倍，所以路程也是 2 倍：
+
+\[
+2(a + b) = a + nL + b
+\]
+
+移项：
+
+\[
+a = nL - b = (n-1)L + (L - b)
+\]
+
+这个式子就是答案：**从头走 \(a\) 步，等价于从相遇点沿前进方向绕 \((n-1)\) 圈后再走 \((L-b)\) 步**，两者落在同一个点。
+
+- \(L - b\) 正好是「相遇点沿前进方向回到入口」的距离；
+- 多绕的 \((n-1)L\) 只是整数圈，不改变落点。
+
+所以：一个新指针（官方命名为 `p`）从头出发、`slow` 从相遇点出发，**同速、每次走 1 步**，走 \(a\) 步后必然同时到达环入口。
+
+常见的 \(n=1\) 情形（`fast` 进环后第一圈就追上 `slow`）：式子简化为 \(a = L - b\)，更直观。
+
+官方题解的记号略有不同：它把「相遇点沿前进方向回到入口的距离」记为 \(c\)（即 \(c = L - b\)），并把 fast 在环里多走的圈数记为 \(n\)，推导结果写为：
+
+\[
+a = c + (n-1)(b+c)
+\]
+
+与我的 \(a = (n-1)L + (L-b)\) 完全等价，只是把 \(L\) 拆成了 \(b+c\)。
+
+##### 完整运行示例：`3→2→0→−4` 环在 1（入口是 2）
+
+链表：`3 → 2 → 0 → −4 →(回)2`。这里 \(a=1\)（3→2），环 \(L=3\)（2→0→−4→2）。
+
+第一阶段：判环。
+
+| 轮 | slow | fast | 说明 |
+|---|---|---|---|
+| 0 | 3 | 3 | 起点相同，不判 |
+| 1 | 2 | 0 | 未相遇 |
+| 2 | 0 | 2 | 未相遇 |
+| 3 | −4 | −4 | ✅ 相遇，进入第二阶段 |
+
+第二阶段：找入口。`ptr` 从头出发，`slow` 从相遇点 −4 出发，同速走。
+
+| 步 | ptr（head） | slow | 说明 |
+|---|---|---|---|
+| 0 | 3 | −4 | 起点不同 |
+| 1 | 2 | 2 | ✅ 相遇，返回 2 = 入口 |
+
+验证距离式：相遇点 −4，即 \(b=2\)（2→0→−4），\(L-b=1\)。从头走 \(a=1\) 步到 2；从 −4 沿前进方向走 1 步也到 2，符合 \(a = L-b\)（\(n=1\)）。
+
+##### 逐行理解
+
+- `slow, fast := head, head`：同一起点出发。
+- `for fast != nil && fast.Next != nil`：判环循环条件（同 141，避免访问 `fast.Next.Next` 时解引用 nil）。
+- `if slow == fast`：有环，此时 `slow` 停在相遇点。
+- 内层 `for slow != head`：`head` 在这里兼职「从头出发的指针」，`slow` 从相遇点出发，两者一次都走 1 步；同速靠的就是距离式保证的「会在入口精确碰头」。
+- `return slow`：内层循环结束时，`slow == head`，这个节点就是入口。距离式保证它一定会终止，所以内层不需要判 nil。
+- 外层循环自然退出（`fast` 走到末尾）：无环，返回 `nil`。
+
+一点代码风格提示：内层循环直接改写形参 `head` 在这个函数里没问题（此时已经不再需要原来的头节点），但为了可读性，官方写法另起 `p := head` 更清晰，也避免以后在函数尾部还想用 `head` 时发现它已经被改掉。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。判环阶段 slow 走过的距离不会超过链表总长度；找入口阶段走过的距离也不会超过链表总长度，合计 \(O(n) + O(n) = O(n)\)。
+- **空间复杂度：\(O(1)\)**。只用了 `slow`、`fast`、`p` 三个指针。
+
+##### 关键不变量
+
+- 判环阶段：`fast` 的路程始终是 `slow` 的 2 倍。
+- 找入口阶段：`p` 和 `slow` 速度相同，且由距离式保证相遇点唯一确定 = 入口。
 
 #### 对比与复盘
 
-> 待补充：两种解法的时间 / 空间复杂度对比。
+| 对比项 | 哈希表 | 快慢指针 |
+|---|---|---|
+| 时间复杂度 | \(O(n)\) | \(O(n)\) |
+| 空间复杂度 | \(O(n)\) | \(O(1)\) |
+| 核心操作 | 记录访问过的节点 | 判环 + 距离式找入口 |
+| 优点 | 直观，不需要数学推导 | 空间最优，面试标准答案 |
+| 局限 | 空间大 | 需要完整推导距离式 |
+
+#### 本地测试（Day 3 要求：表驱动 + 构造环 + 验证无环）
+
+复用 141 的 `makeCycle`（尾节点连回 `pos` 位置的节点）：
+
+```go
+func TestDetectCycle(t *testing.T) {
+    tests := []struct {
+        name string
+        vals []int
+        pos  int
+        want int // 期望入口节点的值；-1 表示期望 nil
+    }{
+        {"tail-to-middle", []int{3, 2, 0, -4}, 1, 2},
+        {"tail-to-head", []int{1, 2}, 0, 1},
+        {"self-loop", []int{1}, 0, 1},
+        {"entry-middle", []int{1, 2, 3, 4}, 2, 3},
+        {"no-cycle", []int{1, 2, 3}, -1, -1},
+        {"empty", []int{}, -1, -1},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got := detectCycle(makeCycle(tt.vals, tt.pos))
+            if tt.want == -1 {
+                if got != nil {
+                    t.Errorf("got %v, want nil", got.Val)
+                }
+                return
+            }
+            if got == nil || got.Val != tt.want {
+                t.Errorf("got %v, want entry value %d", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+注意：测试用「入口节点的值」断言，依赖测试用例里节点值不重复。如果链表允许值重复（如 `[1,1]`），就要改用指针相等断言：构造环时把入口节点指针单独存下来，最后比 `got == entryNode`。
 
 #### 易错点
 
-> 待补充。
+1. 判环循环条件漏 `fast.Next != nil`：访问 `fast.Next.Next` 时 nil 解引用。
+2. 相遇后直接返回 `slow`：那是**相遇点**不是入口。
+3. 内层循环速度不一致：必须「同速」，否则会错过入口。
+4. 距离式推导漏写 \(n\)：`fast` 可能绕了不止一圈，必须写 \(a = nL - b\) 再化简为 \((n-1)L + (L-b)\)。
+5. 用值比较找入口：应该用**指针相等**（`p != slow` 比较的是节点地址），两个值相同的节点不算同一个节点。
+6. 改写形参 `head` 后还想在函数里继续用原来的头：本函数没有后续使用所以安全，但养成「另起 `p`」的习惯更稳。
+
+#### 建议测试案例
+
+```text
+[3,2,0,-4] 环在 1 → 返回节点 2     // 常见例子，入口在中间
+[1,2]      环在 0 → 返回节点 1     // 尾连头，入口就是 head
+[1]        环在 0 → 返回节点 1     // 单点自环，入口=头=相遇点
+[1,2,3,4]  环在 2 → 返回节点 3     // 入口在更深处
+[1,2,3]    无环   → nil
+[]         无环   → nil
+```
 
 #### 可迁移的规律
 
-> 待补充。
+- **141 → 142 是一套组合拳**：先判环（相对速度），再找入口（距离式）。
+- **距离式的通用步骤**：设 \(a\) / \(b\) / \(L\) → 列「2 × slow 路程 = fast 路程」→ 移项得到「从头走的距离 = 从相遇点绕圈走的距离」。
+- **环上追及问题的通法**：路程差 = 整数圈。
+- **变形题**：找环的长度（相遇后 `slow` 原地绕一圈数步数）；[287. 寻找重复数](https://leetcode.cn/problems/find-the-duplicate-number/)（把数组下标当成链表节点，用同一套快慢指针找「环入口」）。
+
+#### 来源说明
+
+- [LeetCode 142. 环形链表 II 题解列表](https://leetcode.cn/problems/linked-list-cycle-ii/solutions/)
+- 力扣官方题解《环形链表 II》（作者：力扣官方题解，2020.10.09）：哈希表 + 快慢指针两种方法，代码与推导按官方原文整理。
+- [代码随想录：0142.环形链表](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0142.环形链表II.md)
 
 #### 重做记录
 
-> 待补充。
+> 2026-08-20：完成哈希表 + 快慢指针（含距离式推导）；重做时**不看资料**完整推导 \(a = (n-1)L + (L-b)\)，并解释「一个从头、一个从相遇点同速走为何在入口相遇」。
+
 
 ---
 
