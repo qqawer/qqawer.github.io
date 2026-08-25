@@ -1,6 +1,6 @@
 ---
 title: "LeetCode 题解手记：从思路到复盘"
-description: "持续记录 LeetCode 刷题过程中的原始思路、优化过程、关键不变量、复杂度分析和易错点。专题一：哈希与双指针；专题二：滑动窗口、前缀和与区间；专题三：链表；专题四：二叉树。"
+description: "持续记录 LeetCode 刷题过程中的原始思路、优化过程、关键不变量、复杂度分析和易错点。专题一：哈希与双指针；专题二：滑动窗口、前缀和与区间；专题三：链表；专题四：二叉树；专题五：图与回溯。"
 date: 2026-07-28
 slug: "leetcode-solution-notes"
 categories:
@@ -15,6 +15,8 @@ tags:
     - Intervals
     - Linked List
     - Binary Tree
+    - Graph
+    - Backtracking
     - Go
 math: true
 toc: true
@@ -6312,12 +6314,12 @@ func dfs(node *TreeNode, 状态 状态类型) {
 
 | 状态 | 分组 | 题号 | 题目 | 核心训练点 | 笔记 |
 |:---:|:---:|---:|---|---|---|
-| ⬜ | A | 94 | [二叉树的中序遍历](https://leetcode.cn/problems/binary-tree-inorder-traversal/) | 递归契约、迭代显式栈 | [查看](#题目-94二叉树的中序遍历) |
-| ⬜ | A | 102 | [二叉树的层序遍历](https://leetcode.cn/problems/binary-tree-level-order-traversal/) | BFS 队列、每层固定长度 | [查看](#题目-102二叉树的层序遍历) |
-| ⬜ | A | 104 | [二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/) | 递归契约、DFS/BFS 对拍 | [查看](#题目-104二叉树的最大深度) |
-| ⬜ | A | 226 | [翻转二叉树](https://leetcode.cn/problems/invert-binary-tree/) | 前序/后序、中序陷阱 | [查看](#题目-226翻转二叉树) |
-| ⬜ | A | 543 | [二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/) | 返回高度、全局答案 | [查看](#题目-543二叉树的直径) |
-| ⬜ | A | 98 | [验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/) | 中序升序、上下界 | [查看](#题目-98验证二叉搜索树) |
+| ✅ | A | 94 | [二叉树的中序遍历](https://leetcode.cn/problems/binary-tree-inorder-traversal/) | 递归契约、迭代显式栈 | [查看](#题目-94二叉树的中序遍历) |
+| ✅ | A | 102 | [二叉树的层序遍历](https://leetcode.cn/problems/binary-tree-level-order-traversal/) | BFS 队列、每层固定长度 | [查看](#题目-102二叉树的层序遍历) |
+| ✅ | A | 104 | [二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/) | 递归契约、DFS/BFS 对拍 | [查看](#题目-104二叉树的最大深度) |
+| ✅ | A | 226 | [翻转二叉树](https://leetcode.cn/problems/invert-binary-tree/) | 前序/后序、中序陷阱 | [查看](#题目-226翻转二叉树) |
+| ✅ | A | 543 | [二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/) | 返回高度、全局答案 | [查看](#题目-543二叉树的直径) |
+| ✅ | A | 98 | [验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/) | 中序升序、上下界 | [查看](#题目-98验证二叉搜索树) |
 
 状态说明：
 
@@ -6402,31 +6404,297 @@ func dfs(node *TreeNode, 状态 状态类型) {
 
 #### 我的第一反应
 
-> 待补充：不看题解时，最先想到什么？
+> 第一反应就是递归三遍历模板（1.6 骨架一）：闭包 `dfs`，左-根-右，空节点直接返回。看完灵茶题解才知道中序还有两个进阶版本：迭代显式栈（Day 4 要求讲清“何时压左、何时访问”）和空间 O(1) 的 Morris 线索遍历。
 
-#### 解法一：直觉 / 暴力解法
+#### 解法一：递归（我的写法）
 
-> 待补充：思路、代码、复杂度。
+##### 递归契约（面试必须说清）
 
-#### 解法二：优化解法
+`dfs(node)` 的作用是：**把以 node 为根的子树按中序遍历顺序追加到 ans**。空节点不产生任何值，直接返回。递归深度 = 树高 h：平衡树是 \(O(\log n)\)，退化成链表的树是 \(O(n)\)——这就是“递归栈空间与树高关系”的答案。
 
-> 待补充：优化突破口、代码、复杂度、关键不变量。
+##### 代码（我的写法）
+
+```go
+func inorderTraversal(root *TreeNode) (ans []int) {
+    var dfs func(root *TreeNode)
+    dfs = func(node *TreeNode) {
+        if node == nil {
+            return
+        }
+        dfs(node.Left)              // 左
+        ans = append(ans, node.Val) // 根：放中间才是中序
+        dfs(node.Right)             // 右
+    }
+    dfs(root)
+    return
+}
+```
+
+灵茶山艾府的递归版与本代码完全一致（只在注释里标了“这行移到前面就是前序，移到后面就是后序”），说明这个写法就是标准答案。
+
+##### 完整运行示例（逐轮表格）
+
+树：
+
+```text
+    1
+   / \
+  2   3
+ / \
+4   5
+```
+
+中序遍历结果：`4, 2, 5, 1, 3`。
+
+| 步 | 动作 | ans |
+|---|---|---|
+| 1 | dfs(1)：进入左子树 dfs(2) | [] |
+| 2 | dfs(2)：进入左子树 dfs(4) | [] |
+| 3 | dfs(4)：左空，访问 4，返回 | [4] |
+| 4 | 回到 dfs(2)，访问 2 | [4, 2] |
+| 5 | dfs(2)：进入右子树 dfs(5)，访问 5，返回 | [4, 2, 5] |
+| 6 | 回到 dfs(1)，访问 1 | [4, 2, 5, 1] |
+| 7 | dfs(1)：进入右子树 dfs(3)，访问 3 | [4, 2, 5, 1, 3] |
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。`n` 为节点个数，每个节点访问一次。
+- **空间复杂度：\(O(h)\)**。`h` 为树高，递归栈最多压一条根到叶路径。
+
+#### 解法二：迭代（显式栈）
+
+##### 思路（回答“迭代栈何时压左、何时访问”）
+
+用显式栈模拟递归（1.6 骨架二）：**进入节点时先把整条左链一路压栈（此时不访问），弹栈时才访问节点（中序位置），然后转向右子树**。口诀：压左链不访问，弹栈才访问。
+
+##### 代码
+
+```go
+func inorderTraversalIter(root *TreeNode) (ans []int) {
+    stack := []*TreeNode{}
+    cur := root
+    for cur != nil || len(stack) > 0 {
+        for cur != nil { // 一路压左链
+            stack = append(stack, cur)
+            cur = cur.Left
+        }
+        cur = stack[len(stack)-1]
+        stack = stack[:len(stack)-1]
+        ans = append(ans, cur.Val) // 弹栈才访问
+        cur = cur.Right            // 转向右子树
+    }
+    return
+}
+```
+
+##### 完整运行示例（逐轮表格）
+
+同一棵树（`1` 左 `2`[左 4 右 5]，右 3）：
+
+| 轮 | 压栈后（栈底→栈顶） | 弹栈访问 | cur（弹栈后转向） | ans |
+|---|---|---|---|---|
+| 0 | [1, 2, 4] | — | nil | [] |
+| 1 | [1, 2] | 4 | nil | [4] |
+| 2 | [1] | 2 | 5 | [4, 2] |
+| 3 | [1, 5] | — | nil | [4, 2] |
+| 4 | [1] | 5 | nil | [4, 2, 5] |
+| 5 | [] | 1 | 3 | [4, 2, 5, 1] |
+| 6 | [3] | — | nil | [4, 2, 5, 1] |
+| 7 | [] | 3 | nil | [4, 2, 5, 1, 3] |
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。
+- **空间复杂度：\(O(h)\)**。栈中最多同时存在一条根到叶路径的节点，最差（偏斜树）\(O(n)\)。
+
+#### 解法三：Morris 遍历（灵茶山艾府，线索二叉树）
+
+##### 核心思想
+
+能不能做到 O(1) 空间？不能写递归，也不能用栈模拟递归——递归和栈都用了 O(h) 空间。Morris 的办法是：利用“中序前驱没有右子树”的特点，把前驱的 `Right` 临时指向当前节点（**线索**），用线索代替栈记住“回去的路”，遍历完再把线索拆掉、恢复原树。
+
+找前驱：从 `root.Left` 开始一直往右走，直到走到尽头（`pre.Right == nil`）或遇到指向 root 的线索（`pre.Right == root`）。
+
+两种情况：
+
+- `pre.Right == nil`：左子树还没访问 → 建线索 `pre.Right = root`，`root` 进入左子树；
+- `pre.Right == root`：左子树访问完毕 → 断线索，访问 `root`，`root` 进入右子树（没有右子树就沿线索回去）。
+
+##### 代码（灵茶山艾府）
+
+```go
+func inorderTraversalMorris(root *TreeNode) (ans []int) {
+    for root != nil {
+        if root.Left != nil {
+            // 找 root 的中序前驱 pre：从 root.Left 一直向右走到尽头，或走到指向 root 的线索
+            pre := root.Left
+            for pre.Right != nil && pre.Right != root {
+                pre = pre.Right
+            }
+
+            if pre.Right == nil { // 左子树尚未访问
+                pre.Right = root // 建立线索（相当于把 pre.Right 当作栈）
+                root = root.Left // 访问左子树
+                continue
+            }
+
+            pre.Right = nil // 左子树访问完毕，去掉线索，恢复原样
+        }
+
+        ans = append(ans, root.Val) // 左子树访问完毕，记录当前节点
+        root = root.Right           // 有右子树就访问右子树，没有就顺着线索回去
+    }
+    return
+}
+```
+
+##### 逐行理解
+
+- `for root != nil`：遍历结束条件是 root 走到 nil（沿线索回去后最终会到 nil）。
+- `if root.Left != nil`：只有存在左子树才需要找前驱、建线索；没有左子树就直接访问。
+- 找 `pre` 的循环条件必须带 `pre.Right != root`：否则第二次遇到线索时会绕圈死循环。
+- 建线索后 `continue`：不能漏，否则会跳过左子树直接访问当前节点。
+- 第二次遇到同一节点时 `pre.Right == root`，说明左子树已经通过线索完整走完，断线索、访问、向右。
+- `pre.Right = nil` 这行如果确定遍历后不再使用这棵二叉树，可以省略，但省略后原树会被线索污染。
+
+##### 完整运行示例（逐轮表格）
+
+同一棵树：
+
+| 步 | root | pre（前驱） | 动作 | ans |
+|---|---|---|---|---|
+| 0 | 1 | 5 | 建线索 5→1，root=2 | [] |
+| 1 | 2 | 4 | 建线索 4→2，root=4 | [] |
+| 2 | 4 | — | 左空，访问 4，root 沿线索到 2 | [4] |
+| 3 | 2 | 4 | pre.Right==root，断线索，访问 2，root=5 | [4, 2] |
+| 4 | 5 | — | 左空，访问 5，root 沿线索到 1 | [4, 2, 5] |
+| 5 | 1 | 5 | pre.Right==root，断线索，访问 1，root=3 | [4, 2, 5, 1] |
+| 6 | 3 | — | 左空，访问 3，root=nil 结束 | [4, 2, 5, 1, 3] |
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。虽然写了二重循环，但每条边至多访问三次（第一次找前驱、遍历、第二次找前驱），总循环次数 \(O(n)\)。
+- **空间复杂度：\(O(1)\)**。只用了 `pre` 一个额外变量（返回值不计入）。
+
+##### 关键不变量
+
+- 线索只建立在“前驱的右指针为空”的节点上；
+- 每条线索被建立一次、拆除一次，断线索后树恢复原样；
+- 访问顺序始终满足“左-根-右”，与递归/迭代完全一致。
 
 #### 对比与复盘
 
-> 待补充：两种解法的时间 / 空间复杂度对比。
+| 对比项 | 递归 | 迭代（显式栈） | Morris |
+|---|---|---|---|
+| 时间复杂度 | \(O(n)\) | \(O(n)\) | \(O(n)\) |
+| 空间复杂度 | \(O(h)\) | \(O(h)\) | \(O(1)\) |
+| 核心动作 | 函数调用栈 | 压左链、弹栈访问 | 线索代替栈 |
+| 是否修改原树 | 否 | 否 | 临时加线索（会拆掉） |
+| 实现难度 | 最简单 | 中等 | 较难，需理解前驱 |
+| 面试定位 | 首选 | Day 4 必讲 | 进阶加分项 |
+
+#### 本地测试（表驱动 + 三实现对拍）
+
+先定义树测试辅助（层序建树，`nil` 占位空子节点）：
+
+```go
+func intPtr(v int) *int { return &v }
+
+// 层序建树：nil 表示空子节点，如 [1, nil, 2, nil, 3] 表示 1→右2→右3
+func treeFromSlice(vals []*int) *TreeNode {
+    if len(vals) == 0 || vals[0] == nil {
+        return nil
+    }
+    root := &TreeNode{Val: *vals[0]}
+    q := []*TreeNode{root}
+    for i := 1; i < len(vals) && len(q) > 0; {
+        node := q[0]
+        q = q[1:]
+        if vals[i] != nil { // 左孩子
+            node.Left = &TreeNode{Val: *vals[i]}
+            q = append(q, node.Left)
+        }
+        i++
+        if i < len(vals) && vals[i] != nil { // 右孩子
+            node.Right = &TreeNode{Val: *vals[i]}
+            q = append(q, node.Right)
+        }
+        i++
+    }
+    return root
+}
+```
+
+表驱动测试：三种实现跑同一批用例，互相就是“对拍”：
+
+```go
+func TestInorderTraversal(t *testing.T) {
+    tests := []struct {
+        name string
+        vals []*int
+        want []int
+    }{
+        {"empty", nil, []int{}},
+        {"single", []*int{intPtr(1)}, []int{1}},
+        {"left-skew", []*int{intPtr(3), intPtr(2), nil, intPtr(1)}, []int{1, 2, 3}},
+        {"right-skew", []*int{intPtr(1), nil, intPtr(2), nil, intPtr(3)}, []int{1, 2, 3}},
+        {"normal", []*int{intPtr(1), intPtr(2), intPtr(3)}, []int{2, 1, 3}},
+        {"complex", []*int{intPtr(1), intPtr(2), intPtr(3), intPtr(4), intPtr(5)}, []int{4, 2, 5, 1, 3}},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            if got := inorderTraversal(treeFromSlice(tt.vals)); !slices.Equal(got, tt.want) {
+                t.Errorf("递归 got %v, want %v", got, tt.want)
+            }
+            if got := inorderTraversalIter(treeFromSlice(tt.vals)); !slices.Equal(got, tt.want) {
+                t.Errorf("迭代 got %v, want %v", got, tt.want)
+            }
+            if got := inorderTraversalMorris(treeFromSlice(tt.vals)); !slices.Equal(got, tt.want) {
+                t.Errorf("Morris got %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
 
 #### 易错点
 
-> 待补充。
+1. 递归忘写空节点边界：`node == nil` 时直接访问 `node.Val` 会 panic。
+2. 访问根的位置放错：放左右递归之前是前序，放中间才是中序，放后面是后序。
+3. 迭代版在压左链时访问：那是前序；中序必须在弹栈时访问。
+4. 迭代版弹栈后忘了 `cur = cur.Right`：会反复弹同一个节点，死循环。
+5. Morris 找前驱时循环条件漏 `pre.Right != root`：第二次碰到线索时绕圈，死循环。
+6. Morris 建线索后漏 `continue`：会跳过左子树，访问顺序变成前序。
+7. Morris 断线索只判断 `pre.Right == root`：左子树没走完之前不能断。
+8. 空间复杂度记混：递归/迭代都是 \(O(h)\)，只有 Morris 是 \(O(1)\)。
+
+#### 建议测试案例
+
+```text
+[]                → []
+[1]               → [1]
+[3,2,nil,1]       → [1,2,3]       // 左偏斜
+[1,nil,2,nil,3]   → [1,2,3]       // 右偏斜
+[1,2,3]           → [2,1,3]       // 普通树
+[1,2,3,4,5]       → [4,2,5,1,3]   // 对应逐轮示例的树
+```
 
 #### 可迁移的规律
 
-> 待补充。
+- **递归三遍历骨架（1.6 骨架一）**：访问根的位置决定前/中/后序，一个模板三处开关。
+- **迭代显式栈（骨架二）**：模拟递归的通用方法，中序 = 压左链 → 弹栈访问 → 转右。
+- **Morris 线索化**：O(1) 空间遍历的进阶技巧，可以推广到前序/后序 Morris；面试加分项，能画出“建线索/断线索”即可。
+- **BST 中序升序**：94 是 98 验证 BST 的前置知识。
+
+#### 来源说明
+
+- [LeetCode 94. 二叉树的中序遍历题解列表](https://leetcode.cn/problems/binary-tree-inorder-traversal/solutions/)
+- 灵茶山艾府《【图解】Morris 遍历（线索二叉树），一图秒懂！》（递归版 + Morris 版）。
+- [代码随想录：二叉树的迭代遍历](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/二叉树的迭代遍历.md)
 
 #### 重做记录
 
-> 待补充。
+> 2026-08-22：完成递归 + 迭代栈 + Morris 三解法；重做时重点检查：递归栈空间与树高的关系、迭代“压左链不访问、弹栈才访问”、Morris 建/拆线索与 `pre.Right != root` 防死循环。
 
 ---
 
@@ -6444,31 +6712,206 @@ func dfs(node *TreeNode, 状态 状态类型) {
 
 #### 我的第一反应
 
-> 待补充：不看题解时，最先想到什么？
+> 第一反应是 BFS 分层：把当前层节点收集到一个切片，逐层推进。第一次写踩了三个坑：切片创建语法写错、用 `cur != nil` 当循环条件导致死循环、把左右孩子判断写成 `else if` 漏掉右孩子。改成 `len(cur) > 0` 和两个独立 `if` 后通过；后来又按灵茶的「一个队列 + 固定 size」重写了一遍，两种写法等价。
 
-#### 解法一：直觉 / 暴力解法
+#### 解法一：两个数组（cur/nxt 分层，我的写法）
 
-> 待补充：思路、代码、复杂度。
+##### 思路
 
-#### 解法二：优化解法
+用 `cur` 存当前层节点，`nxt` 收集下一层节点；处理完 `cur` 后整体替换成 `nxt`。因为 `cur` 本身就是某一层的完整集合，所以不需要“固定 size”的技巧，天然不会串层。
 
-> 待补充：优化突破口、代码、复杂度、关键不变量。
+##### 代码（我的写法，已修正）
+
+```go
+func levelOrderCurNxt(root *TreeNode) (ans [][]int) {
+    cur := []*TreeNode{}
+    if root == nil {
+        return
+    }
+    cur = append(cur, root)
+    for len(cur) > 0 {
+        vals := make([]int, 0)
+        nxt := []*TreeNode{}
+        for _, v := range cur {
+            vals = append(vals, v.Val)
+            if v.Left != nil {
+                nxt = append(nxt, v.Left)
+            }
+            if v.Right != nil {
+                nxt = append(nxt, v.Right)
+            }
+        }
+        cur = nxt
+        ans = append(ans, vals)
+    }
+    return
+}
+```
+
+##### 我踩过的三个坑（错误分析）
+
+| 错误写法 | 为什么错 | 正确写法 |
+|---|---|---|
+| `cur := make(*TreeNode{}, 0)` | `make` 第一个参数必须是**类型**（如 `[]*TreeNode`）；`*TreeNode{}` 是复合字面量表达式，不是类型 | `cur := make([]*TreeNode, 0)` 或 `cur := []*TreeNode{}` |
+| `for cur != nil { ... }` | 切片判空不能看 `!= nil`：`nxt := []*TreeNode{}` 是非 nil 的**空切片**，`cur = nxt` 后 `cur != nil` 永远成立，死循环 | `for len(cur) > 0 { ... }` |
+| `if v.Left != nil { ... } else if v.Right != nil { ... }` | `else if` 把两个**独立**条件耦合了：Left 非空时整个 `else` 分支被跳过，右孩子永远不会入队 | 两个独立的 `if`，左右互不影响 |
+
+##### 完整运行示例（逐轮表格）
+
+树：`3` 左 `9` 右 `20`（左 `15` 右 `7`），即 LeetCode 示例 `[3,9,20,nil,nil,15,7]`。
+
+| 轮 | cur | vals | nxt | ans |
+|---|---|---|---|---|
+| 0 | [3] | [3] | [9, 20] | [[3]] |
+| 1 | [9, 20] | [9, 20] | [15, 7] | [[3], [9, 20]] |
+| 2 | [15, 7] | [15, 7] | [] | [[3], [9, 20], [15, 7]] |
+
+`len(cur) > 0` 不成立时循环结束，输出三层。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。每个节点恰好被处理一次。
+- **空间复杂度：\(O(n)\)**。满二叉树最后一层约 \(n/2\) 个节点，两个切片最坏各存 \(O(n)\)。
+
+#### 解法二：一个队列（固定 size，我的写法）
+
+##### 思路（回答“每层长度为何要在循环前固定”）
+
+单队列边出边进：处理当前层时，下一层的孩子会被 append 进同一个队列。**如果不先固定 size，新入队的下一层节点会被当成当前层一起处理，串层**。所以在每层循环开始前先记下 `size := len(que)`，内层循环只处理这 size 个节点，刚入队的下一层节点留到下一轮。
+
+##### 代码（我的写法）
+
+```go
+func levelOrderQueue(root *TreeNode) (ans [][]int) {
+    que := []*TreeNode{}
+    if root == nil {
+        return
+    }
+    que = append(que, root)
+    for len(que) > 0 {
+        vals := make([]int, 0)
+        size := len(que) // 固定本层长度，防止串层
+        for i := 0; i < size; i++ {
+            v := que[0]
+            que = que[1:]
+            vals = append(vals, v.Val)
+            if v.Left != nil {
+                que = append(que, v.Left)
+            }
+            if v.Right != nil {
+                que = append(que, v.Right)
+            }
+        }
+        ans = append(ans, vals)
+    }
+    return
+}
+```
+
+灵茶山艾府的队列版与本代码逻辑一致，只有一处优化：`vals := make([]int, n)` 预分配空间，再用下标 `vals[i] = node.Val` 赋值，省去反复扩容。
+
+##### 完整运行示例（逐轮表格）
+
+同一棵树：
+
+| 轮 | 处理前 que | size | 本层 vals | 处理后 que |
+|---|---|---|---|---|
+| 0 | [3] | 1 | [3] | [9, 20] |
+| 1 | [9, 20] | 2 | [9, 20] | [15, 7] |
+| 2 | [15, 7] | 2 | [15, 7] | [] |
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。每个节点入队出队各一次。
+- **空间复杂度：\(O(n)\)**。队列中最多同时存在约 \(n/2\) 个节点（满二叉树底层）。
+
+##### 关键不变量
+
+`size` 固定后，本层循环结束时队列里恰好全是**下一层**的节点；`size` 就是“本层还剩多少节点没处理”。
+
+#### Go 队列语法补充（用切片当队列）
+
+- **创建**：`var q []*TreeNode`（nil 切片）、`q := []*TreeNode{}`（空切片）、`q := make([]*TreeNode, 0)`、带容量 `make([]*TreeNode, 0, n)`。最常用的是直接初始化：`q := []*TreeNode{root}`。
+- **入队**：`q = append(q, node)`，追加到末尾。
+- **出队**：`node := q[0]; q = q[1:]`——切片头指针后移，是 O(1) 操作；代价是底层数组仍被引用，LeetCode 场景可忽略。
+- **判空**：永远用 `len(q) > 0`，不要用 `q != nil`（nil 切片和空切片都能 append，空切片 `!= nil`，会误判非空）。
+- **预分配**：知道容量时用 `make([]int, 0, n)`（配合 append）或 `make([]int, n)`（配合下标赋值）；注意 `make([]int, n)` 后不能再 append，否则前 n 位全是 0。
+- **严格队列**：需要真正可释放内存/双向操作的队列时可用 `container/list`，或维护 `head` 下标；刷题用切片即可。
 
 #### 对比与复盘
 
-> 待补充：两种解法的时间 / 空间复杂度对比。
+| 对比项 | 两个数组（cur/nxt） | 一个队列（固定 size） |
+|---|---|---|
+| 时间复杂度 | \(O(n)\) | \(O(n)\) |
+| 空间复杂度 | \(O(n)\) | \(O(n)\) |
+| 分层方式 | cur/nxt 整体替换 | size 固定后逐层消化 |
+| 核心技巧 | 两切片轮换 | 每层前先记 `len(q)` |
+| 优点 | 语义直观，天然不串层 | 只维护一个队列，写法统一 |
+| 局限 | 每层新建两个切片 | 需要理解“固定 size”的原因 |
+
+#### 本地测试（表驱动 + 两实现对拍）
+
+复用 94 的 `treeFromSlice`（层序建树、nil 占位）；二维切片比较用 `reflect.DeepEqual`：
+
+```go
+func TestLevelOrder(t *testing.T) {
+    tests := []struct {
+        name string
+        vals []*int
+        want [][]int
+    }{
+        {"empty", nil, [][]int{}},
+        {"single", []*int{intPtr(1)}, [][]int{{1}}},
+        {"leetcode-example", []*int{intPtr(3), intPtr(9), intPtr(20), nil, nil, intPtr(15), intPtr(7)}, [][]int{{3}, {9, 20}, {15, 7}}},
+        {"non-full", []*int{intPtr(1), intPtr(2), intPtr(3), intPtr(4)}, [][]int{{1}, {2, 3}, {4}}},
+        {"right-skew", []*int{intPtr(1), nil, intPtr(2), nil, intPtr(3)}, [][]int{{1}, {2}, {3}}},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            if got := levelOrderCurNxt(treeFromSlice(tt.vals)); !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("两数组 got %v, want %v", got, tt.want)
+            }
+            if got := levelOrderQueue(treeFromSlice(tt.vals)); !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("单队列 got %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
 
 #### 易错点
 
-> 待补充。
+1. 切片判空用 `len(q) > 0`，不要用 `q != nil`：空切片不是 nil，会死循环。
+2. `make` 语法：`make([]*TreeNode, 0)`，不是 `make(*TreeNode{}, 0)`。
+3. 左右孩子是两个独立条件，不能 `else if`：Left 非空会跳过 Right。
+4. 单队列不固定 size：下一层节点混进当前层，输出错层。
+5. 出队只读 `q[0]` 不更新 `q = q[1:]`：同一个节点反复处理。
+6. `make([]int, n)` 后直接 append：得到 n 个 0 再加真实值；要么按下标赋值，要么用 `make([]int, 0, n)`。
+
+#### 建议测试案例
+
+```text
+[]                       → []
+[1]                      → [[1]]
+[3,9,20,nil,nil,15,7]    → [[3],[9,20],[15,7]]   // LeetCode 示例
+[1,2,3,4]                → [[1],[2,3],[4]]       // 非满树
+[1,nil,2,nil,3]          → [[1],[2],[3]]         // 右偏斜
+```
 
 #### 可迁移的规律
 
-> 待补充。
+- **BFS 模板（1.6 骨架三）**：队列 + 固定 size，是层序遍历的标准骨架。
+- **“按层处理”的题**：199 二叉树的右视图、637 层平均值、116 填充每个节点的下一个右侧节点指针，都是这个模板换“访问动作”。
+- **两数组 vs 单队列**：等价写法；面试写单队列更简洁，两数组用来讲“为什么需要固定 size”更直观。
+
+#### 来源说明
+
+- [LeetCode 102. 二叉树的层序遍历题解列表](https://leetcode.cn/problems/binary-tree-level-order-traversal/solutions/)
+- 灵茶山艾府《BFS 为什么要用队列？一个视频讲透！》（基础算法精讲 13）。
 
 #### 重做记录
 
-> 待补充。
+> 2026-08-22：完成两数组 + 单队列两解法；重做时重点检查：切片判空用 `len`、左右孩子两个独立 `if`、单队列固定 size 后再遍历。
 
 ---
 
@@ -6486,31 +6929,220 @@ func dfs(node *TreeNode, 状态 状态类型) {
 
 #### 我的第一反应
 
-> 待补充：不看题解时，最先想到什么？
+> 第一反应是**自底向上**递归：空树返回 0，否则 `1 + max(左子树深度, 右子树深度)`——这就是 1.6 骨架一的标准用法，写起来几乎是背模板。看完灵茶题解才知道还有**自顶向下**的写法（带 depth 参数，前序位置更新答案），以及 Day 4 要求的 BFS 对拍（层数即深度）。
 
-#### 解法一：直觉 / 暴力解法
+#### 解法一：自底向上（我的写法）
 
-> 待补充：思路、代码、复杂度。
+##### 递归契约（面试必须说清）
 
-#### 解法二：优化解法
+`maxDepth(node)` 的返回值精确定义：**以 node 为根的子树的最大深度（从根到最远叶节点的节点数）**。空树没有任何节点，返回 0；单点树返回 `0 + 1 = 1`。子树的深度算出来后，当前节点还要把自己这一层加进去，所以 `return max(l, r) + 1`。
 
-> 待补充：优化突破口、代码、复杂度、关键不变量。
+##### 代码（我的写法）
+
+```go
+func maxDepthBU(root *TreeNode) int {
+    if root == nil {
+        return 0
+    }
+    lDepth := maxDepthBU(root.Left)
+    rDepth := maxDepthBU(root.Right)
+    return max(lDepth, rDepth) + 1
+}
+```
+
+灵茶山艾府的自底向上写法与本代码完全一致。
+
+##### 逐行理解
+
+- 空树返回 0：递归的“地基”，保证叶节点的深度正确（0+1=1）；
+- 先递归左、右子树：**后序位置**拿到两个子树的深度；
+- `max(lDepth, rDepth) + 1`：左右取更深的那边，再算上当前节点自己这一层。
+
+##### 完整运行示例（逐轮表格）
+
+树：`3` 左 `9` 右 `20`（左 `15` 右 `7`）。自底向上先算叶子，再逐层向上汇总：
+
+| 节点 | 左子树深度 | 右子树深度 | 返回 |
+|---|---|---|---|
+| 9 | 0 | 0 | 1 |
+| 15 | 0 | 0 | 1 |
+| 7 | 0 | 0 | 1 |
+| 20 | 1（来自 15） | 1（来自 7） | 2 |
+| 3 | 1（来自 9） | 2（来自 20） | 3 |
+
+答案 3。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。每个节点访问一次。
+- **空间复杂度：\(O(n)\)**。最坏（偏斜成链）递归栈深度为 n；平衡树是 \(O(\log n)\)。
+
+#### 解法二：自顶向下（灵茶山艾府）
+
+##### 思路
+
+和自底向上相反，**深度信息从根往下传**：`dfs(node, depth)` 把“当前节点的深度”作为参数带下去，每进一层 `depth++`，在前序位置用 `ans = max(ans, depth)` 更新全局答案。它不依赖子树的返回值，只需要当前路径上的状态。
+
+##### 代码（灵茶山艾府）
+
+```go
+func maxDepthTD(root *TreeNode) (ans int) {
+    var dfs func(*TreeNode, int)
+    dfs = func(node *TreeNode, depth int) {
+        if node == nil {
+            return
+        }
+        depth++
+        ans = max(ans, depth)
+        dfs(node.Left, depth)
+        dfs(node.Right, depth)
+    }
+    dfs(root, 0)
+    return
+}
+```
+
+##### 逐行理解
+
+- `dfs(root, 0)`：根节点还没计数，深度从 0 开始；
+- 进入非空节点先 `depth++`：把“从根到当前节点”的深度算出来；
+- `ans = max(ans, depth)`：前序位置更新全局最大深度；
+- 左右子树带着**同一份 depth**（值传递，互不影响）继续下传。
+
+##### 完整运行示例（逐轮表格）
+
+同一棵树：
+
+| 访问节点 | 进入时 depth | ans |
+|---|---|---|
+| 3 | 1 | 1 |
+| 9 | 2 | 2 |
+| 20 | 2 | 2 |
+| 15 | 3 | 3 |
+| 7 | 3 | 3 |
+
+答案 3。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。
+- **空间复杂度：\(O(n)\)**。最坏递归栈 O(n)。
+
+#### 解法三：BFS（层数即深度，对拍用）
+
+##### 思路
+
+层序遍历每处理完一层，深度 +1——**层数就是深度**。借用 102 的队列模板（1.6 骨架三），不需要递归。
+
+##### 代码
+
+```go
+func maxDepthBFS(root *TreeNode) int {
+    if root == nil {
+        return 0
+    }
+    q := []*TreeNode{root}
+    depth := 0
+    for len(q) > 0 {
+        size := len(q)
+        for i := 0; i < size; i++ {
+            node := q[0]
+            q = q[1:]
+            if node.Left != nil {
+                q = append(q, node.Left)
+            }
+            if node.Right != nil {
+                q = append(q, node.Right)
+            }
+        }
+        depth++ // 一层处理完，深度加一
+    }
+    return depth
+}
+```
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。
+- **空间复杂度：\(O(n)\)**。队列最坏存满二叉树底层约 n/2 个节点。
 
 #### 对比与复盘
 
-> 待补充：两种解法的时间 / 空间复杂度对比。
+| 对比项 | 自底向上 | 自顶向下 | BFS |
+|---|---|---|---|
+| 信息流向 | 子树结果向上汇总 | 深度参数向下传 | 层数计数 |
+| 核心位置 | 后序（return 处） | 前序（进节点时） | 每层结束 |
+| 时间/空间 | \(O(n)\) / \(O(n)\) | \(O(n)\) / \(O(n)\) | \(O(n)\) / \(O(n)\) |
+| 是否用递归 | 是 | 是 | 否（迭代队列） |
+| 优点 | 代码最短、直觉 | 可顺便统计“每层状态” | 无爆栈风险、可对拍 |
+
+#### 本地测试（表驱动 + DFS/BFS 对拍）
+
+复用 `treeFromSlice` / `intPtr`，三种实现跑同一批用例：
+
+```go
+func TestMaxDepth(t *testing.T) {
+    tests := []struct {
+        name string
+        vals []*int
+        want int
+    }{
+        {"empty", nil, 0},
+        {"single", []*int{intPtr(1)}, 1},
+        {"left-skew", []*int{intPtr(3), intPtr(2), nil, intPtr(1)}, 3},
+        {"right-skew", []*int{intPtr(1), nil, intPtr(2), nil, intPtr(3)}, 3},
+        {"leetcode-example", []*int{intPtr(3), intPtr(9), intPtr(20), nil, nil, intPtr(15), intPtr(7)}, 3},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            if got := maxDepthBU(treeFromSlice(tt.vals)); got != tt.want {
+                t.Errorf("自底向上 got %d, want %d", got, tt.want)
+            }
+            if got := maxDepthTD(treeFromSlice(tt.vals)); got != tt.want {
+                t.Errorf("自顶向下 got %d, want %d", got, tt.want)
+            }
+            if got := maxDepthBFS(treeFromSlice(tt.vals)); got != tt.want {
+                t.Errorf("BFS got %d, want %d", got, tt.want)
+            }
+        })
+    }
+}
+```
 
 #### 易错点
 
-> 待补充。
+1. 空树返回 0 而不是 1：单点树深度是 1，由 0+1 得到；返回 1 会把空树也算成 1。
+2. 忘记 `+1`：只取左右较大值会漏掉当前节点自己这一层。
+3. 自顶向下先更新 `ans` 再 `depth++`：根节点的深度会被记成 0。
+4. 自顶向下左右递归必须传**同一份 depth**（值传递），不能在左子树里改了再传给右子树。
+5. BFS 的 `depth++` 位置：每层结束加一次，不是每个节点加一次。
+6. 偏斜树递归栈 O(n)：超深树可能栈溢出，面试可以主动提 BFS 迭代方案。
+
+#### 建议测试案例
+
+```text
+[]                      → 0
+[1]                     → 1
+[3,9,20,nil,nil,15,7]   → 3   // 普通树
+[3,2,nil,1]             → 3   // 左偏斜
+[1,nil,2,nil,3]         → 3   // 右偏斜
+```
 
 #### 可迁移的规律
 
-> 待补充。
+- **自底向上（后序汇总）**：需要“子树结果”的题——543 直径、110 平衡二叉树、236 最近公共祖先。
+- **自顶向下（前序 + 参数）**：只需要“当前路径状态”的题——98 上下界、112 路径总和、二叉树所有路径。
+- **选择口诀**：要子树信息就自底向上；只传状态就自顶向下；都不想要递归就 BFS。
+- **BFS 层数即深度**：111 二叉树的最小深度（BFS 找到第一个叶子即可）。
+
+#### 来源说明
+
+- [LeetCode 104. 二叉树的最大深度题解列表](https://leetcode.cn/problems/maximum-depth-of-binary-tree/solutions/)
+- 灵茶山艾府《【视频讲解】让你对递归的理解更上一层楼！》（基础算法精讲 09）。
 
 #### 重做记录
 
-> 待补充。
+> 2026-08-22：完成自底向上 + 自顶向下 + BFS；重做时重点检查：递归契约（空树返回 0）、自顶向下 `depth++` 的位置、DFS/BFS 三种实现对拍。
 
 ---
 
@@ -6528,31 +7160,222 @@ func dfs(node *TreeNode, 状态 状态类型) {
 
 #### 我的第一反应
 
-> 待补充：不看题解时，最先想到什么？
+> 第一反应就是“整棵树左右对称翻转”：对每个节点交换左右子树，再递归处理子树。我写的是**后序**（先递归左右、再交换），和灵茶山艾府的写法一完全一致；灵茶还给了**前序**写法（先交换、再递归）。写完后追问了一句：中序为什么不能直接照搬？——因为交换后递归的“右子树”其实是被翻过一次的左子树，会翻两次。
 
-#### 解法一：直觉 / 暴力解法
+#### 解法一：后序（先递归再交换，我的写法）
 
-> 待补充：思路、代码、复杂度。
+##### 递归契约
 
-#### 解法二：优化解法
+`invertTree(node)` 返回：**以 node 为根的子树的根，且该子树已完成左右翻转**。空节点返回 nil。子问题与原问题同构——“翻转左子树、翻转右子树、交换”，正是递归的两个特征。
 
-> 待补充：优化突破口、代码、复杂度、关键不变量。
+##### 代码（我的写法）
+
+```go
+func invertTree(root *TreeNode) *TreeNode {
+    if root == nil {
+        return nil
+    }
+    left := invertTree(root.Left)  // 翻转左子树
+    right := invertTree(root.Right) // 翻转右子树
+    root.Left = right              // 交换左右儿子
+    root.Right = left
+    return root
+}
+```
+
+灵茶山艾府的写法一与本代码完全一致。
+
+##### 逐行理解
+
+- 空节点返回 nil：递归边界，也是叶节点的自然结果；
+- `left := invertTree(root.Left)`：先拿到左子树翻转后的根；
+- `right := invertTree(root.Right)`：同理拿到右子树翻转后的根；
+- 交换：`root.Left = right`、`root.Right = left`——左右儿子互换；
+- `return root`：当前节点作为翻转后子树的根返回给父节点。
+
+##### 完整运行示例（逐轮表格）
+
+树：`[4,2,7,1,3,6,9]`（LeetCode 示例）。自底向上逐层翻转：
+
+| 节点 | 递归左结果 | 递归右结果 | 交换后 Left / Right |
+|---|---|---|---|
+| 1 | nil | nil | L=nil, R=nil |
+| 3 | nil | nil | L=nil, R=nil |
+| 2 | 1 | 3 | L=3, R=1 |
+| 6 | nil | nil | L=nil, R=nil |
+| 9 | nil | nil | L=nil, R=nil |
+| 7 | 6 | 9 | L=9, R=6 |
+| 4 | 2（已翻转） | 7（已翻转） | L=7, R=2 |
+
+结果层序：`[4,7,2,9,6,3,1]` ✅。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。每个节点访问一次。
+- **空间复杂度：\(O(n)\)**。最坏偏斜成链，递归栈 O(n)。
+
+#### 解法二：前序（先交换再递归，灵茶山艾府）
+
+##### 思路
+
+把“交换左右儿子”提前到递归之前：交换完再递归处理左、右子树。两种写法的结果完全一样，只是“交换”和“递归”的先后顺序不同。
+
+##### 代码（灵茶山艾府）
+
+```go
+func invertTree(root *TreeNode) *TreeNode {
+    if root == nil {
+        return nil
+    }
+    root.Left, root.Right = root.Right, root.Left // 交换左右儿子
+    invertTree(root.Left)                         // 翻转左子树
+    invertTree(root.Right)                        // 翻转右子树
+    return root
+}
+```
+
+##### 完整运行示例（逐轮表格）
+
+同一棵树：
+
+| 节点 | 交换后 Left / Right | 递归左 | 递归右 |
+|---|---|---|---|
+| 4 | L=7, R=2 | invertTree(7) | invertTree(2) |
+| 7 | L=9, R=6 | invertTree(9) | invertTree(6) |
+| 2 | L=3, R=1 | invertTree(3) | invertTree(1) |
+
+结果与解法一相同：`[4,7,2,9,6,3,1]`。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。
+- **空间复杂度：\(O(n)\)**。
+
+#### 为什么前序/后序可以，中序直接照搬会交换两次（面试必须说清）
+
+中序的顺序是“左-根-右”，如果照搬成“递归左 → 交换 → 递归右”：
+
+1. 先递归左子树，左子树被翻好；
+2. 交换左右儿子——此时 `root.Right` 指向的是**已经被翻过的原左子树**；
+3. 再递归右子树——等于把原左子树**再翻一次**（翻回原样），而**原右子树从头到尾没被处理过**。
+
+结果：原左子树被翻两次（白翻），原右子树没翻，整棵树是错的。
+
+如果一定要用中序，第二次递归要改为处理**新的左子树**（也就是原右子树）：
+
+```go
+invertTree(root.Left)                            // 翻转左子树
+root.Left, root.Right = root.Right, root.Left    // 交换
+invertTree(root.Left)                            // 现在的左子树 = 原右子树，翻转它
+```
+
+口诀：**前序/后序随便选，中序要“处理两次左”**；面试直接说“中序照搬会交换两次，所以用前序或后序”即可。
 
 #### 对比与复盘
 
-> 待补充：两种解法的时间 / 空间复杂度对比。
+| 对比项 | 后序（先递归再交换） | 前序（先交换再递归） |
+|---|---|---|
+| 访问根的位置 | 后序（return 前） | 前序（进入即交换） |
+| 核心动作 | 拿左右结果再交换 | 交换完再递归 |
+| 时间/空间 | \(O(n)\) / \(O(n)\) | \(O(n)\) / \(O(n)\) |
+| 可读性 | 先想子问题，逻辑清晰 | 代码更短（一行交换） |
+| 中序陷阱 | 无 | 无 |
+
+#### 本地测试（表驱动 + 翻转两次恢复原树）
+
+需要一个新的辅助：层序转切片（nil 占位、去掉末尾连续 nil）：
+
+```go
+// 层序转切片：nil 占位空子节点，末尾连续 nil 省略
+func treeToSlice(root *TreeNode) []*int {
+    if root == nil {
+        return nil
+    }
+    res := []*int{}
+    q := []*TreeNode{root}
+    for len(q) > 0 {
+        node := q[0]
+        q = q[1:]
+        if node == nil {
+            res = append(res, nil)
+            continue
+        }
+        v := node.Val
+        res = append(res, &v)
+        q = append(q, node.Left, node.Right)
+    }
+    for len(res) > 0 && res[len(res)-1] == nil {
+        res = res[:len(res)-1]
+    }
+    return res
+}
+```
+
+表驱动 + “翻转两次恢复原树”：
+
+```go
+func TestInvertTree(t *testing.T) {
+    tests := []struct {
+        name string
+        vals []*int
+        want []*int
+    }{
+        {"empty", nil, nil},
+        {"single", []*int{intPtr(1)}, []*int{intPtr(1)}},
+        {"asymmetric", []*int{intPtr(4), intPtr(2), intPtr(7), intPtr(1), intPtr(3), intPtr(6), intPtr(9)}, []*int{intPtr(4), intPtr(7), intPtr(2), intPtr(9), intPtr(6), intPtr(3), intPtr(1)}},
+        {"left-skew", []*int{intPtr(1), intPtr(2), nil, intPtr(3)}, []*int{intPtr(1), nil, intPtr(2), nil, intPtr(3)}},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got := treeToSlice(invertTree(treeFromSlice(tt.vals)))
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("got %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func TestDoubleInvert(t *testing.T) {
+    vals := []*int{intPtr(4), intPtr(2), intPtr(7), intPtr(1), intPtr(3), intPtr(6), intPtr(9)}
+    root := treeFromSlice(vals)
+    if got := treeToSlice(invertTree(invertTree(root))); !reflect.DeepEqual(got, vals) {
+        t.Errorf("翻转两次应恢复原树, got %v, want %v", got, vals)
+    }
+}
+```
 
 #### 易错点
 
-> 待补充。
+1. 递归边界漏 `root == nil`：空树 / 叶节点的 nil 子节点会 nil 解引用。
+2. 忘记 `return root`：父节点拿不到翻转后的子树。
+3. 中序照搬“递归左 → 交换 → 递归右”：原左子树被翻两次、原右子树没翻（面试必考）。
+4. 用值比较验证翻转结果：应该比较整棵树的结构（层序），而不是只看根的值。
+5. 前序写法交换后仍递归左右：交换的是左右儿子，递归目标是**交换后的**左右子树，不要写错变量。
+
+#### 建议测试案例
+
+```text
+[]                                    → []
+[1]                                   → [1]
+[4,2,7,1,3,6,9]                       → [4,7,2,9,6,3,1]   // 不对称树
+[1,2,nil,3]                           → [1,nil,2,nil,3]   // 左偏斜变右偏斜
+任意树翻转两次                         → 恢复原树
+```
 
 #### 可迁移的规律
 
-> 待补充。
+- **“交换 + 递归”的两种时机**：先交换（前序）或后交换（后序）都正确，中序要“处理两次左”；
+- **递归返回新根**：`return root` 让父节点能接上子问题的结果（206 反转链表、21 合并链表同款模式）；
+- **变形题**：[101. 对称二叉树](https://leetcode.cn/problems/symmetric-tree/)（翻转后与另一棵比）、[951. 翻转等价二叉树](https://leetcode.cn/problems/flip-equivalent-binary-trees/)。
+
+#### 来源说明
+
+- [LeetCode 226. 翻转二叉树题解列表](https://leetcode.cn/problems/invert-binary-tree/solutions/)
+- 灵茶山艾府《两种递归写法》（基础算法精讲 09：深入理解递归）。
 
 #### 重做记录
 
-> 待补充。
+> 2026-08-22：完成后序 + 前序两种递归；重做时重点检查：递归契约（返回翻转后的根）、中序照搬为何交换两次、翻转两次恢复原树的验证。
 
 ---
 
@@ -6567,6 +7390,752 @@ func dfs(node *TreeNode, 状态 状态类型) {
 - **核心模式**：递归返回高度 + 全局答案。
 - **面试必须说清**：递归返回高度，为什么不能直接返回直径？边数与节点数如何换算？
 - **本地测试标准**：空、单点、最长路不过根；与小树穷举路径对拍。
+
+#### 我的第一反应
+
+> 第一反应是树形 DP（1.6 骨架四）：辅助函数返回“链长/高度”，全局 `ans` 维护“直径”。写完对照灵茶题解，发现就是他的写法二。自己当时困惑的两个点：为什么必须拆一个辅助函数、为什么不能直接 `return dfs(root)`——因为递归需要的是**链长**，而题目要的是由**两条链拼接**成的直径，两个是不同的量。
+
+#### 解法一：树形 DP（写法二：空节点返回 0，我的写法）
+
+##### 两个关键概念（面试必须说清）
+
+设 node 是二叉树中的任意节点：
+
+- **链**：从 node 子树中的某个叶子到 node 的路径。`dfs(node)` 的返回值 = node 子树中最长链的长度；
+- **直径**：由**两条链拼接**而成的路径。枚举每个 node，假设直径在这里“拐弯”，用 `左链 + 右链` 更新全局答案。
+
+两个 ⚠：
+
+- **直径可能在 root 下面的某个节点拐弯，不一定会经过 root**；
+- **`dfs(node)` 返回的是链长，不是直径**——如果返回直径，父节点拿到的就不是“可拼接的链”，拼出来的东西没有意义。
+
+##### 代码（我的写法）
+
+```go
+func diameterOfBinaryTree(root *TreeNode) (ans int) {
+    var dfs func(node *TreeNode) int
+    dfs = func(node *TreeNode) int {
+        if node == nil {
+            return 0
+        }
+        lHeight := dfs(node.Left)  // 左子树的最大链长
+        rHeight := dfs(node.Right) // 右子树的最大链长
+        ans = max(ans, lHeight+rHeight) // 两条链在这里拼接成路径
+        return max(lHeight, rHeight) + 1 // 返回当前子树的最大链长
+    }
+    dfs(root)
+    return
+}
+```
+
+灵茶山艾府的写法二与本代码完全一致。
+
+##### 逐行理解
+
+- 空节点返回 0：叶子节点的链长为 1（0+1），是计数的地基；
+- `lHeight` / `rHeight`：后序位置先拿左右子树的链长；
+- `ans = max(ans, lHeight+rHeight)`：**当前节点把左链和右链拼成一条路径**，更新全局直径；
+- `return max(lHeight, rHeight) + 1`：向上返回的是“更长的那条链 + 当前节点”，供父节点继续拼接。
+
+##### 完整运行示例（逐轮表格）
+
+树：`1` 左 `2`（左 `4` 右 `5`）右 `3`，即 `[1,2,3,4,5]`，期望直径 3（路径 `4→2→1→3` 有 3 条边）。
+
+| 节点 | 左链长 | 右链长 | ans 更新 | 返回（链长） |
+|---|---|---|---|---|
+| 4 | 0 | 0 | max(0, 0)=0 | 1 |
+| 5 | 0 | 0 | max(0, 0)=0 | 1 |
+| 2 | 1 | 1 | max(0, 2)=2 | 2 |
+| 3 | 0 | 0 | max(2, 0)=2 | 1 |
+| 1 | 2 | 1 | max(2, 3)=3 | 3 |
+
+最终 `ans = 3` ✅。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。每个节点访问一次。
+- **空间复杂度：\(O(h)\)**。`h` 为树高，最坏偏斜成链时 \(O(n)\)。
+
+#### 解法二：写法一（空节点返回 -1，灵茶山艾府）
+
+##### 思路
+
+严格按“链 = 叶子到 node 的路径”来定义：一条链经过的**边数**才是它的长度，所以空节点返回 -1，这样叶子算出来的链长是 `-1 + 1 = 0`。
+
+##### 代码（灵茶山艾府）
+
+```go
+func diameterOfBinaryTree(root *TreeNode) (ans int) {
+    // 返回 node 子树的最大链长（边数）
+    var dfs func(*TreeNode) int
+    dfs = func(node *TreeNode) int {
+        if node == nil {
+            return -1 // 对于叶子来说，链长就是 -1+1=0
+        }
+        lLen := dfs(node.Left) + 1  // 左子树最大链长 +1
+        rLen := dfs(node.Right) + 1 // 右子树最大链长 +1
+        ans = max(ans, lLen+rLen)   // 两条链拼成路径
+        return max(lLen, rLen)      // 当前子树最大链长
+    }
+    dfs(root)
+    return
+}
+```
+
+##### 两种写法等价
+
+| | 写法二（我的写法） | 写法一（-1 边界） |
+|---|---|---|
+| 空节点返回 | 0 | -1 |
+| 链长计数 | 节点数（叶子=1） | 边数（叶子=0） |
+| 父节点取链 | `dfs(child)` 直接用 | `dfs(child) + 1` |
+| 拼接路径 | `lHeight + rHeight` | `lLen + rLen` |
+| 结果 | 都是边的数量 | 都是边的数量 |
+
+选哪种看习惯；面试时讲清“返回值是链长不是直径”即可。
+
+#### 什么时候需要辅助函数，为什么不能直接 return dfs(root)（面试必须说清）
+
+判断标准一句话：**递归子问题返回的东西，和题目要求的答案，是不是同一个量**。
+
+- 是同一个量（如 104 最大深度）：`maxDepth(node)` 返回的就是“以 node 为根的深度”，可以直接在原函数上递归并 `return`；
+- 不是同一个量（如 543）：递归需要的是“链长”，题目要的是“直径”。直径由两条链拼接而成，父节点需要的是**子树的链长**而不是子树的直径，所以必须拆一个辅助函数 `dfs` 返回链长，再配一个全局 `ans` 维护直径——这就是 1.6 骨架四。
+
+为什么不能直接 `return dfs(root)`？因为 `dfs(root)` 返回的是整棵树的**最大链长（高度）**，而直径是“两条链拼接”的最大值，可能在任意节点拐弯、不一定经过根，数值上也不等于根的高度。
+
+反例：一条左链 `1→2→3→4`（`[1,2,nil,3,nil,4]`），写法二里 `dfs(root)` 返回 4（节点数链长），但直径是 3（边数）。直接返回 `dfs(root)` 就错了；正确答案来自遍历中 `ans = max(ans, lHeight+rHeight)` 的更新。
+
+再比如直径不过根的树：`1` 只有左子树，最长路径 `5→3→2→4→7` 在左子树内部拐弯、完全不经过 root 1——这种情况下更不可能用根的高度当直径。
+
+**通用规律**：以后遇到“答案由两个子树结果组合而成”的题（110 平衡二叉树、124 二叉树中的最大路径和、687 最长同值路径），都用这个模式：辅助函数返回子树信息，全局变量维护答案。
+
+#### 对比与复盘
+
+| 对比项 | 写法二（0 边界） | 写法一（-1 边界） |
+|---|---|---|
+| 空节点返回 | 0 | -1 |
+| 链长含义 | 节点数 | 边数 |
+| 核心动作 | `ans=max(ans,l+r); return max(l,r)+1` | `ans=max(ans,l+r); return max(l,r)`（l/r 已 +1） |
+| 时间/空间 | \(O(n)\) / \(O(h)\) | \(O(n)\) / \(O(h)\) |
+| 可读性 | 更直观、面试常用 | 严格贴合“链=边”定义 |
+
+#### 本地测试（表驱动）
+
+复用 `treeFromSlice` / `intPtr`：
+
+```go
+func TestDiameterOfBinaryTree(t *testing.T) {
+    tests := []struct {
+        name string
+        vals []*int
+        want int
+    }{
+        {"empty", nil, 0},
+        {"single", []*int{intPtr(1)}, 0},
+        {"leetcode-example", []*int{intPtr(1), intPtr(2), intPtr(3), intPtr(4), intPtr(5)}, 3},
+        {"not-through-root", []*int{intPtr(1), intPtr(2), nil, intPtr(3), intPtr(4), intPtr(5), intPtr(6), intPtr(7), intPtr(8)}, 4},
+        {"left-chain", []*int{intPtr(1), intPtr(2), nil, intPtr(3), nil, intPtr(4)}, 3},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            if got := diameterOfBinaryTree(treeFromSlice(tt.vals)); got != tt.want {
+                t.Errorf("got %d, want %d", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+用例说明：`not-through-root` 的最长路径 `5→3→2→4→7`（4 条边）不经过根节点 1；`left-chain` 用来验证“不能直接 return dfs(root)”——链长 4 而直径 3。
+
+#### 易错点
+
+1. `dfs` 返回直径而不是链长：父节点拿不到可拼接的链，结果错乱。
+2. 忘记更新全局 `ans`：只在返回值里算，根节点拼出来的不是全局最大。
+3. 直径可能在子树内部拐弯：别只算“经过根”的路径。
+4. 边界返回值记混：写法二空节点 0，写法一空节点 -1；混用会整体偏移。
+5. 直接把 `return dfs(root)` 当答案：返回的是链长/高度，不是直径。
+6. 链长计数和边数换算不清：无论哪种写法，`左链 + 右链` 最终都等于路径**边数**。
+
+#### 建议测试案例
+
+```text
+[]                        → 0        // 空树
+[1]                       → 0        // 单点
+[1,2,3,4,5]               → 3        // 经过根的路径 4-2-1-3
+[1,2,nil,3,4,5,6,7,8]     → 4        // 最长路 5-3-2-4-7 不过根
+[1,2,nil,3,nil,4]         → 3        // 左链：dfs(root)=4（链长）≠ 直径 3
+```
+
+#### 可迁移的规律
+
+- **树形 DP 模板（骨架四）**：辅助函数返回子树信息（链长/高度/和），全局变量维护答案（直径/最大和）。
+- **“返回子问题值 + 全局答案”的判断**：答案由两个子树结果组合而成时就用这个模式——110 平衡二叉树、124 最大路径和、687 最长同值路径。
+- **什么时候不需要辅助函数**：递归返回值本身就是答案（104 深度、226 翻转），直接写原函数即可。
+
+#### 来源说明
+
+- [LeetCode 543. 二叉树的直径题解列表](https://leetcode.cn/problems/diameter-of-binary-tree/solutions/)
+- 灵茶山艾府《【视频】彻底掌握直径 DP，从二叉树到一般树》（树形 DP，基础算法精讲 23）。
+
+#### 重做记录
+
+> 2026-08-23：完成树形 DP 两种写法；重做时重点检查：dfs 返回链长而不是直径、全局 ans 的更新、直径不过根的情况、不能直接 return dfs(root)。
+
+---
+
+### 题目 98：验证二叉搜索树
+
+#### 题目摘要
+
+- **题目链接**：[LeetCode 98. 验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/)
+- **输入**：二叉树根节点 `root`。
+- **输出**：是否为有效 BST（`bool`）。
+- **关键约束**：节点数 `[1, 10^4]`；节点值可能触及 `int` 极值。
+- **核心模式**：中序升序 / 上下界递归。
+- **面试必须说清**：为什么只比较父子不够？中序前值/上下界如何处理极值？
+- **本地测试标准**：深层违规、重复、MinInt/MaxInt；不使用不安全哨兵。
+
+#### 我的第一反应
+
+> 第一反应是**前序上下界**：`dfs(node, left, right)` 把“从根到当前节点的路径约束”往下传，当前值必须在 `(left, right)` 内。后来写了**中序前值**版：BST 中序严格升序，`pre` 记录上一个值，`<= pre` 即违规。**后序版当时没写出来**——不知道子树该返回什么；看完题解才明白：后序要自底向上，子树返回自己的 `(min, max)`，父节点用 `x > 左子树最大值 && x < 右子树最小值` 判断。
+
+#### 解法一：前序遍历（上下界，我的写法）
+
+##### 怎么想的
+
+BST 的定义是“左子树所有节点 < 根 < 右子树所有节点”，这个约束在往下走的过程中会不断收紧：往左走，右边界变成当前值；往右走，左边界变成当前值。所以用**前序位置**检查当前节点是否在 `(left, right)` 区间内，再把收紧后的区间传给左右子树。
+
+为什么只比较父子不够？因为深层节点可能违背**祖先**的界限——比如 5 的右子树里出现 3，3 比父节点 4 小、但它还在 5 的右子树里，必须用从根传下来的下界 5 才能抓住它。
+
+##### 代码（我的写法）
+
+```go
+func isValidBSTPre(root *TreeNode) bool {
+    var dfs func(node *TreeNode, left, right int) bool
+    dfs = func(node *TreeNode, left, right int) bool {
+        if node == nil {
+            return true
+        }
+        num := node.Val
+        return left < num && num < right &&
+            dfs(node.Left, left, num) &&
+            dfs(node.Right, num, right)
+    }
+    return dfs(root, math.MinInt, math.MaxInt)
+}
+```
+
+灵茶山艾府的前序写法与本代码完全一致。
+
+##### 逐行理解
+
+- 空节点返回 true：空树 / 叶子没有违反任何约束；
+- `left < num && num < right`：当前值必须在开区间内（严格不等）；
+- `dfs(node.Left, left, num)`：左子树的所有值还要大于 left，且**小于当前值**（上界收紧）；
+- `dfs(node.Right, num, right)`：右子树的所有值还要大于当前值（下界收紧），且小于 right；
+- 短路求值：一旦某个条件失败，后面的递归不再执行。
+
+##### 完整运行示例（逐轮表格）
+
+合法树 `[2,1,3]`：
+
+| 节点 | left | right | 判断 |
+|---|---|---|---|
+| 2 | MinInt | MaxInt | MinInt < 2 < MaxInt ✅ |
+| 1 | MinInt | 2 | MinInt < 1 < 2 ✅ |
+| 3 | 2 | MaxInt | 2 < 3 < MaxInt ✅ |
+
+非法树 `[5,1,4,nil,nil,3,6]`（3 在 5 的右子树却小于 5）：
+
+| 节点 | left | right | 判断 |
+|---|---|---|---|
+| 5 | MinInt | MaxInt | ✅ |
+| 1 | MinInt | 5 | ✅ |
+| 4 | 5 | MaxInt | 5 < 4 ❌ → 返回 false |
+
+节点 4 本身在 `(5, MaxInt)` 之外，前序在这里就返回了——**不需要递归到叶子**。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。
+- **空间复杂度：\(O(n)\)**。最坏偏斜成链，递归栈 O(n)。
+
+#### 解法二：中序遍历（前值，我的写法）
+
+##### 怎么想的
+
+BST 的中序遍历 = **严格递增的有序数组**（hello-algo 7.4）。判断数组是否升序，只需要比较相邻元素；对应到树上就是：中序位置检查 `node.Val > pre`，然后更新 `pre`。这个思路利用 BST 性质，需要维护的状态最少。
+
+##### 代码（我的写法）
+
+```go
+func isValidBSTIn(root *TreeNode) bool {
+    pre := math.MinInt
+    var dfs func(node *TreeNode) bool
+    dfs = func(node *TreeNode) bool {
+        if node == nil {
+            return true
+        }
+        if !dfs(node.Left) { // 左
+            return false
+        }
+        if node.Val <= pre { // 中：必须严格大于前值
+            return false
+        }
+        pre = node.Val
+        return dfs(node.Right) // 右
+    }
+    return dfs(root)
+}
+```
+
+灵茶山艾府的中序写法与本代码完全一致。
+
+##### 逐行理解
+
+- 先递归左子树：左子树先被“摊平”成有序序列的前半段；
+- `node.Val <= pre`：中序位置比较相邻元素，等于也算违规（BST 不允许重复）；
+- `pre = node.Val`：更新前值，给右子树里的节点比较；
+- 左右任一处违规立刻短路返回。
+
+##### 完整运行示例（逐轮表格）
+
+非法树 `[5,1,4,nil,nil,3,6]`，中序序列应为 `1, 5, 3, 4, 6`：
+
+| 访问节点 | pre（进入时） | 判断 | 更新后 pre |
+|---|---|---|---|
+| 1 | MinInt | 1 > MinInt ✅ | 1 |
+| 5 | 1 | 5 > 1 ✅ | 5 |
+| 3 | 5 | 3 <= 5 ❌ 返回 false | — |
+
+在节点 3 处抓住违规（中序必须至少递归到一个叶子）。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。
+- **空间复杂度：\(O(n)\)**。
+
+#### 解法三：后序遍历（子树 min/max，灵茶山艾府）
+
+##### 怎么想的
+
+后序是**自底向上**：先让左右子树各自报告“我子树里的最小值和最大值”，当前节点检查 `x > 左子树最大值 && x < 右子树最小值`，然后把自己的 `(min, max)` 上报给父节点。这就是树形 DP 的多返回值模式——子树信息向上汇总。
+
+空子树怎么处理？返回 `(MaxInt, MinInt)`：这是“空集”的 min/max，任何数跟它取 min/max 都不受影响，相当于恒等元素。
+
+##### 代码（灵茶山艾府）
+
+```go
+func isValidBSTPost(root *TreeNode) bool {
+    var dfs func(node *TreeNode) (int, int) // 返回子树的最小值、最大值
+    dfs = func(node *TreeNode) (int, int) {
+        if node == nil {
+            return math.MaxInt, math.MinInt // 空子树的 (min, max) 恒等元素
+        }
+        lMin, lMax := dfs(node.Left)
+        rMin, rMax := dfs(node.Right)
+        x := node.Val
+        if x <= lMax || x >= rMin { // 违反：x 必须大于左子树最大值、小于右子树最小值
+            return math.MinInt, math.MaxInt // 用 (MinInt, MaxInt) 标记整棵子树非法
+        }
+        return min(lMin, x), max(rMax, x) // 上报包含当前节点后的 (min, max)
+    }
+    _, mx := dfs(root)
+    return mx != math.MaxInt // 若根子树被标记非法，mx 就是 MaxInt
+}
+```
+
+##### 逐行理解
+
+- 空节点返回 `(MaxInt, MinInt)`：叶子上报时 `min(MaxInt, x) = x`、`max(MinInt, x) = x`，正好是它自己；
+- `x <= lMax`：当前值必须大于左子树里所有值（左子树最大值）；
+- `x >= rMin`：当前值必须小于右子树里所有值（右子树最小值）；
+- 违规时返回 `(MinInt, MaxInt)` 作为“非法标记”，一路向上传播；
+- 合法时返回 `(min(lMin, x), max(rMax, x))`：把当前节点合并进子树的 min/max；
+- 最后 `mx != math.MaxInt`：如果根子树没被标记非法，就是合法 BST（Go 里节点值最多到 int32 范围，合法的 max 不可能等于 math.MaxInt）。
+
+##### 完整运行示例（逐轮表格）
+
+合法树 `[2,1,3]`：
+
+| 节点 | 左子树 (min,max) | 右子树 (min,max) | 判断 | 返回 |
+|---|---|---|---|---|
+| 1 | (MaxInt, MinInt) | (MaxInt, MinInt) | 1<=MinInt? 否；1>=MaxInt? 否 | (1, 1) |
+| 3 | (MaxInt, MinInt) | (MaxInt, MinInt) | 通过 | (3, 3) |
+| 2 | (1, 1) | (3, 3) | 1<2<3 ✅ | (1, 3) |
+
+`mx = 3 != MaxInt` → true ✅
+
+非法树 `[5,1,4,nil,nil,3,6]`：
+
+| 节点 | 左子树 (min,max) | 右子树 (min,max) | 判断 | 返回 |
+|---|---|---|---|---|
+| 1 | 空 | 空 | 通过 | (1, 1) |
+| 3 | 空 | 空 | 通过 | (3, 3) |
+| 6 | 空 | 空 | 通过 | (6, 6) |
+| 4 | (3, 3) | (6, 6) | 3<4<6 ✅ | (3, 6) |
+| 5 | (1, 1) | (3, 6) | 5 >= rMin=3 ❌ | (MinInt, MaxInt) |
+
+`mx = MaxInt` → false ✅。注意 4 这层是合法的，违规在根节点 5 处才暴露——后序必须先把子树算完。
+
+##### 复杂度
+
+- **时间复杂度：\(O(n)\)**。
+- **空间复杂度：\(O(n)\)**。
+
+#### 极值处理（面试必须说清）
+
+上下界版本用 `math.MinInt / math.MaxInt` 当哨兵：Go 的 `int` 在 64 位平台是 64 位，比题目允许的节点值范围（int32）严格更小/更大，所以**当前代码实测安全**。
+
+但这是“依赖 int 位宽”的写法：在 32 位 Go、或 Java 的 `int` 场景，节点值可能等于 `MinInt/MaxInt` 本身，`left < x` 或 `x <= pre` 就会误判。Java 题解因此用 `long`；更稳妥、可移植的做法是**用 `*int`，nil 表示“无界”**：
+
+```go
+func isValidBST(root *TreeNode) bool {
+    var dfs func(node *TreeNode, lo, hi *int) bool
+    dfs = func(node *TreeNode, lo, hi *int) bool {
+        if node == nil {
+            return true
+        }
+        if lo != nil && node.Val <= *lo {
+            return false
+        }
+        if hi != nil && node.Val >= *hi {
+            return false
+        }
+        return dfs(node.Left, lo, &node.Val) &&
+            dfs(node.Right, &node.Val, hi)
+    }
+    return dfs(root, nil, nil)
+}
+```
+
+中序版本同理，把 `pre` 改成 `*int`：
+
+```go
+var pre *int
+// 检查处：if pre != nil && node.Val <= *pre { return false }
+```
+
+#### 对比与复盘
+
+| 对比项 | 前序（上下界） | 中序（前值） | 后序（子树 min/max） |
+|---|---|---|---|
+| 检查位置 | 前序：进节点时 | 中序：左子树之后 | 后序：左右子树算完 |
+| 核心思路 | 路径约束向下传 | 中序严格升序 | 子树信息向上汇总 |
+| 提前返回 | 某些数据可不递归到叶子 | 至少要递归到一个叶子 | 至少要递归到一个叶子 |
+| 需要变量 | 2 个区间参数 | 1 个前值 | 子树 min/max |
+| 思想定位 | 自上而下传状态 | 用 BST 性质，最省变量 | 自底向上，最通用（DP 基础） |
+
+#### 本地测试（表驱动 + 三实现对拍）
+
+复用 `treeFromSlice` / `intPtr`，三种实现跑同一批用例：
+
+```go
+func TestIsValidBST(t *testing.T) {
+    tests := []struct {
+        name string
+        vals []*int
+        want bool
+    }{
+        {"empty", nil, true},
+        {"single", []*int{intPtr(1)}, true},
+        {"valid", []*int{intPtr(2), intPtr(1), intPtr(3)}, true},
+        {"invalid-deep", []*int{intPtr(5), intPtr(1), intPtr(4), nil, nil, intPtr(3), intPtr(6)}, false},
+        {"duplicate", []*int{intPtr(1), intPtr(1)}, false},
+        {"extreme-min", []*int{intPtr(math.MinInt32)}, true},
+        {"extreme-invalid", []*int{intPtr(math.MaxInt32), intPtr(math.MaxInt32)}, false},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            if got := isValidBSTPre(treeFromSlice(tt.vals)); got != tt.want {
+                t.Errorf("前序 got %v, want %v", got, tt.want)
+            }
+            if got := isValidBSTIn(treeFromSlice(tt.vals)); got != tt.want {
+                t.Errorf("中序 got %v, want %v", got, tt.want)
+            }
+            if got := isValidBSTPost(treeFromSlice(tt.vals)); got != tt.want {
+                t.Errorf("后序 got %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+#### 易错点
+
+1. 只比较父子节点：深层节点会漏掉祖先的界限（必须传上下界或用中序/后序）。
+2. 用 `<=` / `>=` 而不是 `<` / `>`：BST 不允许重复，等于就是违规。
+3. 中序忘记更新 `pre`：右子树会拿旧前值比较，漏判。
+4. 后序不知道空子树返回什么：空子树是 `(MaxInt, MinInt)` 恒等元素，不是 `(0, 0)`。
+5. 后序违规标记 `(MinInt, MaxInt)` 与合法值混淆：Go 里合法 max 不可能等于 math.MaxInt，但换语言/位宽要小心。
+6. 依赖 `math.MinInt/MaxInt` 哨兵：64 位 Go 安全，但面试要能说出 `*int`（nil=无界）的替代方案。
+
+#### 建议测试案例
+
+```text
+[]                          → true
+[1]                         → true
+[2,1,3]                     → true
+[5,1,4,nil,nil,3,6]         → false   // 深层违规：3 在右子树却 < 5
+[1,1]                       → false   // 重复值
+[MinInt32]                  → true    // 极值单点（64 位 Go 哨兵安全）
+[MaxInt32, MaxInt32]        → false   // 极值重复
+```
+
+#### 可迁移的规律
+
+- **前序上下界**：自上而下传约束——凡是“子树必须满足祖先界限”的题都用它。
+- **中序前值**：BST 中序严格升序——230 第 K 小、530 最小绝对差、783 都是直接套。
+- **后序子树信息**：自底向上多返回值 DP——543 直径、110 平衡、124 最大路径和；本题是“返回两个值（min/max）”的代表。
+- **哨兵 vs 指针**：需要表示“无界”时优先 `*int`（nil），不要赌类型位宽。
+
+#### 来源说明
+
+- [LeetCode 98. 验证二叉搜索树题解列表](https://leetcode.cn/problems/validate-binary-search-tree/solutions/)
+- 灵茶山艾府《【视频】前序中序后序，三种方法，一个视频讲透！》（基础算法精讲 11）。
+
+#### 重做记录
+
+> 2026-08-24：完成前序/中序/后序三解法；重做时重点检查：后序返回子树 min/max 的写法、极值哨兵的可移植性（`*int` 版）、中序严格升序（`<=` 违规）、三实现对拍。
+
+---
+
+### 5. 专题参考资料
+
+- [Hello 算法：二叉树](https://www.hello-algo.com/chapter_tree/binary_tree/)
+- [Hello 算法：二叉树遍历](https://www.hello-algo.com/chapter_tree/binary_tree_traversal/)
+- [Hello 算法：二叉搜索树](https://www.hello-algo.com/chapter_tree/binary_search_tree/)
+- [代码随想录：二叉树的递归遍历](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/二叉树的递归遍历.md)
+- [代码随想录：二叉树的迭代遍历](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/二叉树的迭代遍历.md)
+- [代码随想录：0102.二叉树的层序遍历](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0102.二叉树的层序遍历.md)
+- [代码随想录：0104.二叉树的最大深度](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0104.二叉树的最大深度.md)
+- [代码随想录：0226.翻转二叉树](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0226.翻转二叉树.md)
+- [代码随想录：0098.验证二叉搜索树](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0098.验证二叉搜索树.md)
+- [LeetCode-Go：题解对照](https://github.com/halfrost/LeetCode-Go)
+
+---
+
+## 专题五：图与回溯
+
+### 1. 专题背景
+
+本专题区分两类问题：**遍历所有连通区域**（200 岛屿数量、994 腐烂的橘子、207 课程表）和**枚举所有可行选择**（46 全排列、78 子集、39 组合总和）。底层内容来自 hello-algo 第九章《图》和第十三章《回溯》：图的定义与表示（9.1）、图的遍历（9.3）、回溯算法（13.1）、全排列问题（13.2）、子集和问题（13.3）。
+
+#### 1.1 hello-algo 章节映射
+
+| 本专题知识点 | hello-algo 章节 |
+|---|---|
+| 图的定义、术语、邻接表/邻接矩阵 | 9.1 图 |
+| BFS / DFS 遍历、visited 标记 | 9.3 图的遍历 |
+| 回溯三要素（尝试/回退/剪枝） | 13.1 回溯算法 |
+| 全排列：selected 剪枝 | 13.2 全排列问题 |
+| 子集/组合：start 剪枝、排序剪枝 | 13.3 子集和问题 |
+| 拓扑排序（207） | hello-algo 未单列：底层是 9.1 的入度概念 + BFS 遍历思想 |
+
+#### 1.2 图的基本概念与表示（hello-algo 9.1）
+
+- 图由**顶点**和**边**组成；无向图 vs 有向图；连通图 vs 非连通图；有权图 vs 无权图；
+- **度**：顶点拥有的边数；有向图中分**入度**（指向该顶点的边数）和**出度**（从该顶点指出的边数）——207 拓扑排序的核心；
+- **邻接矩阵**：查边 \(O(1)\)、空间 \(O(n^2)\)；**邻接表**：只存实际边、更省空间（Go 常用 `[][]int` 或 `map[int][]int`）；
+- **网格是特殊图**：200/994 把每个格子当顶点、上下左右四条边当邻接关系。
+
+#### 1.3 图的遍历（hello-algo 9.3）
+
+- **BFS**：队列 + visited，由近及远逐层扩散；遍历序列不唯一；复杂度 \(O(|V|+|E|)\)；
+- **DFS**：递归（或显式栈）+ visited，走到尽头再回头；复杂度 \(O(|V|+|E|)\)；
+- **访问标记何时设置**：入队/进入时立刻标记，不能等到“弹出/离开时”才标记——否则同一节点可能被重复入队，网格题会死循环（200、994 的必考细节）；
+- **多源 BFS（994）**：把所有腐烂橘子同时入队，队列层数 = 扩散的分钟数。
+
+#### 1.4 拓扑排序（207 课程表）
+
+hello-algo 没有拓扑排序专章，知识基础就是 9.1 的入度 + 9.3 的 BFS 队列：
+
+- **入度含义**：一门课还差几门前置课没修完；
+- **Kahn 算法**：入度为 0 的课程入队 → 出队“修完” → 把它的后继课程入度减 1 → 入度变 0 再入队；
+- **有环判断**：能出队的课程数 < 总课程数，说明存在循环依赖（环上的课入度永远不为 0）。
+
+#### 1.5 回溯三要素（hello-algo 13.1）
+
+回溯 = DFS + 撤销选择。核心术语：**状态（state）**、**选择集合（choices）**、**约束条件（剪枝）**、**解（solution）**。复杂度通常是指数/阶乘级，**剪枝是唯一的关键优化**。
+
+三题的选择集合差异：
+
+| 题 | 选择集合 | 剪枝关键 | 答案在哪 |
+|---|---|---|---|
+| 46 全排列 | 所有元素（每元素一次） | selected 布尔数组 | 叶子节点 |
+| 78 子集 | 当前位置之后的元素 | start 递增（i+1） | 每个节点都是答案 |
+| 39 组合总和 | 可重复选 | 下一轮从 i 开始；排序后超过 target 剪枝 | 达到 target 的路径 |
+
+#### 1.6 四个骨架（Day 5 要求：从空白写）
+
+**骨架一：网格 DFS（200 岛屿数量）**
+
+```go
+var dirs = [4][2]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+
+func dfsGrid(grid [][]byte, i, j int) {
+    if i < 0 || i >= len(grid) || j < 0 || j >= len(grid[0]) || grid[i][j] != '1' {
+        return
+    }
+    grid[i][j] = '0' // 进入时立刻标记（沉岛），防止重复访问
+    for _, d := range dirs {
+        dfsGrid(grid, i+d[0], j+d[1])
+    }
+}
+```
+
+**骨架二：多源 BFS（994 腐烂的橘子）**
+
+```go
+q := []int{} // 存坐标（如 i*n+j），所有源点同时入队
+for len(q) > 0 {
+    size := len(q)
+    for k := 0; k < size; k++ {
+        // 出队、处理四方向、新腐烂的橘子入队
+    }
+    minutes++
+}
+```
+
+**骨架三：拓扑排序（207 课程表）**
+
+```go
+indeg := make([]int, numCourses)
+graph := make([][]int, numCourses)
+// 建图 + 统计入度
+q := []int{}
+for i, d := range indeg {
+    if d == 0 {
+        q = append(q, i)
+    }
+}
+for len(q) > 0 {
+    cur := q[0]
+    q = q[1:]
+    for _, nxt := range graph[cur] {
+        indeg[nxt]--
+        if indeg[nxt] == 0 {
+            q = append(q, nxt)
+        }
+    }
+}
+// 出队总数 < numCourses 则有环
+```
+
+**骨架四：回溯（46/78/39 通用）**
+
+```go
+func backtrack(state []int, choices []int, start int) {
+    // 1. 判断当前 state 是否是答案，是则记录（注意复制）
+    // 2. 遍历选择集合（用 start / selected / 剪枝控制）
+    //    for i := start; i < len(choices); i++ {
+    //        做出选择：state = append(state, choices[i])
+    //        backtrack(state, choices, 下一轮start) // 46 传0+selected；78 传i+1；39 传i
+    //        撤销选择：state = state[:len(state)-1]
+    //    }
+}
+```
+
+#### 1.7 本地测试约定（Day 5）
+
+- 表驱动；网格用 `[][]byte`/`[][]int`，图用边列表构造邻接表；
+- 回溯结果**排序后比较**（结果顺序不唯一，避免顺序依赖）；
+- 当天复盘：从空白写 DFS、BFS、拓扑排序和回溯四个骨架。
+
+### 2. 本专题题目看板
+
+题目来自 Day 5 执行清单，难度标记沿用 A/B 分组。
+
+| 状态 | 分组 | 题号 | 题目 | 核心训练点 | 笔记 |
+|:---:|:---:|---:|---|---|---|
+| ⬜ | A | 200 | [岛屿数量](https://leetcode.cn/problems/number-of-islands/) | 网格 DFS/BFS、访问标记时机 | [查看](#题目-200岛屿数量) |
+| ⬜ | A | 994 | [腐烂的橘子](https://leetcode.cn/problems/rotting-oranges/) | 多源 BFS、同时入队 | [查看](#题目-994腐烂的橘子) |
+| ⬜ | A | 207 | [课程表](https://leetcode.cn/problems/course-schedule/) | 拓扑排序、入度、有环判断 | [查看](#题目-207课程表) |
+| ⬜ | A | 46 | [全排列](https://leetcode.cn/problems/permutations/) | 回溯、路径与选择集合 | [查看](#题目-46全排列) |
+| ⬜ | A | 78 | [子集](https://leetcode.cn/problems/subsets/) | 回溯、每个节点都是答案 | [查看](#题目-78子集) |
+| ⬜ | B | 39 | [组合总和](https://leetcode.cn/problems/combination-sum/) | 回溯、剪枝、可重复选择 | [查看](#题目-39组合总和) |
+
+状态说明：
+
+- ⬜ 未开始
+- 🟡 已完成首次提交，尚未复盘
+- ✅ 已完成题解与复盘
+- 🔁 已独立重做
+
+### 3. 每道题的记录模板
+
+以后新增题目时复制下面这段：
+
+```markdown
+### 题目 X：题目名称
+
+#### 题目摘要
+
+- **题目链接**：
+- **输入**：
+- **输出**：
+- **关键约束**：
+- **核心模式**：
+- **面试必须说清**：
+- **本地测试标准**：
+
+#### 我的第一反应
+
+> 记录最初思路、踩过的坑（即使后来发现不对，也保留）。
+
+#### 解法一：直觉 / 暴力解法
+
+##### 我的思路
+##### 代码
+##### 复杂度
+##### 主要关注点
+
+#### 解法二：优化解法
+
+##### 优化突破口
+##### 代码
+##### 逐行理解
+##### 完整运行示例（逐轮表格）
+##### 复杂度
+##### 关键不变量
+
+#### 对比与复盘
+
+| 对比项 | 解法一 | 解法二 |
+|---|---|---|
+| 时间复杂度 |  |  |
+| 空间复杂度 |  |  |
+| 核心操作 |  |  |
+| 优点 |  |  |
+| 局限 |  |  |
+
+#### 本地测试（表驱动）
+
+#### 易错点
+
+#### 建议测试案例
+
+#### 可迁移的规律
+
+#### 来源说明
+
+#### 重做记录
+```
+
+---
+
+### 题目 200：岛屿数量
+
+#### 题目摘要
+
+- **题目链接**：[LeetCode 200. 岛屿数量](https://leetcode.cn/problems/number-of-islands/)
+- **输入**：`m×n` 网格 `grid [][]byte`（`'1'` 陆地、`'0'` 水）。
+- **输出**：岛屿数量（相邻的 1 组成一座岛，四方向连通）。
+- **关键约束**：`m,n ∈ [1, 300]`。
+- **核心模式**：网格 DFS/BFS + 访问标记。
+- **面试必须说清**：访问标记何时设置（进入/入队时立刻标记）。
+- **本地测试标准**：空网格、全 1、全 0、单岛、多岛、环形岛。
 
 #### 我的第一反应
 
@@ -6598,17 +8167,185 @@ func dfs(node *TreeNode, 状态 状态类型) {
 
 ---
 
-### 题目 98：验证二叉搜索树
+### 题目 994：腐烂的橘子
 
 #### 题目摘要
 
-- **题目链接**：[LeetCode 98. 验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/)
-- **输入**：二叉树根节点 `root`。
-- **输出**：是否为有效 BST（`bool`）。
-- **关键约束**：节点数 `[1, 10^4]`；节点值可能触及 `int` 极值。
-- **核心模式**：中序升序 / 上下界递归。
-- **面试必须说清**：为什么只比较父子不够？中序前值/上下界如何处理极值？
-- **本地测试标准**：深层违规、重复、MinInt/MaxInt；不使用不安全哨兵。
+- **题目链接**：[LeetCode 994. 腐烂的橘子](https://leetcode.cn/problems/rotting-oranges/)
+- **输入**：`grid [][]int`（`0` 空、`1` 新鲜、`2` 腐烂）。
+- **输出**：全部腐烂所需分钟数；无法全部腐烂返回 `-1`。
+- **关键约束**：`m,n ∈ [1, 10]`。
+- **核心模式**：多源 BFS。
+- **面试必须说清**：为什么所有腐烂橘子同时入队（同步扩散，层数 = 分钟）。
+- **本地测试标准**：无新鲜、无腐烂、被隔离的新鲜橘子（-1）、多源混合。
+
+#### 我的第一反应
+
+> 待补充：不看题解时，最先想到什么？
+
+#### 解法一：直觉 / 暴力解法
+
+> 待补充：思路、代码、复杂度。
+
+#### 解法二：优化解法
+
+> 待补充：优化突破口、代码、复杂度、关键不变量。
+
+#### 对比与复盘
+
+> 待补充：两种解法的时间 / 空间复杂度对比。
+
+#### 易错点
+
+> 待补充。
+
+#### 可迁移的规律
+
+> 待补充。
+
+#### 重做记录
+
+> 待补充。
+
+---
+
+### 题目 207：课程表
+
+#### 题目摘要
+
+- **题目链接**：[LeetCode 207. 课程表](https://leetcode.cn/problems/course-schedule/)
+- **输入**：课程数 `numCourses` 和先修关系 `prerequisites`。
+- **输出**：能否完成所有课程（`bool`）。
+- **关键约束**：课程数 `[1, 2000]`。
+- **核心模式**：拓扑排序（Kahn）+ 入度。
+- **面试必须说清**：入度含义和有环判断。
+- **本地测试标准**：无先修、线性链、环、自环、多依赖。
+
+#### 我的第一反应
+
+> 待补充：不看题解时，最先想到什么？
+
+#### 解法一：直觉 / 暴力解法
+
+> 待补充：思路、代码、复杂度。
+
+#### 解法二：优化解法
+
+> 待补充：优化突破口、代码、复杂度、关键不变量。
+
+#### 对比与复盘
+
+> 待补充：两种解法的时间 / 空间复杂度对比。
+
+#### 易错点
+
+> 待补充。
+
+#### 可迁移的规律
+
+> 待补充。
+
+#### 重做记录
+
+> 待补充。
+
+---
+
+### 题目 46：全排列
+
+#### 题目摘要
+
+- **题目链接**：[LeetCode 46. 全排列](https://leetcode.cn/problems/permutations/)
+- **输入**：不含重复数字的数组 `nums`。
+- **输出**：所有全排列。
+- **关键约束**：长度 `[1, 6]`。
+- **核心模式**：回溯。
+- **面试必须说清**：路径和选择集合如何维护（`selected` 布尔数组）。
+- **本地测试标准**：长度 1/2/3；结果数量为 `n!`。
+
+#### 我的第一反应
+
+> 待补充：不看题解时，最先想到什么？
+
+#### 解法一：直觉 / 暴力解法
+
+> 待补充：思路、代码、复杂度。
+
+#### 解法二：优化解法
+
+> 待补充：优化突破口、代码、复杂度、关键不变量。
+
+#### 对比与复盘
+
+> 待补充：两种解法的时间 / 空间复杂度对比。
+
+#### 易错点
+
+> 待补充。
+
+#### 可迁移的规律
+
+> 待补充。
+
+#### 重做记录
+
+> 待补充。
+
+---
+
+### 题目 78：子集
+
+#### 题目摘要
+
+- **题目链接**：[LeetCode 78. 子集](https://leetcode.cn/problems/subsets/)
+- **输入**：不含重复元素的数组 `nums`。
+- **输出**：所有子集。
+- **关键约束**：长度 `[1, 10]`。
+- **核心模式**：回溯。
+- **面试必须说清**：每个节点为什么都是答案。
+- **本地测试标准**：空集、单元素；`n=3` 共 8 个子集。
+
+#### 我的第一反应
+
+> 待补充：不看题解时，最先想到什么？
+
+#### 解法一：直觉 / 暴力解法
+
+> 待补充：思路、代码、复杂度。
+
+#### 解法二：优化解法
+
+> 待补充：优化突破口、代码、复杂度、关键不变量。
+
+#### 对比与复盘
+
+> 待补充：两种解法的时间 / 空间复杂度对比。
+
+#### 易错点
+
+> 待补充。
+
+#### 可迁移的规律
+
+> 待补充。
+
+#### 重做记录
+
+> 待补充。
+
+---
+
+### 题目 39：组合总和
+
+#### 题目摘要
+
+- **题目链接**：[LeetCode 39. 组合总和](https://leetcode.cn/problems/combination-sum/)
+- **输入**：无重复整数 `candidates` 和目标 `target`。
+- **输出**：所有和为 `target` 的组合（每个元素可重复选择）。
+- **关键约束**：`candidates` 长度 `[2, 40]`，`target` 为正整数。
+- **核心模式**：回溯 + 剪枝。
+- **面试必须说清**：元素重复选择如何实现（下一轮从 `i` 开始而不是 `i+1`）。
+- **本地测试标准**：单元素、避免顺序重复、排序剪枝、无解。
 
 #### 我的第一反应
 
@@ -6642,13 +8379,15 @@ func dfs(node *TreeNode, 状态 状态类型) {
 
 ### 5. 专题参考资料
 
-- [Hello 算法：二叉树](https://www.hello-algo.com/chapter_tree/binary_tree/)
-- [Hello 算法：二叉树遍历](https://www.hello-algo.com/chapter_tree/binary_tree_traversal/)
-- [Hello 算法：二叉搜索树](https://www.hello-algo.com/chapter_tree/binary_search_tree/)
-- [代码随想录：二叉树的递归遍历](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/二叉树的递归遍历.md)
-- [代码随想录：二叉树的迭代遍历](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/二叉树的迭代遍历.md)
-- [代码随想录：0102.二叉树的层序遍历](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0102.二叉树的层序遍历.md)
-- [代码随想录：0104.二叉树的最大深度](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0104.二叉树的最大深度.md)
-- [代码随想录：0226.翻转二叉树](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0226.翻转二叉树.md)
-- [代码随想录：0098.验证二叉搜索树](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0098.验证二叉搜索树.md)
+- [Hello 算法：图](https://www.hello-algo.com/chapter_graph/graph/)
+- [Hello 算法：图的遍历](https://www.hello-algo.com/chapter_graph/graph_traversal/)
+- [Hello 算法：回溯算法](https://www.hello-algo.com/chapter_backtracking/backtracking_algorithm/)
+- [Hello 算法：全排列问题](https://www.hello-algo.com/chapter_backtracking/permutations_problem/)
+- [Hello 算法：子集和问题](https://www.hello-algo.com/chapter_backtracking/subset_sum_problem/)
+- [代码随想录：0200.岛屿数量](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0200.岛屿数量.md)
+- [代码随想录：0994.腐烂的橘子](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0994.腐烂的橘子.md)
+- [代码随想录：0207.课程表](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0207.课程表.md)
+- [代码随想录：0046.全排列](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0046.全排列.md)
+- [代码随想录：0078.子集](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0078.子集.md)
+- [代码随想录：0039.组合总和](https://github.com/youngyangyang04/leetcode-master/blob/master/problems/0039.组合总和.md)
 - [LeetCode-Go：题解对照](https://github.com/halfrost/LeetCode-Go)
