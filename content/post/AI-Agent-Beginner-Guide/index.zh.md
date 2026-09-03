@@ -10,6 +10,7 @@ tags:
     - LLM
     - Agent 开发
     - 学习笔记
+image: cover.png
 toc: true
 ---
 
@@ -20,6 +21,8 @@ toc: true
 读完 Anthropic 的 [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)、OpenAI 的 [A practical guide to building agents](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/) 和 Lilian Weng 的 [LLM Powered Autonomous Agents](https://lilianweng.github.io/posts/2023-06-23-agent/) 后，我认为最值得记住的不是某个框架，而是下面这句话：
 
 > **Agent 不是一个更长的 Prompt，而是一个让模型在约束内反复“观察—决策—行动—校验”，直到完成目标或交还控制权的系统。**
+
+![AI Agent 入门：从模型调用走向受控的任务循环](cover.png)
 
 三篇文章恰好从三个角度补全了这幅图：
 
@@ -96,6 +99,10 @@ while not should_stop(state):
 ```
 
 OpenAI 把这种持续运行直到满足退出条件的过程称为一个 **run**。退出条件可以是模型给出最终答案、调用特定的完成工具、触发错误、请求人工介入，或者达到最大轮数。
+
+![小黑驱动 Agent 的观察、决策、行动和校验循环；必要时由人类接管](agent-loop-xiaohei.png)
+
+这张图可以当作全文的记忆锚点：**循环提供自主性，环境反馈提供事实，红色刹车提供控制权。** 三者缺少任何一个，系统都更容易变成“反复调用模型”，而不是可靠地完成任务。
 
 ```mermaid
 flowchart TD
