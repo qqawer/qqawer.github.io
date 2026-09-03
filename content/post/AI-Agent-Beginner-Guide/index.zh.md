@@ -10,7 +10,7 @@ tags:
     - LLM
     - Agent 开发
     - 学习笔记
-image: cover.png
+image: /post/ai-agent-beginner-guide/cover.png
 toc: true
 ---
 
@@ -22,7 +22,7 @@ toc: true
 
 > **Agent 不是一个更长的 Prompt，而是一个让模型在约束内反复“观察—决策—行动—校验”，直到完成目标或交还控制权的系统。**
 
-![AI Agent 入门：从模型调用走向受控的任务循环](cover.png)
+{{< figure src="/post/ai-agent-beginner-guide/cover.png" alt="AI Agent 入门：从模型调用走向受控的任务循环" caption="封面：从一次模型调用，走向带反馈与护栏的任务系统" >}}
 
 三篇文章恰好从三个角度补全了这幅图：
 
@@ -56,14 +56,7 @@ Anthropic 把 **Workflow** 定义为：LLM 和工具按照预先规定的代码�
 
 Agent 的关键变化不是多调用几次模型，而是把**工作流执行权**部分交给模型。模型根据目标和环境反馈，动态选择工具、调整步骤，并判断任务是否结束。OpenAI 也强调：如果 LLM 没有控制工作流的执行，普通聊天、单轮生成或情感分类器都不属于 Agent。
 
-```mermaid
-flowchart LR
-    A[用户目标] --> B{谁决定下一步?}
-    B -->|固定代码路径| C[Workflow]
-    B -->|LLM 根据环境动态决策| D[Agent]
-    C --> E[可预测、易测试]
-    D --> F[灵活、能处理开放任务]
-```
+{{< figure src="/post/ai-agent-beginner-guide/workflow-vs-agent.svg" alt="Workflow 与 Agent 的控制权差异" caption="Workflow 的路径由代码预先规定；Agent 在运行时根据环境反馈选择下一步。" >}}
 
 这不是非黑即白的分类，而是一条**自主程度逐渐增加的光谱**：
 
@@ -100,21 +93,9 @@ while not should_stop(state):
 
 OpenAI 把这种持续运行直到满足退出条件的过程称为一个 **run**。退出条件可以是模型给出最终答案、调用特定的完成工具、触发错误、请求人工介入，或者达到最大轮数。
 
-![小黑驱动 Agent 的观察、决策、行动和校验循环；必要时由人类接管](agent-loop-xiaohei.png)
+{{< figure src="/post/ai-agent-beginner-guide/agent-loop-xiaohei.png" alt="小黑驱动 Agent 的观察、决策、行动和校验循环；必要时由人类接管" caption="Agent 的最小闭环：观察、决策、行动、校验，以及始终可用的人工刹车。" >}}
 
 这张图可以当作全文的记忆锚点：**循环提供自主性，环境反馈提供事实，红色刹车提供控制权。** 三者缺少任何一个，系统都更容易变成“反复调用模型”，而不是可靠地完成任务。
-
-```mermaid
-flowchart TD
-    G[Goal 目标] --> O[Observe 读取当前状态]
-    O --> T[Think / Decide 选择下一步]
-    T --> A[Act 调用工具]
-    A --> R[Result 获得真实反馈]
-    R --> C{任务完成或必须停止?}
-    C -->|否| O
-    C -->|完成| F[返回结果]
-    C -->|高风险 / 多次失败| H[交给人类]
-```
 
 这里最重要的一条线是 `Act → Result → Observe`。Agent 不能只凭模型“觉得自己完成了”，而要从环境获得 **ground truth**：搜索是否找到了来源、API 是否真的写入数据、代码是否通过测试。没有真实反馈，循环就可能退化成模型不断对自己的猜测进行加工。
 
@@ -127,26 +108,11 @@ flowchart TD
 
 它们并不矛盾。前者更像认知架构，解释 Agent 需要完成哪些内部功能；后者更像工程装配清单，解释开发者要配置哪些东西。
 
-```mermaid
-flowchart TB
-    subgraph Cognitive[认知视角：Agent 要具备什么能力]
-        P[Planning<br/>拆解与调整计划]
-        M[Memory<br/>保留与检索信息]
-        U[Tool Use<br/>感知和改变外部世界]
-    end
-
-    subgraph Engineering[工程视角：开发者要提供什么]
-        L[Model<br/>进行判断]
-        I[Instructions<br/>定义目标与边界]
-        T[Tools<br/>提供可执行动作]
-        S[State / Retrieval<br/>承载状态与记忆]
-    end
-
-    L --> P
-    I --> P
-    S --> M
-    T --> U
-```
+| 认知能力 | 工程实现 | 连接关系 |
+| --- | --- | --- |
+| Planning：拆解并调整计划 | Model + Instructions | 模型在规则边界内判断下一步 |
+| Memory：保留并取回信息 | State + Retrieval | 状态负责保存，检索负责在需要时召回 |
+| Tool Use：感知和改变环境 | Data / Action Tools | 工具把模型输出变成可验证的外部动作 |
 
 ### 3.1 Model：不是所有步骤都需要最强模型
 
@@ -210,21 +176,7 @@ Anthropic 总结了五种常见工作流。它们是可组合的积木，不是�
 | Orchestrator-Workers | 动态拆解 → 多个 Worker → 汇总 | 子任务无法预先确定 | 编排和评测更复杂 |
 | Evaluator-Optimizer | 生成 → 评价 → 修改 | 有清晰质量标准且迭代有效 | 可能陷入无效循环 |
 
-```mermaid
-flowchart LR
-    Q{任务路径能否预先确定?}
-    Q -->|能| W[优先使用 Workflow]
-    Q -->|不能| A[考虑 Agent]
-    W --> W1{子任务关系}
-    W1 -->|顺序依赖| C[Prompt Chaining]
-    W1 -->|输入分流| R[Routing]
-    W1 -->|彼此独立| P[Parallelization]
-    W1 -->|可反复改进| E[Evaluator-Optimizer]
-    A --> O[单 Agent + 工具]
-    O --> M{单 Agent 是否持续失败?}
-    M -->|否| K[保持简单]
-    M -->|复杂逻辑或工具混淆| MW[再考虑多 Agent]
-```
+{{< figure src="/post/ai-agent-beginner-guide/workflow-patterns.svg" alt="从固定 Workflow 到自主 Agent 的架构选择路径" caption="先判断路径是否可预测：能就选择匹配的 Workflow；不能才进入单 Agent，并用失败证据决定是否拆成多 Agent。" >}}
 
 这里有两个特别容易混淆的概念：
 
@@ -265,19 +217,7 @@ Agent 可以执行动作，所以一次错误可能不再只是生成一段错�
 
 OpenAI 建议把护栏理解为纵深防御：相关性分类、安全分类、PII 检测、规则过滤、工具风险检查和输出校验可以各守一层。同时，护栏不能代替传统的身份认证、权限控制和软件安全措施。
 
-```mermaid
-flowchart LR
-    U[用户输入] --> G1[输入护栏]
-    G1 --> AG[Agent 循环]
-    AG --> READ[只读工具]
-    AG --> RISK{高风险动作?}
-    RISK -->|否| WRITE[受限写入工具]
-    RISK -->|是| HUMAN[人工确认]
-    READ --> CHECK[结果校验 / Evals]
-    WRITE --> CHECK
-    HUMAN --> CHECK
-    CHECK --> OUT[输出护栏]
-```
+{{< figure src="/post/ai-agent-beginner-guide/guardrail-layers.svg" alt="Agent 的分层护栏与人工确认机制" caption="输入检查、最小权限、动作风险分级、人工确认和结果评测共同构成纵深防御。" >}}
 
 ### 6.4 Evals 决定你是否真的变好了
 

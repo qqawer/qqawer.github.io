@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 760" role="img" aria-labelledby="title desc">
+  <title id="title">Workflow 与 Agent 的控制权差异</title>
+  <desc id="desc">同一个用户目标，左边由代码规定固定路径，右边由模型依据反馈动态选择下一步。</desc>
+  <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#1e3a5f"/></marker></defs>
+  <rect width="1440" height="760" fill="#fff"/>
+  <text x="72" y="76" font-family="Arial,'PingFang SC',sans-serif" font-size="34" font-weight="700" fill="#1e40af">同一个目标，两种控制权</text>
+  <text x="72" y="114" font-family="Arial,'PingFang SC',sans-serif" font-size="19" fill="#64748b">区别不在调用次数，而在运行时由谁决定下一步</text>
+  <line x1="720" y1="150" x2="720" y2="690" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="8 10"/>
+  <text x="340" y="190" text-anchor="middle" font-family="Arial,'PingFang SC',sans-serif" font-size="30" font-weight="700" fill="#1e40af">WORKFLOW</text>
+  <text x="1080" y="190" text-anchor="middle" font-family="Arial,'PingFang SC',sans-serif" font-size="30" font-weight="700" fill="#6d28d9">AGENT</text>
+  <circle cx="340" cy="270" r="56" fill="#fed7aa" stroke="#c2410c" stroke-width="3"/><text x="340" y="279" text-anchor="middle" font-family="Arial,'PingFang SC',sans-serif" font-size="22" fill="#374151">目标</text>
+  <path d="M340 328V382" stroke="#1e3a5f" stroke-width="3" marker-end="url(#a)"/>
+  <rect x="210" y="390" width="260" height="72" rx="14" fill="#dbeafe" stroke="#1e40af" stroke-width="3"/><text x="340" y="435" text-anchor="middle" font-family="Arial,'PingFang SC',sans-serif" font-size="22" fill="#374151">代码规定步骤 A</text>
+  <path d="M340 466V510" stroke="#1e3a5f" stroke-width="3" marker-end="url(#a)"/>
+  <rect x="210" y="518" width="260" height="72" rx="14" fill="#dbeafe" stroke="#1e40af" stroke-width="3"/><text x="340" y="563" text-anchor="middle" font-family="Arial,'PingFang SC',sans-serif" font-size="22" fill="#374151">代码规定步骤 B</text>
+  <text x="340" y="646" text-anchor="middle" font-family="Arial,'PingFang SC',sans-serif" font-size="20" fill="#64748b">路径先画好 · 稳定 · 易测试</text>
+  <circle cx="1080" cy="270" r="56" fill="#fed7aa" stroke="#c2410c" stroke-width="3"/><text x="1080" y="279" text-anchor="middle" font-family="Arial,'PingFang SC',sans-serif" font-size="22" fill="#374151">目标</text>
+  <path d="M1080 328V370" stroke="#6d28d9" stroke-width="3" marker-end="url(#a)"/>
+  <polygon points="1080,382 1180,456 1080,530 980,456" fill="#fef3c7" stroke="#b45309" stroke-width="3"/><text x="1080" y="449" text-anchor="middle" font-family="Arial,'PingFang SC',sans-serif" font-size="21" fill="#374151">模型读取反馈</text><text x="1080" y="477" text-anchor="middle" font-family="Arial,'PingFang SC',sans-serif" font-size="21" fill="#374151">决定下一步</text>
+  <path d="M978 456C880 456 870 570 970 584" fill="none" stroke="#6d28d9" stroke-width="3" marker-end="url(#a)"/><text x="864" y="520" font-family="Arial,'PingFang SC',sans-serif" font-size="18" fill="#64748b">换工具</text>
+  <path d="M1182 456C1280 456 1290 570 1190 584" fill="none" stroke="#6d28d9" stroke-width="3" marker-end="url(#a)"/><text x="1244" y="520" font-family="Arial,'PingFang SC',sans-serif" font-size="18" fill="#64748b">改计划</text>
+  <text x="1080" y="646" text-anchor="middle" font-family="Arial,'PingFang SC',sans-serif" font-size="20" fill="#64748b">路径运行时生成 · 灵活 · 需护栏</text>
+</svg>
