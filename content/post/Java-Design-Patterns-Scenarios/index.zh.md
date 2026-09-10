@@ -1,6 +1,6 @@
 ---
 title: "16 个常用设计模式・Java / Go 双语言版：业务场景 + 痛点 + 代码，一表看懂"
-description: "8 大高频设计模式 + 8 个第二梯队模式，补充备忘录、迭代器、命令、桥接模式：典型业务场景、痛点、什么时候不用；Java / Go 页签一键切换对照，开头一张总结表帮你一眼分清 16 个模式。"
+description: "16 个常用设计模式的业务场景、痛点、适用边界与类图，标明接口、继承、关联和创建关系；Java / Go 代码页签切换对照，每张图附可编辑的 Excalidraw 源文件。"
 date: 2026-08-18T00:00:00+08:00
 slug: "java-design-patterns-scenarios"
 categories:
@@ -47,6 +47,25 @@ toc: true
 | 命令 Command | 行为型 | 把请求封装成对象，分离发起者与执行者 | 按钮与快捷键、任务队列、操作撤销 | 一次直接调用就能表达清楚 | 把要做的事装成命令，交给别人执行 |
 | 桥接 Bridge | 结构型 | 拆开两个独立变化的维度，用组合连接 | 通知级别 × 发送渠道、报表种类 × 输出格式、控件类型 × 绘制平台 | 只有一个变化维度；维度之间强耦合 | 两个维度各自扩展，组合搭桥 |
 
+## 🗂️ 类图怎么看：接口、继承与对象关系
+
+每个模式都附一张与正文代码对应的类图，**以 Java 示例的类结构和方法名为主，图下方说明 Go 的对应方式与结构差异**。图中只列关键成员，部分参数类型和构造方法省略，完整签名以代码为准。图片可点击放大；每张图下都能下载 `.excalidraw` 文件，在 Excalidraw 中继续编辑。
+
+| 图中记号 | 含义 | 读图方向 |
+|---|---|---|
+| `«interface»` | 接口契约 | 具体实现类通过实现关系指向它 |
+| `«abstract class»` | 抽象类，可同时包含公共实现与抽象方法 | 子类通过继承关系指向它 |
+| 虚线 + 空心三角 | 实现接口 | 具体类 → 接口 |
+| 实线 + 空心三角 | 继承父类 | 子类 → 父类 |
+| 实线 + 普通箭头 | 可导航关联，通常对应一个持有的字段 | 持有者 → 被持有对象的类型 |
+| 虚线 + 普通箭头 | 依赖，例如调用、使用参数类型或返回类型 | 使用者 → 被使用类型；`«create»` 表示创建 |
+| 实线 + 实心菱形 | 组合，整体内部拥有部分对象 | 菱形在整体一端；本文外观示例内部创建子服务 |
+| `1` / `0..1` / `0..*` | 预期持有一个 / 零或一个 / 零到多个对象 | 数量标注对应箭头目标一侧的类型 |
+| `+` / `-` / `#` | `public` / `private` / `protected` | 描述 Java 成员的可见性 |
+| `{static}` / `{final}` | 静态成员 / 不可重新赋值或不可重写的成员 | 结合所在字段、方法或类理解 |
+
+单例、本文的链式建造者、外观和备忘录示例没有自定义接口，图中按实际代码保留。**Go 的嵌入不是 Java 继承**：装饰器的 Go 示例使用函数包装；责任链、模板方法、迭代器和桥接的接口结构也有差异，不能直接照搬 Java 的继承箭头。
+
 ---
 
 # 一、8 大高频设计模式（第一梯队）
@@ -71,6 +90,12 @@ toc: true
 
 - 需要多份独立状态；
 - 单元测试很难 mock 单例。
+
+### 🗂️ 类图：接口与关系
+
+![单例类图：Config 保存静态 instance，getInstance 返回唯一实例](diagrams/01-singleton.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/01-singleton.zh.excalidraw)
 
 ### ☕ 双语言示例（Java / Go 页签切换）
 
@@ -178,6 +203,12 @@ func main() {
 
 - 产品列表经常新增，且不想修改工厂代码 → 改用工厂方法模式。
 - 需要运行中途更换行为 → 用策略模式，不是工厂。
+
+### 🗂️ 类图：接口与关系
+
+![简单工厂类图：PaymentFactory 创建 Alipay 或 WechatPay，两者实现 Payment 接口](diagrams/02-simple-factory.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/02-simple-factory.zh.excalidraw)
 
 ### ☕ 双语言示例（Java / Go 页签切换）
 
@@ -287,6 +318,12 @@ func main() {
 ### ⚠️ 什么时候不要用
 
 - 对象属性很少（2-3 个字段），直接赋值就行，builder 属于过度设计。
+
+### 🗂️ 类图：接口与关系
+
+![建造者类图：Order.Builder 保存构建参数，通过 build 创建 Order](diagrams/03-builder.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/03-builder.zh.excalidraw)
 
 ### ☕ 双语言示例（Java / Go 页签切换）
 
@@ -428,6 +465,12 @@ func main() {
 
 - 接口本身就一致，不需要转换；不要为了适配而适配增加无用代码。
 
+### 🗂️ 类图：接口与关系
+
+![适配器类图：Adapter 实现 Target 接口，并持有 OldSdk 转换调用](diagrams/04-adapter.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/04-adapter.zh.excalidraw)
+
 ### ☕ 双语言示例（Java / Go 页签切换）
 
 {{< tabs >}}
@@ -527,6 +570,12 @@ func main() {
 ### ⚠️ 什么时候不要用
 
 - 需要完全替换掉原有业务逻辑；替换用策略模式，增强用装饰器。
+
+### 🗂️ 类图：接口与关系
+
+![装饰器类图：BizTask 与 LogDecorator 实现 Handler，LogDecorator 持有 Handler 类型的 target](diagrams/05-decorator.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/05-decorator.zh.excalidraw)
 
 ### ☕ 双语言示例（Java / Go 页签切换）
 
@@ -628,6 +677,12 @@ func main() {
 ### ⚠️ 什么时候不要用
 
 - 单纯给函数加日志计时 → 优先装饰器。
+
+### 🗂️ 类图：接口与关系
+
+![代理类图：Proxy 与 RealService 实现 Subject，Proxy 懒加载并持有 RealService](diagrams/06-proxy.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/06-proxy.zh.excalidraw)
 
 ### ☕ 双语言示例（Java / Go 页签切换）
 
@@ -732,6 +787,12 @@ func main() {
 ### ⚠️ 什么时候不要用
 
 - 创建完对象，后面永远不会更换实现 → 简单工厂就够了，不需要策略。
+
+### 🗂️ 类图：接口与关系
+
+![策略类图：Order 持有 Discount 接口，FullReduction 与 PercentOff 提供可替换算法](diagrams/07-strategy.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/07-strategy.zh.excalidraw)
 
 ### ☕ 双语言示例（Java / Go 页签切换）
 
@@ -858,6 +919,12 @@ func main() {
 ### ⚠️ 什么时候不要用
 
 - 流程是强依赖、必须顺序执行；不要用观察者，直接串行调用。
+
+### 🗂️ 类图：接口与关系
+
+![观察者类图：Subject 保存多个 Observer，SmsNotify 和 StockService 实现通知接口](diagrams/08-observer.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/08-observer.zh.excalidraw)
 
 ### ☕ 双语言示例（Java / Go 页签切换）
 
@@ -1202,6 +1269,12 @@ func main() {
 - 子系统调用关系本来就简单、只有一两个类，加门面属于过度设计；
 - 门面不要越做越大变成「上帝类」——它只负责编排入口，不负责塞业务逻辑。
 
+### 🗂️ 类图：接口与关系
+
+![外观类图：OrderFacade 组合 StockService、PayService 和 LogisticsService，统一编排下单](diagrams/09-facade.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/09-facade.zh.excalidraw)
+
 ### ☕ 双语言示例（Java / Go 页签切换）
 
 {{< tabs >}}
@@ -1323,6 +1396,12 @@ func main() {
 - 环节顺序不固定、职责经常增删，链条会很难维护；
 - 只有两三个简单 `if` 校验，直接写就行，不需要责任链。
 
+### 🗂️ 类图：接口与关系
+
+![责任链类图：具体处理器继承 Handler，Handler 通过 next 自关联连接后续处理器](diagrams/10-chain.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/10-chain.zh.excalidraw)
+
 ### ☕ 双语言示例（Java / Go 页签切换）
 
 {{< tabs >}}
@@ -1384,10 +1463,10 @@ class BizHandler extends Handler {
 public class Main {
     public static void main(String[] args) {
         // 串起链条：参数校验 → 权限校验 → 业务执行
-        new ParamCheck()
-                .setNext(new AuthCheck())
-                .setNext(new BizHandler())
-                .handle(200);
+        Handler chain = new ParamCheck();
+        chain.setNext(new AuthCheck()).setNext(new BizHandler());
+        // setNext 返回的是下一个处理器；执行必须从保留的链头开始
+        chain.handle(200);
     }
 }
 ```
@@ -1480,6 +1559,12 @@ func main() {
 
 - 状态很少（2-3 个）且流转逻辑简单，用 if-else 反而更直白；
 - 状态固定不变、没有「自动流转」的需求，不需要引入状态对象。
+
+### 🗂️ 类图：接口与关系
+
+![状态类图：Order 持有 OrderState，四种状态实现接口并按顺序创建下一状态](diagrams/11-state.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/11-state.zh.excalidraw)
 
 ### ☕ 双语言示例（Java / Go 页签切换）
 
@@ -1628,6 +1713,12 @@ func main() {
 - 流程本身不固定、经常要调整步骤顺序，模板方法反而束缚；
 - 只有一个实现、短期内没有第二个变体，不需要先抽象模板。
 
+### 🗂️ 类图：接口与关系
+
+![模板方法类图：ExcelExport 与 PdfExport 继承 ExportTemplate，重写 format 和 save](diagrams/12-template-method.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/12-template-method.zh.excalidraw)
+
 ### ☕ 双语言示例（Java / Go 页签切换）
 
 原版 Go 用「接口 + 外部函数」模拟模板，Java 里更贴切的写法是**抽象类 + final 模板方法**：公共步骤写死在基类，可变步骤留成抽象方法。
@@ -1766,6 +1857,12 @@ func main() {
 - 状态很大、变化又频繁，全量快照会占用大量内存；可以限制历史条数，或评估增量记录。
 - 只需要撤销一个很小、可逆的操作，直接记录反向操作可能更简单。
 - 已经发生支付、发短信、写外部系统等副作用：恢复内存快照不能撤销这些结果，需要对应的业务补偿。
+
+### 🗂️ 类图：接口与关系
+
+![备忘录类图：Editor 创建 Snapshot，History 保存编辑器引用与快照栈，Snapshot 记录 owner](diagrams/13-memento.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/13-memento.zh.excalidraw)
 
 ### ☕ 双语言示例（Java / Go 页签切换）
 
@@ -1955,6 +2052,12 @@ Java 标准库的 `StateEdit` 也采用了类似的状态恢复思路：由被�
 - 主要需求是随机访问、按键查询，迭代器不能替代索引或 map。
 - 需要并发修改集合却没有定义一致性规则：迭代器本身不保证线程安全，也不会自动提供数据快照。
 
+### 🗂️ 类图：接口与关系
+
+![迭代器类图：OrderBatch 实现 Iterable，创建实现 Iterator 接口的匿名类，每个实例保存独立游标](diagrams/14-iterator.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/14-iterator.zh.excalidraw)
+
 ### ☕ 双语言示例（Java / Go 页签切换）
 
 订单批次 `OrderBatch` 隐藏内部数组 / slice，每次创建迭代器时生成一个独立游标。Java 实现 `Iterable<String>`，可直接使用增强 `for`；Go 用 `Next() (string, bool)` 表达「取到元素 / 已经结束」。
@@ -2105,6 +2208,12 @@ Java 的 `hasNext()` 不推进游标，`next()` 在耗尽后必须抛出 `NoSuch
 - 只有一个简单入口，不需要排队、记录或撤销，直接方法调用或函数回调更清楚。
 - 只是为同一任务替换算法，优先考虑策略模式。
 - 不要给每个操作都强行加 `undo()`：发短信、真实扣款等操作不能靠恢复一个字段撤销，应设计明确的业务补偿流程。
+
+### 🗂️ 类图：接口与关系
+
+![命令类图：Remote 保存 Command 历史，SetPowerCommand 实现命令接口并持有接收者 Light](diagrams/15-command.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/15-command.zh.excalidraw)
 
 ### ☕ 双语言示例（Java / Go 页签切换）
 
@@ -2303,6 +2412,12 @@ func main() {
 - 两个维度实际上强耦合，大部分组合都不成立；硬凑统一接口会产生大量特判，应先重新划分职责和能力边界。
 - 只是在接入一个不兼容的旧接口，适配器通常更直接。
 
+### 🗂️ 类图：接口与关系
+
+![桥接类图：Notification 抽象类组合 Sender 接口，通知子类和渠道实现各自扩展](diagrams/16-bridge.zh.png)
+
+[下载可编辑的 Excalidraw 源文件](diagrams/16-bridge.zh.excalidraw)
+
 ### ☕ 双语言示例（Java / Go 页签切换）
 
 下面组合「普通 / 紧急通知」和「邮件 / 短信渠道」。四个角色是：**Notification（抽象部分）、NormalNotification / UrgentNotification（扩展抽象）、Sender（实现接口）、EmailSender / SmsSender（具体实现）**。
@@ -2498,3 +2613,4 @@ func main() {
 9. **迭代器**：统一遍历接口不代表自动获得懒加载、并发安全或快照一致性，这些取决于具体实现及其契约。
 10. **命令**：核心是请求对象化与调用解耦，撤销、持久化、重试都是按需扩展；需要撤销时，可以与备忘录配合。
 11. **桥接**：属于结构型模式，重点是抽象与实现两个维度独立扩展；采用组合、依赖接口或能切换实现，本身都不是充分判断条件。
+12. **类图与示例对应**：16 张类图标明已有接口、抽象类和对象关系，不为没有接口的示例额外添加接口。责任链的 Java 入口保留链头后再调用 `handle()`，避免连续 `setNext()` 返回链尾后跳过前面的校验。
