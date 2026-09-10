@@ -1,6 +1,6 @@
 ---
-title: "15 个常用设计模式・Java / Go 双语言版：业务场景 + 痛点 + 代码，一表看懂"
-description: "8 大高频设计模式 + 7 个第二梯队模式，补充备忘录、迭代器、命令模式：典型业务场景、痛点、什么时候不用；Java / Go 页签一键切换对照，开头一张总结表帮你一眼分清 15 个模式。"
+title: "16 个常用设计模式・Java / Go 双语言版：业务场景 + 痛点 + 代码，一表看懂"
+description: "8 大高频设计模式 + 8 个第二梯队模式，补充备忘录、迭代器、命令、桥接模式：典型业务场景、痛点、什么时候不用；Java / Go 页签一键切换对照，开头一张总结表帮你一眼分清 16 个模式。"
 date: 2026-08-18T00:00:00+08:00
 slug: "java-design-patterns-scenarios"
 categories:
@@ -14,7 +14,7 @@ tags:
 toc: true
 ---
 
-# 🧩 15 个常用设计模式・Java / Go 双语言版：场景、痛点、代码一表看懂
+# 🧩 16 个常用设计模式・Java / Go 双语言版：场景、痛点、代码一表看懂
 
 > 这篇博客整理自一份《8 大高频设计模式・详细业务场景 + 痛点 + 什么时候不用》的笔记，并做了三件事：
 >
@@ -22,11 +22,11 @@ toc: true
 > 2. **双语言代码**：每个模式的代码框里都有 **Java / Go 两个页签，一键切换对照**，想用哪种语言看哪种；
 > 3. **保留原文**：场景、痛点、口诀一字不删；原文 Go 代码全部保留，直接放在每个模式的代码页签里，不再单独设附录。
 
-在原有 12 个模式的基础上，本文补充了 **备忘录 Memento、迭代器 Iterator、命令 Command**，共 15 个模式。「第一梯队 / 第二梯队」沿用原笔记的学习分组，不代表严格的使用频率排名。
+在原有 12 个模式的基础上，本文补充了 **备忘录 Memento、迭代器 Iterator、命令 Command、桥接 Bridge**，共 16 个模式。「第一梯队 / 第二梯队」沿用原笔记的学习分组，不代表严格的使用频率排名。
 
 先看总表，再逐一看细节，也可以配合「易混模式对照」和「工厂 + 策略组合实战」理解模式之间的关系。
 
-## 📋 开篇总结表：15 个模式一眼看懂
+## 📋 开篇总结表：16 个模式一眼看懂
 
 | 模式 | 类型 | 核心一句话 | 典型业务场景 | 什么时候不用 | 一句话口诀 |
 |---|---|---|---|---|---|
@@ -45,6 +45,7 @@ toc: true
 | 备忘录 Memento | 行为型 | 在不暴露内部细节的前提下保存、恢复对象状态 | 编辑器撤销、表单草稿回退、游戏存档 | 状态太大且快照频繁；需要撤销外部副作用 | 先存一份状态，后悔时读档 |
 | 迭代器 Iterator | 行为型 | 统一遍历入口，隐藏集合内部结构 | 订单集合、树形目录、分页结果遍历 | 普通集合直接循环就够用 | 只管取下一个，不管里面怎么存 |
 | 命令 Command | 行为型 | 把请求封装成对象，分离发起者与执行者 | 按钮与快捷键、任务队列、操作撤销 | 一次直接调用就能表达清楚 | 把要做的事装成命令，交给别人执行 |
+| 桥接 Bridge | 结构型 | 拆开两个独立变化的维度，用组合连接 | 通知级别 × 发送渠道、报表种类 × 输出格式、控件类型 × 绘制平台 | 只有一个变化维度；维度之间强耦合 | 两个维度各自扩展，组合搭桥 |
 
 ---
 
@@ -985,6 +986,18 @@ func main() {
 - **状态模式**：状态之间可以互相转换，由「状态自己」决定下一个状态（订单：待支付 → 已支付 → 已发货）；
 - **策略模式**：策略之间互相独立，由「上下文 Context」决定什么时候换（折扣：9 折 ↔ 满减，互不关联）。
 
+## 📌 桥接 vs 适配器 vs 策略（补充）
+
+| 模式 | 主要解决什么问题 | 通知系统里的例子 |
+|---|---|---|
+| 桥接 Bridge | 两个维度都要独立扩展，避免为每种组合建一个类 | 普通 / 紧急通知与邮件 / 短信渠道分开定义，再自由组合 |
+| 适配器 Adapter | 已有接口不兼容，需要转换调用方式或数据 | 把短信 SDK 的 `sendSms(phone, body)` 转成系统统一的 `Sender.send(userId, content)` |
+| 策略 Strategy | 同一个目标有多种可替换算法 | 对同一类通知选择固定间隔或指数退避的重试算法 |
+
+桥接和策略都可能表现为「持有一个接口并委托调用」，区别要看设计意图：**桥接强调两套类型各自演化，策略强调替换某一项行为的算法**。仅仅注入一个接口，或支持运行时切换实现，都不足以单独判定是桥接；桥接也不要求必须在运行中切换实现。
+
+两者还能和适配器配合：先用适配器把各家发送 SDK 接到 `Sender` 接口，再让通知类型通过这个接口组合渠道。
+
 ## 📌 备忘录 vs 命令 vs 策略（补充）
 
 | 模式 | 关注的问题 | 编辑器里的例子 |
@@ -1176,7 +1189,7 @@ func main() {
 
 ---
 
-# 三、第二梯队 7 个常用模式
+# 三、第二梯队 8 个常用模式
 
 ## 9. 外观模式 Facade（结构型）
 
@@ -2266,7 +2279,198 @@ func main() {
 
 ---
 
-# 四、7 个第二梯队模式速记区分（原文保留并补充）
+## 16. 桥接模式 Bridge（结构型）
+
+**核心：把抽象部分与实现部分分离，用组合把它们连接起来，让两边都能独立扩展。**
+
+这里的「抽象部分」指面向业务的高层功能，「实现部分」指它依赖的底层能力，不是简单地把一个类拆成接口和实现类。例如通知系统中，**通知级别决定怎样组织消息，发送渠道决定怎样把消息送出去**。
+
+### ✅ 典型业务场景
+
+- **通知级别 × 发送渠道**
+  痛点：普通通知、紧急通知都要支持邮件和短信。如果每个组合建一个类，就会出现 `NormalEmailNotification`、`NormalSmsNotification`、`UrgentEmailNotification`、`UrgentSmsNotification`；新增站内信又要为每种通知各加一个类。
+  做法：通知类型依赖统一的发送接口，邮件、短信分别实现这个接口。新增通知类型时复用已有渠道，新增渠道时复用已有通知类型。
+- **报表种类 × 输出格式**
+  痛点：销售报表、库存报表都要输出 CSV 和 PDF，把取数、报表规则与格式生成写进每个组合类，会重复两边的逻辑。
+  做法：报表侧负责业务数据与结构，输出侧负责渲染；用稳定的数据契约连接，前提是不同格式都能表达这份结构。
+- **控件类型 × 平台绘制实现**
+  痛点：按钮、复选框各自需要多个平台版本，控件交互逻辑和平台绘制逻辑容易重复。
+  做法：控件维护高层交互行为，通过绘制接口调用平台实现，让两边分别演化。
+
+### ⚠️ 什么时候不要用
+
+- 只有一个会变化的维度，普通接口、多态或策略已经够用，不必再人为拆出第二套类型。
+- 两个维度实际上强耦合，大部分组合都不成立；硬凑统一接口会产生大量特判，应先重新划分职责和能力边界。
+- 只是在接入一个不兼容的旧接口，适配器通常更直接。
+
+### ☕ 双语言示例（Java / Go 页签切换）
+
+下面组合「普通 / 紧急通知」和「邮件 / 短信渠道」。四个角色是：**Notification（抽象部分）、NormalNotification / UrgentNotification（扩展抽象）、Sender（实现接口）、EmailSender / SmsSender（具体实现）**。
+
+| 通知类型 | 邮件渠道 | 短信渠道 |
+|---|---|---|
+| 普通通知 | 普通通知 + EmailSender | 普通通知 + SmsSender |
+| 紧急通知 | 紧急通知 + EmailSender | 紧急通知 + SmsSender |
+
+每个格子都是对象组合，不需要单独定义一个类。示例仅打印发送过程，`userId` 表示接收用户；紧急通知用前缀展示不同的消息编排，不包含真实投递、重试或告警升级逻辑。
+
+{{< tabs >}}
+{{< tab "Java" >}}
+```java
+// 实现维度：怎样发送
+interface Sender {
+    void send(String userId, String content);
+}
+
+class EmailSender implements Sender {
+    public void send(String userId, String content) {
+        System.out.println("[邮件] " + userId + "：" + content);
+    }
+}
+
+class SmsSender implements Sender {
+    public void send(String userId, String content) {
+        System.out.println("[短信] " + userId + "：" + content);
+    }
+}
+
+// 抽象维度：哪种通知；通过持有 Sender 连接发送实现
+abstract class Notification {
+    protected final Sender sender;
+
+    protected Notification(Sender sender) {
+        this.sender = sender;
+    }
+
+    public abstract void notifyUser(String userId, String content);
+}
+
+class NormalNotification extends Notification {
+    public NormalNotification(Sender sender) { super(sender); }
+
+    public void notifyUser(String userId, String content) {
+        sender.send(userId, "【普通】" + content);
+    }
+}
+
+class UrgentNotification extends Notification {
+    public UrgentNotification(Sender sender) { super(sender); }
+
+    public void notifyUser(String userId, String content) {
+        sender.send(userId, "【紧急】" + content);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Sender email = new EmailSender();
+        Sender sms = new SmsSender();
+        Notification[] notifications = {
+            new NormalNotification(email),
+            new NormalNotification(sms),
+            new UrgentNotification(email),
+            new UrgentNotification(sms)
+        };
+        for (Notification notification : notifications) {
+            notification.notifyUser("u1001", "服务将在 22:00 维护");
+        }
+    }
+}
+```
+{{< /tab >}}
+
+{{< tab "Go" >}}
+```go
+package main
+
+import "fmt"
+
+// 实现维度：怎样发送
+type Sender interface {
+	Send(userID, content string)
+}
+
+type EmailSender struct{}
+
+func (EmailSender) Send(userID, content string) {
+	fmt.Printf("[邮件] %s：%s\n", userID, content)
+}
+
+type SmsSender struct{}
+
+func (SmsSender) Send(userID, content string) {
+	fmt.Printf("[短信] %s：%s\n", userID, content)
+}
+
+// 抽象维度：哪种通知；具体通知通过组合持有 Sender
+type Notification interface {
+	Notify(userID, content string)
+}
+
+type NormalNotification struct {
+	sender Sender
+}
+
+func NewNormalNotification(sender Sender) *NormalNotification {
+	return &NormalNotification{sender: sender}
+}
+
+func (n *NormalNotification) Notify(userID, content string) {
+	n.sender.Send(userID, "【普通】"+content)
+}
+
+type UrgentNotification struct {
+	sender Sender
+}
+
+func NewUrgentNotification(sender Sender) *UrgentNotification {
+	return &UrgentNotification{sender: sender}
+}
+
+func (n *UrgentNotification) Notify(userID, content string) {
+	n.sender.Send(userID, "【紧急】"+content)
+}
+
+func main() {
+	email, sms := EmailSender{}, SmsSender{}
+	notifications := []Notification{
+		NewNormalNotification(email),
+		NewNormalNotification(sms),
+		NewUrgentNotification(email),
+		NewUrgentNotification(sms),
+	}
+	for _, notification := range notifications {
+		notification.Notify("u1001", "服务将在 22:00 维护")
+	}
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+两种语言输出一致：
+
+```text
+[邮件] u1001：【普通】服务将在 22:00 维护
+[短信] u1001：【普通】服务将在 22:00 维护
+[邮件] u1001：【紧急】服务将在 22:00 维护
+[短信] u1001：【紧急】服务将在 22:00 维护
+```
+
+**连接两边的桥，就是通知对象持有的 `Sender`。** Java 用抽象类保存这条引用，Go 用结构体字段组合发送接口，不需要模拟类继承。高层的 `notifyUser()` / `Notify()` 负责组织通知，再调用底层的 `send()` / `Send()` 完成渠道发送。
+
+接下来增加一个 `InAppSender`（站内信），只需实现 `Sender` 并在组装处注入，普通、紧急通知的代码都不用改。反过来，新增一种通知类型，也能直接复用邮件、短信实现。前提是发送接口足够稳定，并且新能力符合已有契约。
+
+如果有 M 种通知和 N 种渠道，为每个组合建类需要 M × N 个具体组合类；桥接把它们拆成 M 个通知类型和 N 个渠道实现，另加少量接口或基类。**减少的是重复的类型与实现代码，业务上可能出现的 M × N 种组合仍然存在，相应的兼容性验证也不能省略。**
+
+阅读真实 API 时，可以参考高层接口与底层驱动的分层：Java 的 `DriverManager` 会从已注册的 JDBC 驱动中选择合适的驱动建立连接；Go 的 `database/sql/driver` 定义供数据库驱动实现、由 `database/sql` 使用的接口。这有助于理解通过稳定接口连接不同层次，但要判定某段设计是否属于桥接，还需找出两边各自扩展的维度。参见 [DriverManager 官方文档](https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/DriverManager.html) 和 [Go 数据库驱动接口](https://pkg.go.dev/database/sql/driver)。
+
+### 一句话口诀（补充）
+
+> 两个维度各自扩展，组合搭桥 → 桥接
+
+---
+
+# 四、8 个第二梯队模式速记区分（原文保留并补充）
 
 - **外观 Facade**：复杂一堆子系统 → 一个入口调用；
 - **责任链**：校验 / 审批一条流水线，中途失败就截断；
@@ -2274,7 +2478,8 @@ func main() {
 - **模板方法**：流程骨架固定不变，只有部分步骤子类自定义；
 - **备忘录 Memento**：先保存对象状态，需要回退时交给原对象恢复；
 - **迭代器 Iterator**：统一取下一个元素，遍历过程不暴露集合内部结构；
-- **命令 Command**：把请求封装成对象，方便统一触发、排队或记录操作。
+- **命令 Command**：把请求封装成对象，方便统一触发、排队或记录操作；
+- **桥接 Bridge**：把两个独立变化的维度拆开，通过组合连接起来。
 
 ---
 
@@ -2282,13 +2487,14 @@ func main() {
 
 对照 GoF 经典分类逐条核对过，原稿结论基本正确，这里把几处容易混淆的点明确一下：
 
-1. **分类核对**：单例、简单工厂、建造者 = 创建型；适配器、装饰器、代理、外观 = 结构型；策略、观察者、责任链、状态、模板方法、备忘录、迭代器、命令 = 行为型。
+1. **分类核对**：单例、简单工厂、建造者 = 创建型；适配器、装饰器、代理、外观、桥接 = 结构型；策略、观察者、责任链、状态、模板方法、备忘录、迭代器、命令 = 行为型。
 2. **简单工厂**严格说不在 GoF 23 个经典模式里，它是「工厂方法 / 抽象工厂」的简化教学版本，教程里常把它单列出来讲，本文按原稿保留。
 3. **观察者 vs MQ**：进程内观察者默认是同步通知；MQ / Kafka 是「发布-订阅」思想在分布式下的实现，可以异步、削峰，但核心思路一致。
 4. **装饰器 vs 代理**：装饰器一定会执行目标对象；代理可能直接拦截不调用真实对象（原稿结论正确）。
 5. **适配器 vs 外观**：适配器是「接口翻译」，解决两个接口不兼容；外观是「简化入口」，隐藏内部编排。场景里「接入多个支付 SDK」是适配器，「下单聚合库存/支付/物流」是外观。
 6. **模板方法**：Go 版用「接口 + 外部函数」模拟，Java 版用「抽象类 + final 模板方法」表达，语义更严格。
-7. **代码语言**：每个模式的代码框都带 **Java / Go 页签**，两者一一对应。前 12 个模式的 Go 代码保留原稿版本；新增 3 个模式提供独立的 Java / Go 示例，可分别运行，Java 示例保存为 `Main.java`，Go 示例保存为 `main.go`。
+7. **代码语言**：每个模式的代码框都带 **Java / Go 页签**，两者一一对应。前 12 个模式的 Go 代码保留原稿版本；新增 4 个模式提供独立的 Java / Go 示例，可分别运行，Java 示例保存为 `Main.java`，Go 示例保存为 `main.go`。
 8. **备忘录**：保存和恢复状态不等于切换状态模式中的行为，也不等于数据库事务回滚；可变状态必须处理快照隔离。
 9. **迭代器**：统一遍历接口不代表自动获得懒加载、并发安全或快照一致性，这些取决于具体实现及其契约。
 10. **命令**：核心是请求对象化与调用解耦，撤销、持久化、重试都是按需扩展；需要撤销时，可以与备忘录配合。
+11. **桥接**：属于结构型模式，重点是抽象与实现两个维度独立扩展；采用组合、依赖接口或能切换实现，本身都不是充分判断条件。
