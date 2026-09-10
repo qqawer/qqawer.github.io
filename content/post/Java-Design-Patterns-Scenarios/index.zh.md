@@ -1,6 +1,6 @@
 ---
-title: "8 大高频设计模式・Java / Go 双语言版：业务场景 + 痛点 + 代码，一表看懂"
-description: "8 大高频设计模式 + 4 个第二梯队模式：典型业务场景、痛点、什么时候不用；每个模式一个代码框，Java / Go 页签一键切换对照，开头一张总结表帮你一眼分清 12 个模式。"
+title: "15 个常用设计模式・Java / Go 双语言版：业务场景 + 痛点 + 代码，一表看懂"
+description: "8 大高频设计模式 + 7 个第二梯队模式，补充备忘录、迭代器、命令模式：典型业务场景、痛点、什么时候不用；Java / Go 页签一键切换对照，开头一张总结表帮你一眼分清 15 个模式。"
 date: 2026-08-18T00:00:00+08:00
 slug: "java-design-patterns-scenarios"
 categories:
@@ -14,7 +14,7 @@ tags:
 toc: true
 ---
 
-# 🧩 8 大高频设计模式・Java / Go 双语言版：场景、痛点、代码一表看懂
+# 🧩 15 个常用设计模式・Java / Go 双语言版：场景、痛点、代码一表看懂
 
 > 这篇博客整理自一份《8 大高频设计模式・详细业务场景 + 痛点 + 什么时候不用》的笔记，并做了三件事：
 >
@@ -22,9 +22,11 @@ toc: true
 > 2. **双语言代码**：每个模式的代码框里都有 **Java / Go 两个页签，一键切换对照**，想用哪种语言看哪种；
 > 3. **保留原文**：场景、痛点、口诀一字不删；原文 Go 代码全部保留，直接放在每个模式的代码页签里，不再单独设附录。
 
-先看总表，再逐一看细节，最后看「易混模式对照」和「工厂 + 策略组合实战」。
+在原有 12 个模式的基础上，本文补充了 **备忘录 Memento、迭代器 Iterator、命令 Command**，共 15 个模式。「第一梯队 / 第二梯队」沿用原笔记的学习分组，不代表严格的使用频率排名。
 
-## 📋 开篇总结表：12 个模式一眼看懂
+先看总表，再逐一看细节，也可以配合「易混模式对照」和「工厂 + 策略组合实战」理解模式之间的关系。
+
+## 📋 开篇总结表：15 个模式一眼看懂
 
 | 模式 | 类型 | 核心一句话 | 典型业务场景 | 什么时候不用 | 一句话口诀 |
 |---|---|---|---|---|---|
@@ -40,6 +42,9 @@ toc: true
 | 责任链 Chain | 行为型 | 一条流水线依次处理，可中断 | 参数→权限→限流→业务、审批流 | 环节不固定、职责常变 | 校验/审批一条流水线，中途失败就截断 |
 | 状态 State | 行为型 | 行为随内部状态自动变化，状态间可转换 | 订单状态流转、工单/审批 | 状态少且流转简单 | 一个对象内部状态流转、自动切换行为 |
 | 模板方法 Template | 行为型 | 固定流程骨架，子类重写部分步骤 | 报表导出（加载→格式化→保存） | 流程本身不固定 | 流程骨架固定不变，只有部分步骤自定义 |
+| 备忘录 Memento | 行为型 | 在不暴露内部细节的前提下保存、恢复对象状态 | 编辑器撤销、表单草稿回退、游戏存档 | 状态太大且快照频繁；需要撤销外部副作用 | 先存一份状态，后悔时读档 |
+| 迭代器 Iterator | 行为型 | 统一遍历入口，隐藏集合内部结构 | 订单集合、树形目录、分页结果遍历 | 普通集合直接循环就够用 | 只管取下一个，不管里面怎么存 |
+| 命令 Command | 行为型 | 把请求封装成对象，分离发起者与执行者 | 按钮与快捷键、任务队列、操作撤销 | 一次直接调用就能表达清楚 | 把要做的事装成命令，交给别人执行 |
 
 ---
 
@@ -980,6 +985,23 @@ func main() {
 - **状态模式**：状态之间可以互相转换，由「状态自己」决定下一个状态（订单：待支付 → 已支付 → 已发货）；
 - **策略模式**：策略之间互相独立，由「上下文 Context」决定什么时候换（折扣：9 折 ↔ 满减，互不关联）。
 
+## 📌 备忘录 vs 命令 vs 策略（补充）
+
+| 模式 | 关注的问题 | 编辑器里的例子 |
+|---|---|---|
+| 备忘录 Memento | 怎样保存并恢复「之前是什么样」 | 保存编辑前的正文、光标位置，撤销时恢复 |
+| 命令 Command | 怎样封装「这次要做什么」并交给调用者管理 | 把插入文字封装成命令，按钮和快捷键共用执行入口 |
+| 策略 Strategy | 同一个目标采用哪种可替换算法 | 同一段文字选择不同的排版算法 |
+
+**命令和备忘录可以配合使用**：命令在执行前向编辑器索取快照，撤销时交还快照。命令负责操作的执行与管理，备忘录负责保存恢复所需的状态；命令本身并不要求一定支持撤销。
+
+## 📌 迭代器 vs 责任链（补充）
+
+- **迭代器**：从集合中依次取出数据，业务处理由调用方决定；
+- **责任链**：把同一个请求交给一组处理器，决定继续传递还是结束。
+
+遍历十个订单用迭代器；对一个订单依次做参数、权限和额度检查用责任链。两者都可能出现循环，但分离的职责不同。
+
 ## 🚀 工厂 + 策略 组合完整示例（Java / Go 页签切换）
 
 业务中最常一起搭配使用：**工厂负责创建策略对象，上下文负责使用、切换策略对象**。
@@ -1154,7 +1176,7 @@ func main() {
 
 ---
 
-# 三、第二梯队 4 个高频模式
+# 三、第二梯队 7 个常用模式
 
 ## 9. 外观模式 Facade（结构型）
 
@@ -1710,12 +1732,549 @@ func main() {
 
 ---
 
-# 四、4 个第二梯队模式速记区分（原文保留）
+## 13. 备忘录模式 Memento（行为型）
+
+**核心：由对象自己生成状态快照，在不暴露内部细节的前提下，允许以后恢复到这个状态。**
+
+### ✅ 典型业务场景
+
+- **编辑器撤销：正文、光标、选区一起回退**
+  痛点：撤销按钮如果直接读取、修改编辑器的内部字段，每增加一个字段，历史管理代码也要跟着改。
+  做法：编辑器自己决定快照包含哪些状态，历史管理器只保存快照，撤销时交回编辑器恢复。
+- **复杂表单恢复到上一次保存的草稿**
+  痛点：用户改了多个关联字段，逐个写反向操作容易漏掉状态。
+  做法：在需要回退的边界保存一份完整状态，取消编辑时恢复。
+- **单机游戏存档、绘图工具的画布历史**
+  痛点：位置、属性、图层等状态需要成组恢复，不能只回退一个数值。
+  做法：由拥有这些状态的对象生成备忘录；跨进程存档还需要额外处理持久化和版本兼容。
+
+### ⚠️ 什么时候不要用
+
+- 状态很大、变化又频繁，全量快照会占用大量内存；可以限制历史条数，或评估增量记录。
+- 只需要撤销一个很小、可逆的操作，直接记录反向操作可能更简单。
+- 已经发生支付、发短信、写外部系统等副作用：恢复内存快照不能撤销这些结果，需要对应的业务补偿。
+
+### ☕ 双语言示例（Java / Go 页签切换）
+
+用一个正文编辑器演示「第二版 → 第一版 → 空白」。三个角色分别是：**Editor（原发器，拥有状态）、Snapshot（备忘录）、History（管理者，保存历史）**。每次修改前保存快照，撤销时弹出最近的一份；历史为空时返回 `false`。
+
+{{< tabs >}}
+{{< tab "Java" >}}
+```java
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+class Editor {
+    private String text = "";
+
+    public void setText(String text) { this.text = text; }
+    public String getText() { return text; }
+
+    // 外部可以持有快照，但不能读取或改写其中的状态
+    public static final class Snapshot {
+        private final Editor owner;
+        private final String text;
+
+        private Snapshot(Editor owner, String text) {
+            this.owner = owner;
+            this.text = text;
+        }
+    }
+
+    public Snapshot save() {
+        return new Snapshot(this, text);
+    }
+
+    public void restore(Snapshot snapshot) {
+        if (snapshot.owner != this) {
+            throw new IllegalArgumentException("快照不属于当前编辑器");
+        }
+        text = snapshot.text;
+    }
+}
+
+class History {
+    private final Editor editor;
+    private final Deque<Editor.Snapshot> snapshots = new ArrayDeque<>();
+
+    public History(Editor editor) { this.editor = editor; }
+
+    public void replace(String text) {
+        snapshots.push(editor.save()); // 先保存，再修改
+        editor.setText(text);
+    }
+
+    public boolean undo() {
+        if (snapshots.isEmpty()) return false;
+        editor.restore(snapshots.pop());
+        return true;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Editor editor = new Editor();
+        History history = new History(editor);
+        history.replace("第一版");
+        history.replace("第二版");
+        System.out.println(editor.getText());
+        history.undo();
+        System.out.println(editor.getText());
+        history.undo();
+        System.out.println("恢复为空白：" + editor.getText().isEmpty());
+        System.out.println("还能撤销：" + history.undo());
+    }
+}
+```
+{{< /tab >}}
+
+{{< tab "Go" >}}
+```go
+package main
+
+import "fmt"
+
+type Editor struct {
+	text string
+}
+
+func (e *Editor) SetText(text string) { e.text = text }
+func (e *Editor) Text() string        { return e.text }
+
+// 小写字段对包外不可见；管理者只保存快照，不读取其内容
+type snapshot struct {
+	owner *Editor
+	text  string
+}
+
+func (e *Editor) save() snapshot {
+	return snapshot{owner: e, text: e.text}
+}
+
+func (e *Editor) restore(s snapshot) {
+	if s.owner != e {
+		panic("快照不属于当前编辑器")
+	}
+	e.text = s.text
+}
+
+type History struct {
+	editor    *Editor
+	snapshots []snapshot
+}
+
+func NewHistory(editor *Editor) *History {
+	return &History{editor: editor}
+}
+
+func (h *History) Replace(text string) {
+	h.snapshots = append(h.snapshots, h.editor.save()) // 先保存，再修改
+	h.editor.SetText(text)
+}
+
+func (h *History) Undo() bool {
+	if len(h.snapshots) == 0 {
+		return false
+	}
+	last := len(h.snapshots) - 1
+	h.editor.restore(h.snapshots[last])
+	h.snapshots[last] = snapshot{} // 释放弹出记录持有的引用
+	h.snapshots = h.snapshots[:last]
+	return true
+}
+
+func main() {
+	editor := &Editor{}
+	history := NewHistory(editor)
+	history.Replace("第一版")
+	history.Replace("第二版")
+	fmt.Println(editor.Text())
+	history.Undo()
+	fmt.Println(editor.Text())
+	history.Undo()
+	fmt.Println("恢复为空白：" + fmt.Sprint(editor.Text() == ""))
+	fmt.Println("还能撤销：" + fmt.Sprint(history.Undo()))
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+两种语言输出一致：
+
+```text
+第二版
+第一版
+恢复为空白：true
+还能撤销：false
+```
+
+**关键不是保存一个对象引用，而是保存不会被后续修改污染的状态。** 这里正文是不可变的字符串，快照保存旧值即可；如果换成 Java 可变列表或 Go 的 slice / map，只复制引用或容器头部不够，需要根据状态结构做深拷贝，或使用不可变数据结构。
+
+Java 示例用嵌套类的 `private` 字段隐藏快照内容；Go 的小写名称只隔离包外访问，同包代码仍可访问，因此示例中的 `History` 主动遵守「只保管、不拆解」的约定。需要语言层面的隔离时，应把编辑器和快照实现放进独立包，对外提供不暴露状态的快照接口。示例只演示单线程内存撤销，所有需要记录的编辑都经过 `History`；重做、历史容量限制需要另外实现。
+
+Java 标准库的 `StateEdit` 也采用了类似的状态恢复思路：由被编辑对象保存编辑前后的状态，撤销与重做时恢复对应状态。参见 [StateEdit 官方文档](https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/undo/StateEdit.html)。
+
+### 一句话口诀（补充）
+
+> 先存一份状态，后悔时读档 → 备忘录
+
+---
+
+## 14. 迭代器模式 Iterator（行为型）
+
+**核心：提供统一的顺序访问入口，让调用方遍历集合时，不必知道内部用数组、链表还是树来存。**
+
+### ✅ 典型业务场景
+
+- **批量处理订单、商品或消息集合**
+  痛点：业务直接依赖数组下标或链表节点，底层存储结构一换，遍历代码也要改。
+  做法：集合提供迭代器，调用方只负责取下一个元素并处理。
+- **组织架构树、文件目录遍历**
+  痛点：调用方既要做业务，又要维护递归、栈或队列。
+  做法：深度优先、广度优先遍历分别由迭代器维护访问状态，业务只消费返回的节点。
+- **分页 API、数据库游标的逐条消费**
+  痛点：每个调用方都要重复写翻页、切换缓冲区等逻辑。
+  做法：在迭代接口背后按需获取下一批；此时还要设计错误返回、取消和资源关闭，不能把查询失败当成遍历结束。
+
+### ⚠️ 什么时候不要用
+
+- 普通数组、集合、slice 的现成遍历已经够用，直接用 Java 增强 `for` 或 Go `range`，不必额外手写迭代器。
+- 主要需求是随机访问、按键查询，迭代器不能替代索引或 map。
+- 需要并发修改集合却没有定义一致性规则：迭代器本身不保证线程安全，也不会自动提供数据快照。
+
+### ☕ 双语言示例（Java / Go 页签切换）
+
+订单批次 `OrderBatch` 隐藏内部数组 / slice，每次创建迭代器时生成一个独立游标。Java 实现 `Iterable<String>`，可直接使用增强 `for`；Go 用 `Next() (string, bool)` 表达「取到元素 / 已经结束」。
+
+{{< tabs >}}
+{{< tab "Java" >}}
+```java
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+class OrderBatch implements Iterable<String> {
+    private final String[] ids;
+
+    public OrderBatch(String... ids) {
+        this.ids = ids.clone(); // 不共享调用方可修改的输入数组
+    }
+
+    @Override
+    public Iterator<String> iterator() {
+        return new Iterator<String>() {
+            private int index = 0; // 每个迭代器有自己的游标
+
+            @Override
+            public boolean hasNext() {
+                return index < ids.length;
+            }
+
+            @Override
+            public String next() {
+                if (!hasNext()) throw new NoSuchElementException();
+                return ids[index++];
+            }
+        };
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        OrderBatch orders = new OrderBatch("O1001", "O1002");
+        Iterator<String> first = orders.iterator();
+        Iterator<String> second = orders.iterator();
+        System.out.println("迭代器 A：" + first.next());
+        System.out.println("迭代器 B：" + second.next());
+
+        // 增强 for 会取得一个新迭代器，从头遍历
+        for (String id : orders) {
+            System.out.println("处理订单：" + id);
+        }
+    }
+}
+```
+{{< /tab >}}
+
+{{< tab "Go" >}}
+```go
+package main
+
+import "fmt"
+
+type OrderIterator interface {
+	Next() (string, bool)
+}
+
+type OrderBatch struct {
+	ids []string
+}
+
+func NewOrderBatch(ids ...string) *OrderBatch {
+	return &OrderBatch{ids: append([]string(nil), ids...)}
+}
+
+func (b *OrderBatch) Iterator() OrderIterator {
+	return &sliceIterator{ids: b.ids} // 每次创建一个独立游标
+}
+
+type sliceIterator struct {
+	ids   []string
+	index int
+}
+
+func (it *sliceIterator) Next() (string, bool) {
+	if it.index >= len(it.ids) {
+		return "", false
+	}
+	id := it.ids[it.index]
+	it.index++
+	return id, true
+}
+
+func main() {
+	orders := NewOrderBatch("O1001", "O1002")
+	first, second := orders.Iterator(), orders.Iterator()
+	a, _ := first.Next() // 示例已知集合非空
+	b, _ := second.Next()
+	fmt.Println("迭代器 A：" + a)
+	fmt.Println("迭代器 B：" + b)
+
+	it := orders.Iterator()
+	for {
+		id, ok := it.Next()
+		if !ok {
+			break
+		}
+		fmt.Println("处理订单：" + id)
+	}
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+两种语言输出一致：
+
+```text
+迭代器 A：O1001
+迭代器 B：O1001
+处理订单：O1001
+处理订单：O1002
+```
+
+两个迭代器都从第一条订单开始，说明**遍历位置属于迭代器，不属于集合**。示例在构造订单批次时复制输入，并且不提供修改订单号的方法；这里只演示内存集合，不涉及翻页和 I/O 错误。
+
+Java 的 `hasNext()` 不推进游标，`next()` 在耗尽后必须抛出 `NoSuchElementException`，这是 [Iterator 官方接口](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Iterator.html) 的约定。Go 示例用 `bool` 区分空字符串元素与遍历结束；现代 Go 也可用标准库 [`iter.Seq` / `iter.Seq2`](https://pkg.go.dev/iter) 配合 `range`，这里保留显式游标便于对照 Java。
+
+### 一句话口诀（补充）
+
+> 只管取下一个，不管里面怎么存 → 迭代器
+
+---
+
+## 15. 命令模式 Command（行为型）
+
+**核心：把一次请求连同接收者、参数封装成命令对象，让发起请求的一方不必知道具体业务怎么执行。**
+
+### ✅ 典型业务场景
+
+- **编辑器按钮、菜单、快捷键共用同一项操作**
+  痛点：三个入口分别写一遍业务逻辑，修改时容易漏掉其中一个。
+  做法：把操作封装成命令，各入口只负责触发；是否保存历史由统一的调用者管理。
+- **后台任务排队、延迟执行、批量操作**
+  痛点：请求一发起就直接执行，难以把「创建任务」和「何时执行」分开。
+  做法：先生成携带参数的命令，再交给队列或调度器执行。命令模式提供封装边界，持久化、重试和幂等仍需另外设计。
+- **绘图操作撤销、设备控制历史**
+  痛点：调用方如果只知道某个方法执行过，不知道执行前的状态，就无法正确撤销。
+  做法：可撤销命令保存必要的历史信息，并提供 `undo()`；调用者维护已执行命令栈。
+
+### ⚠️ 什么时候不要用
+
+- 只有一个简单入口，不需要排队、记录或撤销，直接方法调用或函数回调更清楚。
+- 只是为同一任务替换算法，优先考虑策略模式。
+- 不要给每个操作都强行加 `undo()`：发短信、真实扣款等操作不能靠恢复一个字段撤销，应设计明确的业务补偿流程。
+
+### ☕ 双语言示例（Java / Go 页签切换）
+
+用「开灯 → 再开一次 → 撤销 → 再撤销」说明四个角色：**Command（命令接口）、SetPowerCommand（具体命令）、Remote（调用者）、Light（接收者）**。`Remote` 只调用命令接口，真正修改设备状态的是 `Light`。
+
+这个例子选择实现可撤销命令。**撤销开灯要恢复执行前的状态，不能无条件关灯**：如果原本已经开着，再次开灯后的撤销仍应保持开灯。
+
+{{< tabs >}}
+{{< tab "Java" >}}
+```java
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+interface Command {
+    void execute();
+    void undo();
+}
+
+// 接收者：拥有并修改实际状态
+class Light {
+    private boolean on;
+
+    public boolean isOn() { return on; }
+    public void setOn(boolean on) { this.on = on; }
+}
+
+class SetPowerCommand implements Command {
+    private final Light light;
+    private final boolean target;
+    private boolean previous;
+
+    public SetPowerCommand(Light light, boolean target) {
+        this.light = light;
+        this.target = target;
+    }
+
+    public void execute() {
+        previous = light.isOn(); // 执行时记录旧值，不在构造时记录
+        light.setOn(target);
+    }
+
+    public void undo() {
+        light.setOn(previous);
+    }
+}
+
+class Remote {
+    private final Deque<Command> history = new ArrayDeque<>();
+
+    public void run(Command command) {
+        command.execute();
+        history.push(command); // 执行成功后再记入历史
+    }
+
+    public boolean undo() {
+        if (history.isEmpty()) return false;
+        history.pop().undo();
+        return true;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Light light = new Light();
+        Remote remote = new Remote();
+        // 每次操作创建新命令，避免覆盖历史命令的 previous
+        remote.run(new SetPowerCommand(light, true));
+        remote.run(new SetPowerCommand(light, true));
+        System.out.println("连续开灯后：" + light.isOn());
+        remote.undo();
+        System.out.println("撤销第二次：" + light.isOn());
+        remote.undo();
+        System.out.println("撤销第一次：" + light.isOn());
+        System.out.println("还能撤销：" + remote.undo());
+    }
+}
+```
+{{< /tab >}}
+
+{{< tab "Go" >}}
+```go
+package main
+
+import "fmt"
+
+type Command interface {
+	Execute()
+	Undo()
+}
+
+type Light struct {
+	on bool
+}
+
+func (l *Light) IsOn() bool    { return l.on }
+func (l *Light) SetOn(on bool) { l.on = on }
+
+type SetPowerCommand struct {
+	light    *Light
+	target   bool
+	previous bool
+}
+
+func NewSetPowerCommand(light *Light, target bool) *SetPowerCommand {
+	return &SetPowerCommand{light: light, target: target}
+}
+
+func (c *SetPowerCommand) Execute() {
+	c.previous = c.light.IsOn() // 执行时记录旧值
+	c.light.SetOn(c.target)
+}
+
+func (c *SetPowerCommand) Undo() {
+	c.light.SetOn(c.previous)
+}
+
+type Remote struct {
+	history []Command
+}
+
+func (r *Remote) Run(command Command) {
+	command.Execute()
+	r.history = append(r.history, command)
+}
+
+func (r *Remote) Undo() bool {
+	if len(r.history) == 0 {
+		return false
+	}
+	last := len(r.history) - 1
+	r.history[last].Undo()
+	r.history[last] = nil
+	r.history = r.history[:last]
+	return true
+}
+
+func main() {
+	light := &Light{}
+	remote := &Remote{}
+	// 每次操作创建新命令，避免覆盖历史命令的 previous
+	remote.Run(NewSetPowerCommand(light, true))
+	remote.Run(NewSetPowerCommand(light, true))
+	fmt.Println("连续开灯后：" + fmt.Sprint(light.IsOn()))
+	remote.Undo()
+	fmt.Println("撤销第二次：" + fmt.Sprint(light.IsOn()))
+	remote.Undo()
+	fmt.Println("撤销第一次：" + fmt.Sprint(light.IsOn()))
+	fmt.Println("还能撤销：" + fmt.Sprint(remote.Undo()))
+}
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+两种语言输出一致：
+
+```text
+连续开灯后：true
+撤销第二次：true
+撤销第一次：false
+还能撤销：false
+```
+
+第一次命令记录旧值 `false`，第二次命令记录旧值 `true`，按后进先出撤销才会逐步回到初始状态。示例假设单线程执行、每次操作使用新的命令实例，设备状态只通过这个调用者修改；这里只修改内存字段，执行与撤销不会发生 I/O 失败。接真实设备时，还要设计错误返回、失败后的历史保留，以及外部状态已变化时能否撤销。
+
+如果接收者的状态很复杂，可以把命令里的 `previous` 换成它生成的备忘录，执行前保存、撤销时恢复。需要注意的是，**可撤销和可重试是两件事**：把请求包装成命令，不会自动让扣款等操作变成幂等操作。
+
+多个界面入口共享操作的实际 API 可以参考 [Swing Action 官方文档](https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/Action.html)：同一个操作对象可以供多个控件使用，并集中管理名称、图标与启用状态。
+
+### 一句话口诀（补充）
+
+> 把要做的事装成命令，交给别人执行 → 命令
+
+---
+
+# 四、7 个第二梯队模式速记区分（原文保留并补充）
 
 - **外观 Facade**：复杂一堆子系统 → 一个入口调用；
 - **责任链**：校验 / 审批一条流水线，中途失败就截断；
 - **状态 State**：一个对象内部状态流转、自动切换行为（订单状态）；
-- **模板方法**：流程骨架固定不变，只有部分步骤子类自定义。
+- **模板方法**：流程骨架固定不变，只有部分步骤子类自定义；
+- **备忘录 Memento**：先保存对象状态，需要回退时交给原对象恢复；
+- **迭代器 Iterator**：统一取下一个元素，遍历过程不暴露集合内部结构；
+- **命令 Command**：把请求封装成对象，方便统一触发、排队或记录操作。
 
 ---
 
@@ -1723,10 +2282,13 @@ func main() {
 
 对照 GoF 经典分类逐条核对过，原稿结论基本正确，这里把几处容易混淆的点明确一下：
 
-1. **分类核对**：单例、简单工厂、建造者 = 创建型；适配器、装饰器、代理、外观 = 结构型；策略、观察者、责任链、状态、模板方法 = 行为型。
+1. **分类核对**：单例、简单工厂、建造者 = 创建型；适配器、装饰器、代理、外观 = 结构型；策略、观察者、责任链、状态、模板方法、备忘录、迭代器、命令 = 行为型。
 2. **简单工厂**严格说不在 GoF 23 个经典模式里，它是「工厂方法 / 抽象工厂」的简化教学版本，教程里常把它单列出来讲，本文按原稿保留。
 3. **观察者 vs MQ**：进程内观察者默认是同步通知；MQ / Kafka 是「发布-订阅」思想在分布式下的实现，可以异步、削峰，但核心思路一致。
 4. **装饰器 vs 代理**：装饰器一定会执行目标对象；代理可能直接拦截不调用真实对象（原稿结论正确）。
 5. **适配器 vs 外观**：适配器是「接口翻译」，解决两个接口不兼容；外观是「简化入口」，隐藏内部编排。场景里「接入多个支付 SDK」是适配器，「下单聚合库存/支付/物流」是外观。
 6. **模板方法**：Go 版用「接口 + 外部函数」模拟，Java 版用「抽象类 + final 模板方法」表达，语义更严格。
-7. **代码语言**：每个模式的代码框都带 **Java / Go 页签**，两者一一对应，Go 代码为原稿版本，未做删改。
+7. **代码语言**：每个模式的代码框都带 **Java / Go 页签**，两者一一对应。前 12 个模式的 Go 代码保留原稿版本；新增 3 个模式提供独立的 Java / Go 示例，可分别运行，Java 示例保存为 `Main.java`，Go 示例保存为 `main.go`。
+8. **备忘录**：保存和恢复状态不等于切换状态模式中的行为，也不等于数据库事务回滚；可变状态必须处理快照隔离。
+9. **迭代器**：统一遍历接口不代表自动获得懒加载、并发安全或快照一致性，这些取决于具体实现及其契约。
+10. **命令**：核心是请求对象化与调用解耦，撤销、持久化、重试都是按需扩展；需要撤销时，可以与备忘录配合。
