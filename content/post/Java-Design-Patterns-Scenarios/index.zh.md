@@ -1,6 +1,6 @@
 ---
 title: "16 个常用设计模式・Java / Go 双语言版：业务场景 + 痛点 + 代码，一表看懂"
-description: "16 个常用设计模式的业务场景、痛点、适用边界与类图，标明接口、继承、关联和创建关系；Java / Go 代码页签切换对照，每张图附可编辑的 Excalidraw 源文件。"
+description: "16 个设计模式的 Java / Go 业务示例：明确业务对象、协作类、状态变化和失败分支，配套类图、运行结果、扩展方式与适用边界。"
 date: 2026-08-18T00:00:00+08:00
 slug: "java-design-patterns-scenarios"
 categories:
@@ -14,33 +14,33 @@ tags:
 toc: true
 ---
 
-# 🧩 16 个常用设计模式・Java / Go 双语言版：场景、痛点、代码一表看懂
+# 🧩 16 个常用设计模式・Java / Go 双语言版：业务对象、协作过程与类图
 
-> 这篇博客整理自一份《8 大高频设计模式・详细业务场景 + 痛点 + 什么时候不用》的笔记，并做了三件事：
->
-> 1. **内容审核**：逐个核对了模式归类、场景描述和结论，与经典 GoF 设计模式分类一致，细节核对结果放在文末「内容审核与补充说明」；
-> 2. **双语言代码**：每个模式的代码框里都有 **Java / Go 两个页签，一键切换对照**，想用哪种语言看哪种；
-> 3. **保留原文**：场景、痛点、口诀一字不删；原文 Go 代码全部保留，直接放在每个模式的代码页签里，不再单独设附录。
+理解一个模式，不能只看到 `send(msg)` 被转发了一次。真正要看的是：业务中谁保存状态，谁决定规则，谁调用谁；当新增渠道、修改算法或执行失败时，需要改动哪些地方。
 
-在原有 12 个模式的基础上，本文补充了 **备忘录 Memento、迭代器 Iterator、命令 Command、桥接 Bridge**，共 16 个模式。「第一梯队 / 第二梯队」沿用原笔记的学习分组，不代表严格的使用频率排名。
+本文围绕这些问题重写了 16 个模式的示例。每节都有具体需求、类的职责、完整调用过程、Java / Go 可运行代码、实际输出和扩展边界。例子保持在一个文件能够读完的规模，同时保留金额、商品明细、权限、分页游标、快照等真正影响行为的数据。
 
-先看总表，再逐一看细节，也可以配合「易混模式对照」和「工厂 + 策略组合实战」理解模式之间的关系。
+**运行约定：** Java 使用 **JDK 17+**，每节单独保存为 `Main.java`，执行 `javac -encoding UTF-8 Main.java` 后运行 `java -Dfile.encoding=UTF-8 Main`；Go 每节单独保存为 `main.go`，执行 `go run main.go`。不同节会重用类名，请放在不同目录。金额统一用整数“分”，重量用“克”，演示数量控制在整数运算范围内。Java 常用异常、Go 常用 `error` 表达业务失败，结果含义对应，语法不强求一致。
+
+支付、物流、存储、发送队列均为本地替身，没有真实扣款、发货或发送通知。例子验证的是对象协作与局部行为；涉及幂等、并发与外部副作用的限制写在对应章节，不把它们当成模式自动提供的能力。
+
+「第一梯队 / 第二梯队」沿用原笔记的学习分组，共 16 个模式，不代表严格的使用频率排名。先看总表，再按具体需求阅读。
 
 ## 📋 开篇总结表：16 个模式一眼看懂
 
 | 模式 | 类型 | 核心一句话 | 典型业务场景 | 什么时候不用 | 一句话口诀 |
 |---|---|---|---|---|---|
-| 单例 Singleton | 创建型 | 全局唯一实例 | 数据库连接池、全局配置、日志、Redis/MQ 客户端 | 需要多份独立状态；单测难 mock | 全项目只有一份，谁拿都是它 |
-| 简单工厂 Simple Factory | 创建型 | 按类型统一创建对象，选择只发生在创建时 | 支付渠道、文件导出器、消息发送 | 产品常新增且不想改工厂；中途要换实现 | 一次性选好对象，用完拉倒 |
+| 单例 Singleton | 创建型 | 约定范围内共享一个实例 | 数据库连接池、全局配置、日志、Redis/MQ 客户端 | 需要多份独立状态；单测难 mock | 同一范围，取到同一实例 |
+| 简单工厂 Simple Factory | 创建型 | 集中选择、配置并创建实现对象 | 支付渠道、文件导出器、消息发送 | 创建逻辑无差异；复杂产品族需其他工厂结构 | 创建细节集中到一处 |
 | 建造者 Builder | 创建型 | 分步构建字段多、可选参数多的复杂对象 | 复杂订单、多条件查询、HTTP 请求体、报表对象 | 字段只有 2-3 个 | 字段太多，链式 Builder 慢慢搭 |
 | 适配器 Adapter | 结构型 | 转换接口，做翻译层 | 第三方支付 SDK、新旧接口字段映射、多数据源 | 接口本来就一致 | 别人的接口和我不一样 → 加一层适配器翻译 |
 | 装饰器 Decorator | 结构型 | 动态叠加附加能力，不改原代码 | 日志/耗时/链路、缓存、权限、文件流包装 | 要完全替换主体逻辑 | 原来的功能我还要，只是额外加点东西 |
 | 代理 Proxy | 结构型 | 替身控制对真实对象的访问 | RPC 远程调用、权限拦截、懒加载、限流熔断 | 只是加日志计时 | 访问真实对象之前，先管控一下能不能进 |
-| 策略 Strategy | 行为型 | 同一目标多种算法，运行时可切换 | 折扣、运费、排序、导出格式 | 创建后永不换实现 | 同一个任务多种方案，中途可以换 |
-| 观察者 Observer | 行为型 | 一对多事件通知，主流程解耦 | 下单成功后的扣库存/短信/账单/积分、注册事件、MQ | 强依赖、必须顺序执行 | 一件事做完，触发一堆附属事情 |
+| 策略 Strategy | 行为型 | 同一目标的多种算法独立封装 | 折扣、运费、排序、导出格式 | 只有一个稳定且简单的算法 | 同一个任务，多种算法独立实现 |
+| 观察者 Observer | 行为型 | 一对多事件通知，主流程解耦 | 订单到账后的积分/回执/通知、注册事件 | 附属步骤之间存在强交易依赖 | 一件事做完，触发一堆附属事情 |
 | 外观 Facade | 结构型 | 简单入口，隐藏复杂子系统 | 下单聚合库存/支付/物流 | 子系统本来就简单 | 复杂一堆子系统 → 一个入口 |
-| 责任链 Chain | 行为型 | 一条流水线依次处理，可中断 | 参数→权限→限流→业务、审批流 | 环节不固定、职责常变 | 校验/审批一条流水线，中途失败就截断 |
-| 状态 State | 行为型 | 行为随内部状态自动变化，状态间可转换 | 订单状态流转、工单/审批 | 状态少且流转简单 | 一个对象内部状态流转、自动切换行为 |
+| 责任链 Chain | 行为型 | 一条流水线依次处理，可中断 | 参数→权限→限流→业务、审批流 | 检查很少；节点职责交叉严重 | 校验/审批一条流水线，中途失败就截断 |
+| 状态 State | 行为型 | 当前状态决定动作行为与允许的转换 | 订单状态流转、工单/审批 | 状态少且流转简单 | 动作委托当前状态，按规则流转 |
 | 模板方法 Template | 行为型 | 固定流程骨架，子类重写部分步骤 | 报表导出（加载→格式化→保存） | 流程本身不固定 | 流程骨架固定不变，只有部分步骤自定义 |
 | 备忘录 Memento | 行为型 | 在不暴露内部细节的前提下保存、恢复对象状态 | 编辑器撤销、表单草稿回退、游戏存档 | 状态太大且快照频繁；需要撤销外部副作用 | 先存一份状态，后悔时读档 |
 | 迭代器 Iterator | 行为型 | 统一遍历入口，隐藏集合内部结构 | 订单集合、树形目录、分页结果遍历 | 普通集合直接循环就够用 | 只管取下一个，不管里面怎么存 |
@@ -49,7 +49,7 @@ toc: true
 
 ## 🗂️ 类图怎么看：接口、继承与对象关系
 
-每个模式都附一张与正文代码对应的类图，**以 Java 示例的类结构和方法名为主，图下方说明 Go 的对应方式与结构差异**。图中只列关键成员，部分参数类型和构造方法省略，完整签名以代码为准。图片可点击放大；每张图下都能下载 `.excalidraw` 文件，在 Excalidraw 中继续编辑。
+每个模式都附一张与正文代码对应的类图，**以 Java 示例的类结构和方法名为主，图下方说明业务数据、调用路径与 Go 的结构差异**。图中只列关键成员，部分参数类型和构造方法省略，完整签名以代码为准。图片可点击放大；每张图下都能下载 `.excalidraw` 文件，在 Excalidraw 中继续编辑。
 
 | 图中记号 | 含义 | 读图方向 |
 |---|---|---|
@@ -59,83 +59,99 @@ toc: true
 | 实线 + 空心三角 | 继承父类 | 子类 → 父类 |
 | 实线 + 普通箭头 | 可导航关联，通常对应一个持有的字段 | 持有者 → 被持有对象的类型 |
 | 虚线 + 普通箭头 | 依赖，例如调用、使用参数类型或返回类型 | 使用者 → 被使用类型；`«create»` 表示创建 |
-| 实线 + 实心菱形 | 组合，整体内部拥有部分对象 | 菱形在整体一端；本文外观示例内部创建子服务 |
-| `1` / `0..1` / `0..*` | 预期持有一个 / 零或一个 / 零到多个对象 | 数量标注对应箭头目标一侧的类型 |
-| `+` / `-` / `#` | `public` / `private` / `protected` | 描述 Java 成员的可见性 |
+| `1` / `0..1` / `0..*` / `1..*` | 一个 / 零或一个 / 零到多个 / 一个或多个对象 | 数量标注对应箭头目标一侧的类型 |
+| `+` / `-` / `#` | `public` / `private` / `protected` | 未标记可见性的成员请以源码为准 |
 | `{static}` / `{final}` | 静态成员 / 不可重新赋值或不可重写的成员 | 结合所在字段、方法或类理解 |
 
-单例、本文的链式建造者、外观和备忘录示例没有自定义接口，图中按实际代码保留。**Go 的嵌入不是 Java 继承**：装饰器的 Go 示例使用函数包装；责任链、模板方法、迭代器和桥接的接口结构也有差异，不能直接照搬 Java 的继承箭头。
+类图只突出模式参与者，简单的数据载体集中列在图下方，完整定义见代码。没有自定义接口的例子按实际结构绘制。Java 的 record 用来缩短数据类的样板代码，它不会自动让嵌套的 List、Map 也不可变，因此需要时仍然显式复制。Go 采用结构体、接口与组合；嵌入与 Java 继承的区别可参见 [Effective Go 的嵌入说明](https://go.dev/doc/effective_go#embedding)。
 
----
+## 一、8 个常用模式：创建、连接与可替换行为
 
-# 一、8 大高频设计模式（第一梯队）
+### 1. 单例 Singleton｜创建型
 
-## 1. 单例 Singleton｜创建型
+#### 业务场景：同一份配置支撑结算与补货
 
-**核心：全局唯一实例**
+商城有东区、西区两套运费规则，结算服务要计算实付金额，补货服务要读取预警阈值。如果每个服务都自行加载配置，既会重复读取，也可能在启动过程中拿到不同版本。这里把启动配置作为一份只读快照，通过 `AppConfig.getInstance()` 取得，然后注入各个业务服务。
 
-### ✅ 典型业务场景
+| 类 / 接口 | 具体职责 |
+|---|---|
+| AppConfig | 持有区域运费表和补货阈值，控制实例创建，不承担结算逻辑 |
+| ShippingRule | 保存基础运费、包邮门槛，用 feeFor() 计算运费 |
+| CheckoutService | 按区域获取规则，payable() 返回商品金额加运费 |
+| RestockService | needsRestock() 用同一份配置判断库存是否低于阈值 |
 
-- **数据库连接池**
-  痛点：每次请求新建数据库连接，连接数爆炸、性能差。
-  做法：全局只有一个连接池对象，所有线程共用。
-- **全局配置管理器 Config**
-  加载一次 yaml/json 配置文件，全项目读取同一份配置，避免重复读文件。
-- **日志 Logger 实例**
-  整个服务共用同一个日志句柄，统一控制日志级别、输出文件。
-- **Redis 客户端、MQ 客户端**
-  不要每次发消息新建一个 redis 连接。
+#### 一次请求怎样走
 
-### ⚠️ 什么时候不要用
+1. `main` 取得唯一配置，分别交给结算服务和补货服务。
+2. 同样是 9000 分商品，东区收 800 分运费，西区收 1500 分运费。
+3. 库存 3 小于预警阈值 5，因此需要补货。重复取得配置仍然是同一个实例。
 
-- 需要多份独立状态；
-- 单元测试很难 mock 单例。
+#### 类图：接口与关系
 
-### 🗂️ 类图：接口与关系
-
-![单例类图：Config 保存静态 instance，getInstance 返回唯一实例](diagrams/01-singleton.zh.png)
+![1. 单例 Singleton｜创建型：同一份配置支撑结算与补货，核心类、接口与对象关系](diagrams/01-singleton.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/01-singleton.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
-
-原版 Go 用 `sync.Once` 保证「只初始化一次」，Java 最接近的等价写法是**双重检查锁（DCL）**：
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-public class Config {
-    // volatile：防止“先返回半初始化对象”的指令重排问题
-    private static volatile Config instance;
-    public String dbHost;
+import java.util.Map;
 
-    private Config() {
-        System.out.println("初始化配置");
-        dbHost = "127.0.0.1";
+record ShippingRule(int baseFeeCents, int freeAboveCents) {
+    int feeFor(int goodsCents) {
+        return goodsCents >= freeAboveCents ? 0 : baseFeeCents;
     }
-
-    // 双重检查锁（DCL）：懒加载 + 线程安全
-    public static Config getInstance() {
-        if (instance == null) {                 // 第一次检查：避免无谓加锁
-            synchronized (Config.class) {
-                if (instance == null) {         // 第二次检查：保证全局唯一
-                    instance = new Config();
-                }
-            }
-        }
-        return instance;
+}
+final class AppConfig {
+    private final Map<String, ShippingRule> shipping;
+    private final int restockThreshold;
+    private AppConfig() {
+        // 用固定数据代替配置文件读取；构造完成后不再修改。
+        shipping = Map.of("east", new ShippingRule(800, 10000),
+                          "west", new ShippingRule(1500, 20000));
+        restockThreshold = 5;
     }
-
+    private static class Holder {
+        private static final AppConfig INSTANCE = new AppConfig();
+    }
+    public static AppConfig getInstance() { return Holder.INSTANCE; }
+    public ShippingRule shippingFor(String region) {
+        ShippingRule rule = shipping.get(region);
+        if (rule == null) throw new IllegalArgumentException("未知区域");
+        return rule;
+    }
+    public int restockThreshold() { return restockThreshold; }
+}
+class CheckoutService {
+    private final AppConfig config;
+    CheckoutService(AppConfig config) { this.config = config; }
+    int payable(String region, int goodsCents) {
+        if (goodsCents < 0) throw new IllegalArgumentException("金额不能为负");
+        return goodsCents + config.shippingFor(region).feeFor(goodsCents);
+    }
+}
+class RestockService {
+    private final AppConfig config;
+    RestockService(AppConfig config) { this.config = config; }
+    boolean needsRestock(int available) { return available < config.restockThreshold(); }
+}
+public class Main {
     public static void main(String[] args) {
-        Config c1 = Config.getInstance();
-        Config c2 = Config.getInstance();
-        System.out.println(c1 == c2);   // true：拿到的始终是同一个实例
+        AppConfig config = AppConfig.getInstance();
+        CheckoutService checkout = new CheckoutService(config);
+        RestockService restock = new RestockService(config);
+        System.out.println("共享配置=" + (config == AppConfig.getInstance()));
+        System.out.println("east 实付=" + checkout.payable("east", 9000));
+        System.out.println("west 实付=" + checkout.payable("west", 9000));
+        System.out.println("库存 3 需补货=" + restock.needsRestock(3));
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
@@ -144,1795 +160,2276 @@ import (
 	"sync"
 )
 
-type Config struct {
-	DBHost string
+type ShippingRule struct{ BaseFeeCents, FreeAboveCents int }
+
+func (r ShippingRule) FeeFor(goods int) int {
+	if goods >= r.FreeAboveCents {
+		return 0
+	}
+	return r.BaseFeeCents
 }
 
-var (
-	instance *Config
-	once     sync.Once
-)
+type AppConfig struct {
+	shipping         map[string]ShippingRule
+	restockThreshold int
+}
 
-func GetConfig() *Config {
+var once sync.Once
+var instance *AppConfig
+
+func GetConfig() *AppConfig {
 	once.Do(func() {
-		fmt.Println("初始化配置")
-		instance = &Config{DBHost: "127.0.0.1"}
+		instance = &AppConfig{map[string]ShippingRule{
+			"east": {800, 10000}, "west": {1500, 20000},
+		}, 5}
 	})
 	return instance
 }
+func (c *AppConfig) ShippingFor(region string) (ShippingRule, error) {
+	r, ok := c.shipping[region]
+	if !ok {
+		return ShippingRule{}, fmt.Errorf("未知区域")
+	}
+	return r, nil
+}
+func (c *AppConfig) RestockThreshold() int { return c.restockThreshold }
 
+type CheckoutService struct{ config *AppConfig }
+
+func (s CheckoutService) Payable(region string, goods int) (int, error) {
+	if goods < 0 {
+		return 0, fmt.Errorf("金额不能为负")
+	}
+	r, err := s.config.ShippingFor(region)
+	if err != nil {
+		return 0, err
+	}
+	return goods + r.FeeFor(goods), nil
+}
+
+type RestockService struct{ config *AppConfig }
+
+func (s RestockService) NeedsRestock(available int) bool {
+	return available < s.config.RestockThreshold()
+}
 func main() {
-	c1 := GetConfig()
-	c2 := GetConfig()
-	fmt.Println(c1 == c2)
+	config := GetConfig()
+	checkout, restock := CheckoutService{config}, RestockService{config}
+	fmt.Printf("共享配置=%t\n", config == GetConfig())
+	for _, region := range []string{"east", "west"} {
+		payable, err := checkout.Payable(region, 9000)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("%s 实付=%d\n", region, payable)
+	}
+	fmt.Printf("库存 3 需补货=%t\n", restock.NeedsRestock(3))
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-> 补充：Java 里线程安全的单例还有「静态内部类」和「枚举」两种写法，其中**枚举**天然线程安全、防反射、防序列化破坏，最推荐：
->
-> ```java
-> public enum ConfigEnum {
->     INSTANCE;                  // 全局只有一个 INSTANCE
->     public String dbHost = "127.0.0.1";
-> }
-> ```
+#### 运行结果与关键点
 
-### 一句话口诀（补充）
+```text
+共享配置=true
+east 实付=9800
+west 实付=10500
+库存 3 需补货=true
+```
 
-> 全局只要一份，谁拿都是它 → 单例
+增加区域时修改配置数据；修改补货算法时修改 `RestockService`。业务类通过构造参数接收配置，避免到处隐藏地调用全局入口。Java 使用静态内部类持有实例，Go 使用 `sync.Once`；两者的业务读取都不修改配置。
 
----
+#### 什么时候不用，以及这个例子的边界
 
-## 2. 简单工厂 Simple Factory｜创建型
+单例只约束约定范围内的实例数量，不等于跨进程唯一。Java 的范围还受到类加载器影响；Go 实际项目应把配置放到独立包中，用未导出字段限制外部修改。多个租户需要不同配置、测试需要替换配置时，应考虑普通对象或配置接口；需要热更新时也必须另行设计快照替换，`Once` 不负责更新。
 
-**核心：统一创建对象；根据类型选择实现；选择仅发生在创建时**
+### 2. 简单工厂 Simple Factory｜创建型
 
-### ✅ 典型业务场景
+#### 业务场景：结算入口统一创建支付渠道
 
-- **多种支付渠道创建：支付宝、微信、银行卡、PayPal**
-  痛点：散落在代码各处到处 `if ("alipay".equals(type)) { return new Alipay(); }`，创建逻辑分散难维护。
-  工厂收拢所有支付对象创建。拿到实例后直接 Pay，中途一般不换支付方式。
-- **文件导出器：导出 Excel、PDF、CSV、Word**
-  用户一次导出任务选定格式，导出完任务结束，中途不会切换导出格式。
-- **消息发送工具：短信、邮件、站内信、钉钉通知**
-  根据消息类型，工厂返回对应的发送实例，执行一次发送。
+商城收到订单 O-100、应付 12800 分和用户选择的渠道。支付宝需要商户号，微信需要应用号；结算规则还要求渠道具备退款能力。如果控制器、定时任务和补单程序都自己拼这些创建参数，新增渠道时会同时改很多入口。`PaymentFactory` 收拢这件事，结算服务只依赖统一的支付契约。
 
-### ⚠️ 什么时候不要用
+| 类 / 接口 | 具体职责 |
+|---|---|
+| PaymentRequest / Receipt | 承载订单号、金额、渠道和交易流水，而不是只传一段提示文字 |
+| PaymentGateway | charge() 返回支付回执，supportsRefund() 声明渠道能力 |
+| AlipayGateway / WechatGateway | 保存各自接入配置，生成对应格式的模拟流水 |
+| PaymentFactory / CheckoutService | 前者选择并配置对象；后者检查业务约束，再调用 charge() |
 
-- 产品列表经常新增，且不想修改工厂代码 → 改用工厂方法模式。
-- 需要运行中途更换行为 → 用策略模式，不是工厂。
+#### 一次请求怎样走
 
-### 🗂️ 类图：接口与关系
+1. `CheckoutService.pay()` 把渠道名交给工厂。
+2. 工厂为支付宝注入商户号，为微信注入应用号，并返回 `PaymentGateway`。
+3. 结算检查退款能力，收到包含流水号与实际金额的 `Receipt`。传入 cash 会明确失败，不返回空对象。
 
-![简单工厂类图：PaymentFactory 创建 Alipay 或 WechatPay，两者实现 Payment 接口](diagrams/02-simple-factory.zh.png)
+#### 类图：接口与关系
+
+![2. 简单工厂 Simple Factory｜创建型：结算入口统一创建支付渠道，核心类、接口与对象关系](diagrams/02-simple-factory.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/02-simple-factory.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-// 支付接口：所有支付方式都实现它
-interface Payment {
-    void pay(double amount);
-}
-
-class Alipay implements Payment {
-    public void pay(double amount) {
-        System.out.printf("支付宝支付 %.2f%n", amount);
+record PaymentRequest(String orderId, int amountCents) {
+    PaymentRequest {
+        if (orderId.isBlank() || amountCents <= 0)
+            throw new IllegalArgumentException("订单和金额无效");
     }
 }
-
-class WechatPay implements Payment {
-    public void pay(double amount) {
-        System.out.printf("微信支付 %.2f%n", amount);
-    }
+record Receipt(String orderId, String channel, String transactionId, int chargedCents) {}
+interface PaymentGateway {
+    Receipt charge(PaymentRequest request);
+    boolean supportsRefund();
 }
-
-// 工厂：把所有“创建支付对象”的逻辑收拢到一处
+class AlipayGateway implements PaymentGateway {
+    private final String merchantId;
+    AlipayGateway(String merchantId) { this.merchantId = merchantId; }
+    public Receipt charge(PaymentRequest r) {
+        return new Receipt(r.orderId(), "alipay", merchantId + ":" + r.orderId(), r.amountCents());
+    }
+    public boolean supportsRefund() { return true; }
+}
+class WechatGateway implements PaymentGateway {
+    private final String appId;
+    WechatGateway(String appId) { this.appId = appId; }
+    public Receipt charge(PaymentRequest r) {
+        return new Receipt(r.orderId(), "wechat", appId + ":" + r.orderId(), r.amountCents());
+    }
+    public boolean supportsRefund() { return true; }
+}
 class PaymentFactory {
-    public static Payment create(String type) {
-        switch (type) {
-            case "alipay": return new Alipay();
-            case "wechat": return new WechatPay();
-            default:       return null;
-        }
+    PaymentGateway create(String channel) {
+        return switch (channel) {
+            case "alipay" -> new AlipayGateway("merchant-01");
+            case "wechat" -> new WechatGateway("app-02");
+            default -> throw new IllegalArgumentException("不支持的支付渠道: " + channel);
+        };
     }
 }
-
+class CheckoutService {
+    private final PaymentFactory factory;
+    CheckoutService(PaymentFactory factory) { this.factory = factory; }
+    Receipt pay(String channel, PaymentRequest request) {
+        PaymentGateway gateway = factory.create(channel);
+        if (!gateway.supportsRefund()) throw new IllegalStateException("商城要求渠道支持退款");
+        return gateway.charge(request);
+    }
+}
 public class Main {
     public static void main(String[] args) {
-        // 创建时选定实现，拿到实例后直接 Pay
-        Payment pay = PaymentFactory.create("alipay");
-        pay.pay(100);
+        CheckoutService checkout = new CheckoutService(new PaymentFactory());
+        for (String channel : new String[]{"alipay", "wechat"}) {
+            Receipt r = checkout.pay(channel, new PaymentRequest("O-100", 12800));
+            System.out.printf("%s %s %d%n", r.channel(), r.transactionId(), r.chargedCents());
+        }
+        try { checkout.pay("cash", new PaymentRequest("O-101", 100)); }
+        catch (IllegalArgumentException e) { System.out.println(e.getMessage()); }
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
 import "fmt"
 
-type Payment interface {
-	Pay(amount float64)
+type PaymentRequest struct {
+	OrderID     string
+	AmountCents int
+}
+type Receipt struct {
+	OrderID, Channel, TransactionID string
+	ChargedCents                    int
+}
+type PaymentGateway interface {
+	Charge(PaymentRequest) (Receipt, error)
+	SupportsRefund() bool
 }
 
-type Alipay struct{}
-func (a Alipay) Pay(amount float64) {
-	fmt.Printf("支付宝支付 %.2f\n", amount)
+func validate(r PaymentRequest) error {
+	if r.OrderID == "" || r.AmountCents <= 0 {
+		return fmt.Errorf("订单和金额无效")
+	}
+	return nil
 }
 
-type WechatPay struct{}
-func (w WechatPay) Pay(amount float64) {
-	fmt.Printf("微信支付 %.2f\n", amount)
-}
+type AlipayGateway struct{ merchantID string }
 
-func NewPayment(typ string) Payment {
-	switch typ {
+func (g AlipayGateway) Charge(r PaymentRequest) (Receipt, error) {
+	if err := validate(r); err != nil {
+		return Receipt{}, err
+	}
+	return Receipt{r.OrderID, "alipay", g.merchantID + ":" + r.OrderID, r.AmountCents}, nil
+}
+func (AlipayGateway) SupportsRefund() bool { return true }
+
+type WechatGateway struct{ appID string }
+
+func (g WechatGateway) Charge(r PaymentRequest) (Receipt, error) {
+	if err := validate(r); err != nil {
+		return Receipt{}, err
+	}
+	return Receipt{r.OrderID, "wechat", g.appID + ":" + r.OrderID, r.AmountCents}, nil
+}
+func (WechatGateway) SupportsRefund() bool { return true }
+
+type PaymentFactory struct{}
+
+func (PaymentFactory) Create(channel string) (PaymentGateway, error) {
+	switch channel {
 	case "alipay":
-		return Alipay{}
+		return AlipayGateway{"merchant-01"}, nil
 	case "wechat":
-		return WechatPay{}
+		return WechatGateway{"app-02"}, nil
 	default:
-		return nil
+		return nil, fmt.Errorf("不支持的支付渠道: %s", channel)
 	}
 }
 
+type CheckoutService struct{ factory PaymentFactory }
+
+func (s CheckoutService) Pay(channel string, r PaymentRequest) (Receipt, error) {
+	g, err := s.factory.Create(channel)
+	if err != nil {
+		return Receipt{}, err
+	}
+	if !g.SupportsRefund() {
+		return Receipt{}, fmt.Errorf("商城要求渠道支持退款")
+	}
+	return g.Charge(r)
+}
 func main() {
-	pay := NewPayment("alipay")
-	pay.Pay(100)
+	checkout := CheckoutService{PaymentFactory{}}
+	for _, channel := range []string{"alipay", "wechat"} {
+		r, err := checkout.Pay(channel, PaymentRequest{"O-100", 12800})
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(r.Channel, r.TransactionID, r.ChargedCents)
+	}
+	_, err := checkout.Pay("cash", PaymentRequest{"O-101", 100})
+	fmt.Println(err)
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-### 一句话口诀（原文）
+#### 运行结果与关键点
 
-> 一次性选好对象，用完拉倒 → 工厂
+```text
+alipay merchant-01:O-100 12800
+wechat app-02:O-100 12800
+不支持的支付渠道: cash
+```
 
----
+增加银行卡支付时，实现 `PaymentGateway`，再为工厂新增创建分支。上层结算流程无需知道银行卡网关的构造参数。创建逻辑稳定时，简单 `switch` 就够了；创建规则庞大后可再考虑注册表或工厂方法。
 
-## 3. 建造者 Builder｜创建型
+#### 什么时候不用，以及这个例子的边界
 
-**核心：分步构建复杂对象；字段多、可选参数多**
+两次调用是在比较本地模拟渠道，并不表示应对同一真实订单扣款两次。示例没有请求第三方，也没有实现支付幂等和到账核验。简单工厂关注创建职责；是否需要切换算法，是另一个问题，不能靠“用完就不换”来定义工厂。
 
-### ✅ 典型业务场景
+### 3. 建造者 Builder｜创建型
 
-- **复杂订单对象 Order**
-  字段：订单号、用户 id、商品、优惠券、运费、折扣、备注、地址、发票信息。
-  很多字段可选，如果直接构造函数，会出现超长参数列表，极易传参顺序出错。
-  链式调用：`new Order.Builder().setUser(...).setGoods(...).setDiscount(...).build()`。
-- **复杂查询条件 QueryCondition**
-  数据库多条件查询：时间范围、页码、排序、状态、关键词、标签。很多条件非必填。
-- **HTTP 复杂请求体、API DTO**
-  调用第三方 API，body 参数庞大，部分字段可选。
-- **报表生成对象**
-  报表标题、行列、样式、筛选条件、导出格式。
+#### 业务场景：构建一份有效且独立的报表任务
 
-### ⚠️ 什么时候不要用
+运营要导出一周订单，选择列、最大行数和收件人。时间范围是必填项，列不能空，行数限制在 1 到 10000 之间。有些任务下载到本地，有些发给运营邮箱。把这些参数都放进一个长构造方法，调用处很难看出每个值的含义，而且容易得到配置不完整的任务。
 
-- 对象属性很少（2-3 个字段），直接赋值就行，builder 属于过度设计。
+| 类 / 接口 | 具体职责 |
+|---|---|
+| DateRange | 校验起止日期，表示完整时间区间 |
+| ReportJob | 已构建的任务，保存列、收件人和行数限制 |
+| ReportJob.Builder | 逐步收集参数，在 build() 时检查跨字段约束 |
+| Go ReportBuilder | 记录链式配置错误，在 Build() 统一返回错误并复制切片 |
 
-### 🗂️ 类图：接口与关系
+#### 一次请求怎样走
 
-![建造者类图：Order.Builder 保存构建参数，通过 build 创建 Order](diagrams/03-builder.zh.png)
+1. 构建器接收 9 月 1 日至 7 日的时间范围，再选择订单号、金额两列。
+2. `build()` 生成第一份任务，最多导出 500 行并发送到指定邮箱。
+3. 同一个构建器追加区域列，生成第二份任务；第一份仍然只有两列，证明构建结果已与构建器隔离。
+
+#### 类图：接口与关系
+
+![3. 建造者 Builder｜创建型：构建一份有效且独立的报表任务，核心类、接口与对象关系](diagrams/03-builder.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/03-builder.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-public class Order {
-    // 字段多、可选参数多：构造函数根本写不过来
-    private final String orderNo;
-    private final int userId;
-    private final int goodsId;
-    private final double discount;
+import java.time.LocalDate;
+import java.util.*;
 
-    // 私有构造：只能通过 Builder 创建
-    private Order(Builder b) {
-        this.orderNo = b.orderNo;
-        this.userId = b.userId;
-        this.goodsId = b.goodsId;
-        this.discount = b.discount;
+record DateRange(LocalDate from, LocalDate to) {
+    DateRange {
+        if (from.isAfter(to)) throw new IllegalArgumentException("开始日期晚于结束日期");
     }
-
-    // 链式构建器：每个 set 方法返回 this，最后 build()
-    public static class Builder {
-        private String orderNo;
-        private int userId;
-        private int goodsId;
-        private double discount;
-
-        public Builder setOrderNo(String orderNo) { this.orderNo = orderNo; return this; }
-        public Builder setUserId(int userId)      { this.userId = userId;   return this; }
-        public Builder setGoodsId(int goodsId)    { this.goodsId = goodsId; return this; }
-        public Builder setDiscount(double d)      { this.discount = d;      return this; }
-
-        public Order build() {
-            return new Order(this);
+}
+final class ReportJob {
+    private final DateRange range;
+    private final List<String> columns;
+    private final String recipient;
+    private final int rowLimit;
+    private ReportJob(Builder b) {
+        range = b.range;
+        columns = List.copyOf(b.columns); // 构建后与 Builder 的可变列表隔离
+        recipient = b.recipient;
+        rowLimit = b.rowLimit;
+    }
+    String describe() {
+        return range.from() + "~" + range.to() + " columns=" + columns.size()
+            + " limit=" + rowLimit + " to=" + recipient;
+    }
+    static class Builder {
+        private final DateRange range;
+        private final List<String> columns = new ArrayList<>();
+        private String recipient = "download";
+        private int rowLimit = 1000;
+        Builder(DateRange range) { this.range = Objects.requireNonNull(range); }
+        Builder column(String name) {
+            if (!Set.of("orderId", "amount", "region").contains(name))
+                throw new IllegalArgumentException("不支持的列");
+            if (!columns.contains(name)) columns.add(name);
+            return this;
+        }
+        Builder sendTo(String email) { recipient = email; return this; }
+        Builder limit(int n) { rowLimit = n; return this; }
+        ReportJob build() {
+            if (columns.isEmpty() || rowLimit < 1 || rowLimit > 10000 || recipient.isBlank())
+                throw new IllegalArgumentException("列、行数或收件人无效");
+            return new ReportJob(this);
         }
     }
-
-    @Override
-    public String toString() {
-        return "Order{orderNo='" + orderNo + "', userId=" + userId
-                + ", goodsId=" + goodsId + ", discount=" + discount + '}';
-    }
-
+}
+public class Main {
     public static void main(String[] args) {
-        Order order = new Order.Builder()
-                .setOrderNo("O1001")
-                .setUserId(123)
-                .setGoodsId(456)
-                .setDiscount(0.9)
-                .build();
-        System.out.println(order);
+        DateRange range = new DateRange(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-09-07"));
+        ReportJob.Builder builder = new ReportJob.Builder(range)
+            .column("orderId").column("amount").limit(500).sendTo("ops@example.com");
+        ReportJob first = builder.build();
+        ReportJob second = builder.column("region").build();
+        System.out.println(first.describe());
+        System.out.println(second.describe());
+        try { new ReportJob.Builder(range).build(); }
+        catch (IllegalArgumentException e) { System.out.println(e.getMessage()); }
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
-type Order struct {
-	OrderNo  string
-	UserID   int
-	GoodsID  int
-	Discount float64
+type DateRange struct{ from, to time.Time }
+
+func NewDateRange(from, to string) (DateRange, error) {
+	a, err := time.Parse("2006-01-02", from)
+	if err != nil {
+		return DateRange{}, err
+	}
+	b, err := time.Parse("2006-01-02", to)
+	if err != nil {
+		return DateRange{}, err
+	}
+	if a.After(b) {
+		return DateRange{}, fmt.Errorf("开始日期晚于结束日期")
+	}
+	return DateRange{a, b}, nil
 }
 
-type OrderBuilder struct {
-	order Order
+type ReportJob struct {
+	dateRange DateRange
+	columns   []string
+	recipient string
+	rowLimit  int
 }
 
-func NewOrderBuilder() *OrderBuilder {
-	return &OrderBuilder{}
+func (j ReportJob) Describe() string {
+	return fmt.Sprintf("%s~%s columns=%d limit=%d to=%s", j.dateRange.from.Format("2006-01-02"),
+		j.dateRange.to.Format("2006-01-02"), len(j.columns), j.rowLimit, j.recipient)
 }
 
-func (b *OrderBuilder) SetOrderNo(no string) *OrderBuilder {
-	b.order.OrderNo = no
+type ReportBuilder struct {
+	job ReportJob
+	err error
+}
+
+func NewReportBuilder(r DateRange) *ReportBuilder {
+	return &ReportBuilder{job: ReportJob{dateRange: r, recipient: "download", rowLimit: 1000}}
+}
+func (b *ReportBuilder) Column(name string) *ReportBuilder {
+	if name != "orderId" && name != "amount" && name != "region" {
+		b.err = fmt.Errorf("不支持的列")
+		return b
+	}
+	for _, c := range b.job.columns {
+		if c == name {
+			return b
+		}
+	}
+	b.job.columns = append(b.job.columns, name)
 	return b
 }
-func (b *OrderBuilder) SetUserID(id int) *OrderBuilder {
-	b.order.UserID = id
-	return b
+func (b *ReportBuilder) SendTo(email string) *ReportBuilder { b.job.recipient = email; return b }
+func (b *ReportBuilder) Limit(n int) *ReportBuilder         { b.job.rowLimit = n; return b }
+func (b *ReportBuilder) Build() (ReportJob, error) {
+	if b.err != nil {
+		return ReportJob{}, b.err
+	}
+	j := b.job
+	if len(j.columns) == 0 || j.rowLimit < 1 || j.rowLimit > 10000 || j.recipient == "" {
+		return ReportJob{}, fmt.Errorf("列、行数或收件人无效")
+	}
+	j.columns = append([]string(nil), j.columns...) // 隔离底层数组
+	return j, nil
 }
-func (b *OrderBuilder) SetGoodsID(id int) *OrderBuilder {
-	b.order.GoodsID = id
-	return b
-}
-func (b *OrderBuilder) SetDiscount(d float64) *OrderBuilder {
-	b.order.Discount = d
-	return b
-}
-
-func (b *OrderBuilder) Build() Order {
-	return b.order
-}
-
 func main() {
-	order := NewOrderBuilder().
-		SetOrderNo("O1001").
-		SetUserID(123).
-		SetGoodsID(456).
-		SetDiscount(0.9).
-		Build()
-	fmt.Println(order)
+	r, err := NewDateRange("2026-09-01", "2026-09-07")
+	if err != nil {
+		panic(err)
+	}
+	b := NewReportBuilder(r).Column("orderId").Column("amount").Limit(500).SendTo("ops@example.com")
+	first, err := b.Build()
+	if err != nil {
+		panic(err)
+	}
+	second, err := b.Column("region").Build()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(first.Describe())
+	fmt.Println(second.Describe())
+	_, err = NewReportBuilder(r).Build()
+	fmt.Println(err)
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-> 补充：实际项目中常用 Lombok 的 `@Builder` 注解自动生成这套代码，写法不变、省掉样板代码。
+#### 运行结果与关键点
 
-### 一句话口诀（补充）
+```text
+2026-09-01~2026-09-07 columns=2 limit=500 to=ops@example.com
+2026-09-01~2026-09-07 columns=3 limit=500 to=ops@example.com
+列、行数或收件人无效
+```
 
-> 字段太多、可选太多 → 链式 Builder 慢慢搭
+新增“压缩文件”选项时，可以加有默认值的构建步骤，无需修改已有调用。`build()` 是一致性边界，不能只做 `new`；Java 的 `List.copyOf()` 和 Go 的切片复制使后续配置不会改掉已经创建的任务。
 
----
+#### 什么时候不用，以及这个例子的边界
 
-## 4. 适配器 Adapter｜结构型
+这里是常见的链式 Builder 变体，没有强行增加 Director 或 Builder 接口。只有两三个简单字段时，普通构造函数更清晰。Go 的未导出字段提供包级封装；需要向调用者返回切片时仍应复制，不能直接暴露内部数组。
 
-**核心：转换接口，让两个不兼容的东西一起工作；做翻译层**
+### 4. 适配器 Adapter｜结构型
 
-### ✅ 典型业务场景
+#### 业务场景：把以克计重的发货单接到旧快递 SDK
 
-- **接入多个第三方支付 SDK**
-  支付宝 SDK 方法名：`alipay.tradePay()`；
-  微信 SDK：`wx.unifiedOrder()`。
-  两个第三方接口完全不一样。写一层适配器，对外统一暴露 `pay(amount)`，内部调用各自 sdk。上层业务代码不用改。
-- **新旧系统对接，老接口改造**
-  老系统返回字段 `user_name`；新系统需要 `username`。适配器做字段映射转换。
-- **多数据源适配**
-  同时读 MySQL、Elasticsearch、MongoDB，对外统一查询接口。
-- **第三方消息推送服务商切换**
-  极光、个推，封装统一接口。
+商城发货单包含订单号、收件地址和多条包裹明细，每条明细有重量与数量。旧快递 SDK 却要求整数公斤，还用数值状态码表示创建失败。让业务层到处换算重量、解析状态码，会把第三方细节扩散到发货、退货和运费预估功能。
 
-### ⚠️ 什么时候不要用
+| 类 / 接口 | 具体职责 |
+|---|---|
+| Shipment / Parcel | 表示一票货物及其商品明细，totalGrams() 合计重量 |
+| ShippingProvider | 业务需要的 quote() 与 book() 契约 |
+| LegacyCourierSdk | 旧接口 tariff()、create()，使用公斤和 LegacyTicket 状态码 |
+| CourierAdapter | 实现新接口，组合旧 SDK，完成单位、参数和结果转换 |
 
-- 接口本身就一致，不需要转换；不要为了适配而适配增加无用代码。
+#### 一次请求怎样走
 
-### 🗂️ 类图：接口与关系
+1. 两本 600 克的书加一个 500 克杯子，总重量是 1700 克。
+2. 适配器向上取整为 2 公斤，再调用旧 SDK，运费是 600 + 2 × 200 = 1000 分。
+3. SDK 返回成功票据后，适配器生成包含订单号的 `Tracking`；空地址的 400 状态码被转换为业务可处理的错误。
 
-![适配器类图：Adapter 实现 Target 接口，并持有 OldSdk 转换调用](diagrams/04-adapter.zh.png)
+#### 类图：接口与关系
+
+![4. 适配器 Adapter｜结构型：把以克计重的发货单接到旧快递 SDK，核心类、接口与对象关系](diagrams/04-adapter.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/04-adapter.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-// 目标接口：上层业务只认这一个
-interface Target {
-    String request();
+import java.util.List;
+record Parcel(String sku, int grams, int quantity) {}
+record Shipment(String orderId, String address, List<Parcel> parcels) {
+    Shipment { parcels = List.copyOf(parcels); }
+    int totalGrams() { return parcels.stream().mapToInt(p -> p.grams() * p.quantity()).sum(); }
 }
-
-// 第三方老 SDK：方法名、返回格式都跟我们的目标不一致
-class OldSdk {
-    public String oldRequest() {
-        return "第三方返回数据";
+record Tracking(String orderId, String waybill, int feeCents) {}
+interface ShippingProvider {
+    int quote(Shipment shipment);
+    Tracking book(Shipment shipment);
+}
+record LegacyTicket(int code, String number) {}
+class LegacyCourierSdk {
+    int tariff(int kilograms) { return 600 + kilograms * 200; }
+    LegacyTicket create(String destination, int kilograms) {
+        if (destination.isBlank()) return new LegacyTicket(400, "");
+        return new LegacyTicket(0, "WB-" + kilograms); // SDK 的本地替身
     }
 }
-
-// 适配器：做一层“翻译”，把旧接口转换成目标接口
-class Adapter implements Target {
-    private OldSdk old;
-
-    public Adapter(OldSdk old) {
-        this.old = old;
+class CourierAdapter implements ShippingProvider {
+    private final LegacyCourierSdk sdk;
+    CourierAdapter(LegacyCourierSdk sdk) { this.sdk = sdk; }
+    private int kilograms(Shipment s) {
+        if (s.parcels().isEmpty() || s.parcels().stream().anyMatch(p -> p.grams() <= 0 || p.quantity() <= 0))
+            throw new IllegalArgumentException("包裹重量或数量无效");
+        return (s.totalGrams() + 999) / 1000; // 克 → 向上取整的公斤
     }
-
-    @Override
-    public String request() {
-        return old.oldRequest();
+    public int quote(Shipment s) { return sdk.tariff(kilograms(s)); }
+    public Tracking book(Shipment s) {
+        LegacyTicket ticket = sdk.create(s.address(), kilograms(s));
+        if (ticket.code() != 0) throw new IllegalStateException("承运商拒绝地址");
+        return new Tracking(s.orderId(), ticket.number(), quote(s));
     }
 }
-
 public class Main {
     public static void main(String[] args) {
-        Target client = new Adapter(new OldSdk());
-        System.out.println(client.request());
+        ShippingProvider courier = new CourierAdapter(new LegacyCourierSdk());
+        List<Parcel> parcels = List.of(new Parcel("BOOK", 600, 2), new Parcel("CUP", 500, 1));
+        Tracking t = courier.book(new Shipment("O-200", "上海仓库路 1 号", parcels));
+        System.out.printf("%s %s fee=%d%n", t.orderId(), t.waybill(), t.feeCents());
+        try { courier.book(new Shipment("O-201", "", parcels)); }
+        catch (IllegalStateException e) { System.out.println(e.getMessage()); }
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
 import "fmt"
 
-type Target interface {
-	Request() string
+type Parcel struct {
+	SKU             string
+	Grams, Quantity int
+}
+type Shipment struct {
+	OrderID, Address string
+	Parcels          []Parcel
 }
 
-type OldSDK struct{}
-func (o *OldSDK) OldRequest() string {
-	return "第三方返回数据"
+func (s Shipment) TotalGrams() int {
+	total := 0
+	for _, p := range s.Parcels {
+		total += p.Grams * p.Quantity
+	}
+	return total
 }
 
-type Adapter struct {
-	old *OldSDK
+type Tracking struct {
+	OrderID, Waybill string
+	FeeCents         int
+}
+type ShippingProvider interface {
+	Quote(Shipment) (int, error)
+	Book(Shipment) (Tracking, error)
+}
+type LegacyTicket struct {
+	Code   int
+	Number string
+}
+type LegacyCourierSDK struct{}
+
+func (LegacyCourierSDK) Tariff(kg int) int { return 600 + kg*200 }
+func (LegacyCourierSDK) Create(destination string, kg int) LegacyTicket {
+	if destination == "" {
+		return LegacyTicket{400, ""}
+	}
+	return LegacyTicket{0, fmt.Sprintf("WB-%d", kg)}
 }
 
-func (a *Adapter) Request() string {
-	return a.old.OldRequest()
-}
+type CourierAdapter struct{ sdk LegacyCourierSDK }
 
+func kilograms(s Shipment) (int, error) {
+	if len(s.Parcels) == 0 {
+		return 0, fmt.Errorf("包裹重量或数量无效")
+	}
+	for _, p := range s.Parcels {
+		if p.Grams <= 0 || p.Quantity <= 0 {
+			return 0, fmt.Errorf("包裹重量或数量无效")
+		}
+	}
+	return (s.TotalGrams() + 999) / 1000, nil
+}
+func (a CourierAdapter) Quote(s Shipment) (int, error) {
+	kg, err := kilograms(s)
+	if err != nil {
+		return 0, err
+	}
+	return a.sdk.Tariff(kg), nil
+}
+func (a CourierAdapter) Book(s Shipment) (Tracking, error) {
+	kg, err := kilograms(s)
+	if err != nil {
+		return Tracking{}, err
+	}
+	ticket := a.sdk.Create(s.Address, kg)
+	if ticket.Code != 0 {
+		return Tracking{}, fmt.Errorf("承运商拒绝地址")
+	}
+	return Tracking{s.OrderID, ticket.Number, a.sdk.Tariff(kg)}, nil
+}
 func main() {
-	client := &Adapter{old: &OldSDK{}}
-	fmt.Println(client.Request())
+	var courier ShippingProvider = CourierAdapter{LegacyCourierSDK{}}
+	parcels := []Parcel{{"BOOK", 600, 2}, {"CUP", 500, 1}}
+	t, err := courier.Book(Shipment{"O-200", "上海仓库路 1 号", parcels})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s %s fee=%d\n", t.OrderID, t.Waybill, t.FeeCents)
+	_, err = courier.Book(Shipment{"O-201", "", parcels})
+	fmt.Println(err)
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-### 一句话口诀（原文）
+#### 运行结果与关键点
 
-> 别人的接口和我不一样 → 加一层适配器翻译
+```text
+O-200 WB-2 fee=1000
+承运商拒绝地址
+```
 
----
+接入另一家快递时，为它实现一个 `ShippingProvider` 适配器。业务发货流程继续调用 `quote()`、`book()`，无需知道不同公司的重量单位、状态码和字段名称。
 
-## 5. 装饰器 Decorator｜结构型
+#### 什么时候不用，以及这个例子的边界
 
-**核心：动态给原有功能叠加附加能力；不改原有函数代码**
+适配器的重点是把已有的不兼容接口接进来。这里只实现内存 SDK 替身；真实接入还要处理超时、鉴权、重复下单和服务端错误。示例运单号只是演示返回结构，不能作为唯一标识生成方案。
 
-**关注点：增强功能，不是替换主体逻辑**
+### 5. 装饰器 Decorator｜结构型
 
-### ✅ 典型业务场景
+#### 业务场景：会员折扣与运费按顺序叠加
 
-- **给接口增加横切能力**
-  原有核心函数：`createOrder()`；
-  装饰加上：打印入参日志、函数耗时统计、异常捕获、链路 TraceId。
-  原业务代码完全不动。
-- **缓存装饰器**
-  原始函数从数据库查询用户；装饰一层：先查 Redis 缓存，没命中再查 DB。
-- **权限校验**
-  原始 handler 执行业务；装饰器先校验 token、角色权限。
-- **文件流多层包装**
-  文件读取 → 加解压 → 加解密。
+购物车里有三本单价 4000 分的书，会员享九折，折后商品金额满 11000 分包邮。原价计算、会员权益和配送费用由不同规则负责，组合也可能随活动变化。如果为每种组合都建一个计价类，类数量会快速增加。
 
-### ⚠️ 什么时候不要用
+| 类 / 接口 | 具体职责 |
+|---|---|
+| Cart / CartLine | 保存会员身份、SKU、单价和数量 |
+| Pricing / Quote | 统一报价入口；结果区分商品金额、运费和合计 |
+| CatalogPricing | 计算未优惠的商品金额 |
+| MemberPricing / ShippingPricing | 都实现 Pricing 并持有另一个 Pricing，分别叠加折扣和运费 |
 
-- 需要完全替换掉原有业务逻辑；替换用策略模式，增强用装饰器。
+#### 一次请求怎样走
 
-### 🗂️ 类图：接口与关系
+1. 外层 `ShippingPricing` 调用会员层，会员层再调用基础计价，先得到 12000 分。
+2. 会员层返回九折后的 10800 分；运费层发现没到 11000 分，添加 800 分运费。
+3. 交换包装顺序后，运费层会用原价判断包邮，合计变成 10800 分，违反本例的折后包邮规则。
 
-![装饰器类图：BizTask 与 LogDecorator 实现 Handler，LogDecorator 持有 Handler 类型的 target](diagrams/05-decorator.zh.png)
+#### 类图：接口与关系
+
+![5. 装饰器 Decorator｜结构型：会员折扣与运费按顺序叠加，核心类、接口与对象关系](diagrams/05-decorator.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/05-decorator.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
-
-原版 Go 用「函数包函数」实现装饰，Java 里对应的是「装饰器类持有原对象、实现同一接口」：
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-interface Handler {
-    void execute();
+import java.util.List;
+record CartLine(String sku, int unitPriceCents, int quantity) {}
+record Cart(List<CartLine> lines, boolean member) {
+    Cart { lines = List.copyOf(lines); }
 }
-
-// 原始业务：只干一件事
-class BizTask implements Handler {
-    public void execute() {
-        System.out.println("执行业务逻辑");
+record Quote(int goodsCents, int shippingCents) {
+    int total() { return goodsCents + shippingCents; }
+}
+interface Pricing { Quote quote(Cart cart); }
+class CatalogPricing implements Pricing {
+    public Quote quote(Cart c) {
+        int goods = 0;
+        for (CartLine line : c.lines()) {
+            if (line.quantity() <= 0 || line.unitPriceCents() < 0)
+                throw new IllegalArgumentException("商品价格或数量无效");
+            goods += line.unitPriceCents() * line.quantity();
+        }
+        return new Quote(goods, 0);
     }
 }
-
-// 装饰器：给原功能叠加日志，BizTask 一行代码都不用改
-class LogDecorator implements Handler {
-    private final Handler target;
-
-    public LogDecorator(Handler target) {
-        this.target = target;
-    }
-
-    public void execute() {
-        System.out.println("开始执行");
-        target.execute();
-        System.out.println("执行结束");
+class MemberPricing implements Pricing {
+    private final Pricing next;
+    MemberPricing(Pricing next) { this.next = next; }
+    public Quote quote(Cart c) {
+        Quote q = next.quote(c);
+        int goods = c.member() ? q.goodsCents() * 90 / 100 : q.goodsCents();
+        return new Quote(goods, q.shippingCents());
     }
 }
-
+class ShippingPricing implements Pricing {
+    private final Pricing next;
+    ShippingPricing(Pricing next) { this.next = next; }
+    public Quote quote(Cart c) {
+        Quote q = next.quote(c);
+        // 业务规定：按折后商品金额判断是否达到 110 元包邮。
+        return new Quote(q.goodsCents(), q.goodsCents() >= 11000 ? 0 : 800);
+    }
+}
 public class Main {
     public static void main(String[] args) {
-        // 想要日志：包一层；不想要：直接用 new BizTask()
-        Handler task = new LogDecorator(new BizTask());
-        task.execute();
+        Cart cart = new Cart(List.of(new CartLine("BOOK", 4000, 3)), true);
+        Pricing pricing = new ShippingPricing(new MemberPricing(new CatalogPricing()));
+        Quote q = pricing.quote(cart);
+        System.out.printf("折后商品=%d 运费=%d 合计=%d%n", q.goodsCents(), q.shippingCents(), q.total());
+        Pricing reversed = new MemberPricing(new ShippingPricing(new CatalogPricing()));
+        System.out.println("反向包装的合计=" + reversed.quote(cart).total());
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
 import "fmt"
 
-type Handler func()
+type CartLine struct {
+	SKU                      string
+	UnitPriceCents, Quantity int
+}
+type Cart struct {
+	Lines  []CartLine
+	Member bool
+}
+type Quote struct{ GoodsCents, ShippingCents int }
 
-func WithLog(h Handler) Handler {
-	return func() {
-		fmt.Println("开始执行")
-		h()
-		fmt.Println("执行结束")
+func (q Quote) Total() int { return q.GoodsCents + q.ShippingCents }
+
+type Pricing interface{ Quote(Cart) (Quote, error) }
+type CatalogPricing struct{}
+
+func (CatalogPricing) Quote(c Cart) (Quote, error) {
+	goods := 0
+	for _, l := range c.Lines {
+		if l.Quantity <= 0 || l.UnitPriceCents < 0 {
+			return Quote{}, fmt.Errorf("商品价格或数量无效")
+		}
+		goods += l.UnitPriceCents * l.Quantity
 	}
+	return Quote{goods, 0}, nil
 }
 
-func BizTask() {
-	fmt.Println("执行业务逻辑")
+type MemberPricing struct{ next Pricing }
+
+func (p MemberPricing) Quote(c Cart) (Quote, error) {
+	q, err := p.next.Quote(c)
+	if err != nil {
+		return Quote{}, err
+	}
+	if c.Member {
+		q.GoodsCents = q.GoodsCents * 90 / 100
+	}
+	return q, nil
 }
 
+type ShippingPricing struct{ next Pricing }
+
+func (p ShippingPricing) Quote(c Cart) (Quote, error) {
+	q, err := p.next.Quote(c)
+	if err != nil {
+		return Quote{}, err
+	}
+	q.ShippingCents = 800
+	if q.GoodsCents >= 11000 {
+		q.ShippingCents = 0
+	}
+	return q, nil
+}
 func main() {
-	task := WithLog(BizTask)
-	task()
+	c := Cart{[]CartLine{{"BOOK", 4000, 3}}, true}
+	var pricing Pricing = ShippingPricing{MemberPricing{CatalogPricing{}}}
+	q, err := pricing.Quote(c)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("折后商品=%d 运费=%d 合计=%d\n", q.GoodsCents, q.ShippingCents, q.Total())
+	reversed := MemberPricing{ShippingPricing{CatalogPricing{}}}
+	other, err := reversed.Quote(c)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("反向包装的合计=%d\n", other.Total())
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-> 补充：JDK 里的 `BufferedInputStream` 包 `FileInputStream`、`InflaterInputStream` 包普通输入流，就是文件流多层包装的现成例子；Spring 的 `@Transactional`、切面日志本质上也是同一思想。
+#### 运行结果与关键点
 
-### 一句话口诀（原文）
+```text
+折后商品=10800 运费=800 合计=11600
+反向包装的合计=10800
+```
 
-> 原来的功能我还要，只是额外加点东西 → 装饰器
+新增包装费可以再实现一层 `Pricing`，基础价格与会员规则都无需改动。装饰器使能力可以组合，但**包装顺序是业务规则的一部分**，应由装配入口明确固定。Go 这里也使用接口和结构体组合，便于与 Java 对照；轻量场景仍可用函数包装。
 
----
+#### 什么时候不用，以及这个例子的边界
 
-## 6. 代理 Proxy｜结构型
+如果两项优惠互斥、需要比较最优组合，单纯套装饰器未必合适。装饰器也不保证每次都调用内层，例如缓存装饰器可能直接命中；应通过增强职责与设计意图区分它和代理。
 
-**核心：找一个替身控制访问真实对象；做访问控制、延迟加载**
+### 6. 代理 Proxy｜结构型
 
-**和装饰器区别：装饰器增强功能；代理控制对象访问。**
+#### 业务场景：跨租户的文档读取必须先经过权限检查
 
-### ✅ 典型业务场景
+企业文档服务提供合同读取功能。用户不仅需要 document:read 权限，还必须属于文档所在租户。控制器如果先取正文再判断权限，会产生无谓读取，也容易在遗漏校验的入口泄露数据。所有业务入口应拿到同一个受保护的 `DocumentService`。
 
-- **RPC 远程调用代理**
-  你调用本地接口方法，实际代理帮你发 http/grpc 请求到远程服务。
-- **权限拦截**
-  访问管理员接口前，代理校验用户是不是管理员，不通过直接拒绝，不去调用真实服务。
-- **延迟加载（懒加载）**
-  一个很重的大对象（大数据报表），先不初始化；等到第一次调用 `do()` 的时候，代理才去创建真实对象。
-- **限流熔断**
-  代理层控制接口 QPS，超流量直接返回降级结果，不访问真实服务。
-- **接口访问日志审计**
+| 类 / 接口 | 具体职责 |
+|---|---|
+| User / Document | 用户带租户和权限集合，文档带标题、页数和标识 |
+| DocumentService / DocumentStore | 统一读取契约与真实存储；存储计数用于观察是否被调用 |
+| AccessPolicy | 独立判断操作权限和租户归属 |
+| DocumentProxy | 先执行策略校验，通过后才委托真实服务 |
 
-### ⚠️ 什么时候不要用
+#### 一次请求怎样走
 
-- 单纯给函数加日志计时 → 优先装饰器。
+1. tenant-A 的 Alice 有读取权限，代理放行，真实存储返回 12 页的采购合同。
+2. tenant-B 的 Bob 也有读取权限，但不属于该文档租户，因此在代理处被拒绝。
+3. 真实读取次数仍为 1，说明被拒绝的请求没有进入存储层。
 
-### 🗂️ 类图：接口与关系
+#### 类图：接口与关系
 
-![代理类图：Proxy 与 RealService 实现 Subject，Proxy 懒加载并持有 RealService](diagrams/06-proxy.zh.png)
+![6. 代理 Proxy｜结构型：跨租户的文档读取必须先经过权限检查，核心类、接口与对象关系](diagrams/06-proxy.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/06-proxy.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-interface Subject {
-    void doWork();
+import java.util.*;
+record User(String id, String tenant, Set<String> permissions) {
+    User { permissions = Set.copyOf(permissions); }
 }
-
-class RealService implements Subject {
-    public void doWork() {
-        System.out.println("真实业务操作");
+record Document(String id, String title, int pages) {}
+interface DocumentService { Document read(User user, String documentId); }
+class DocumentStore implements DocumentService {
+    private final Map<String, Document> documents = Map.of("D-1", new Document("D-1", "采购合同", 12));
+    private int reads;
+    public Document read(User user, String id) {
+        reads++;
+        Document document = documents.get(id);
+        if (document == null) throw new IllegalArgumentException("文档不存在");
+        return document;
+    }
+    int reads() { return reads; }
+}
+class AccessPolicy {
+    private final Map<String, String> owners = Map.of("D-1", "tenant-A");
+    boolean allows(User user, String documentId) {
+        return user.permissions().contains("document:read")
+            && user.tenant().equals(owners.get(documentId));
     }
 }
-
-// 代理：权限校验 + 懒加载 + 日志，都在代理层做
-class Proxy implements Subject {
-    private RealService real;   // 懒加载：第一次用才创建
-
-    public void doWork() {
-        System.out.println("权限校验");
-        if (real == null) {
-            real = new RealService();
-        }
-        real.doWork();
-        System.out.println("记录操作日志");
+class DocumentProxy implements DocumentService {
+    private final DocumentService real;
+    private final AccessPolicy policy;
+    DocumentProxy(DocumentService real, AccessPolicy policy) { this.real = real; this.policy = policy; }
+    public Document read(User user, String id) {
+        if (!policy.allows(user, id)) throw new SecurityException("无权读取文档");
+        return real.read(user, id);
     }
 }
-
 public class Main {
     public static void main(String[] args) {
-        Subject proxy = new Proxy();
-        proxy.doWork();
+        DocumentStore store = new DocumentStore();
+        DocumentService service = new DocumentProxy(store, new AccessPolicy());
+        User alice = new User("alice", "tenant-A", Set.of("document:read"));
+        Document d = service.read(alice, "D-1");
+        System.out.printf("%s pages=%d%n", d.title(), d.pages());
+        try { service.read(new User("bob", "tenant-B", Set.of("document:read")), "D-1"); }
+        catch (SecurityException e) { System.out.println(e.getMessage()); }
+        System.out.println("真实存储读取次数=" + store.reads());
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
 import "fmt"
 
-type Subject interface {
-	Do()
+type User struct {
+	ID, Tenant  string
+	Permissions map[string]bool
+}
+type Document struct {
+	ID, Title string
+	Pages     int
+}
+type DocumentService interface {
+	Read(User, string) (Document, error)
+}
+type DocumentStore struct {
+	documents map[string]Document
+	reads     int
 }
 
-type RealService struct{}
-func (r *RealService) Do() {
-	fmt.Println("真实业务操作")
-}
-
-type Proxy struct {
-	real *RealService
-}
-
-func (p *Proxy) Do() {
-	fmt.Println("权限校验")
-	if p.real == nil {
-		p.real = &RealService{}
+func (s *DocumentStore) Read(_ User, id string) (Document, error) {
+	s.reads++
+	d, ok := s.documents[id]
+	if !ok {
+		return Document{}, fmt.Errorf("文档不存在")
 	}
-	p.real.Do()
-	fmt.Println("记录操作日志")
+	return d, nil
 }
 
+type AccessPolicy struct{ owners map[string]string }
+
+func (p AccessPolicy) Allows(u User, id string) bool {
+	owner, ok := p.owners[id]
+	return ok && u.Permissions["document:read"] && owner == u.Tenant
+}
+
+type DocumentProxy struct {
+	real   DocumentService
+	policy AccessPolicy
+}
+
+func (p DocumentProxy) Read(u User, id string) (Document, error) {
+	if !p.policy.Allows(u, id) {
+		return Document{}, fmt.Errorf("无权读取文档")
+	}
+	return p.real.Read(u, id)
+}
 func main() {
-	proxy := &Proxy{}
-	proxy.Do()
+	store := &DocumentStore{documents: map[string]Document{"D-1": {"D-1", "采购合同", 12}}}
+	var service DocumentService = DocumentProxy{store, AccessPolicy{map[string]string{"D-1": "tenant-A"}}}
+	alice := User{"alice", "tenant-A", map[string]bool{"document:read": true}}
+	d, err := service.Read(alice, "D-1")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s pages=%d\n", d.Title, d.Pages)
+	_, err = service.Read(User{"bob", "tenant-B", map[string]bool{"document:read": true}}, "D-1")
+	fmt.Println(err)
+	fmt.Printf("真实存储读取次数=%d\n", store.reads)
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-> 补充：代理**可以不调用真实对象**——权限校验不通过时直接 return，真实服务根本不会执行，这就是它和装饰器最本质的区别。Java 里的 JDK 动态代理、CGLIB、Spring AOP 都是代理思想的实现。
+#### 运行结果与关键点
 
-### 一句话口诀（原文）
+```text
+采购合同 pages=12
+无权读取文档
+真实存储读取次数=1
+```
 
-> 访问真实对象之前，我想先管控一下能不能进 → 代理
+新增管理员授权、分享链接校验时，扩展 `AccessPolicy`；替换为远程文档存储时，实现同一个 `DocumentService`。调用者不需要在每次读取时重新拼装权限步骤。
 
----
+#### 什么时候不用，以及这个例子的边界
 
-## 7. 策略 Strategy｜行为型
+示例中的 `User` 代表认证系统已经确认的身份，不能相信客户端自己提交的 tenant 或权限字段。真实项目还要限制调用者绕过代理直接拿到存储对象。本例是访问控制代理，不依靠懒加载来体现模式。
 
-**核心：同一业务目标，多种可互换的算法；运行时随时切换算法**
+### 7. 策略 Strategy｜行为型
 
-**重点！有上下文 Context 持有策略，可以 set 更换**
+#### 业务场景：同一包裹比较普通和加急配送
 
-### ✅ 典型业务场景
+用户在结算页给一个 1700 克、发往偏远地区的包裹切换配送方式。普通和加急各有基础价、每公斤价格与偏远地区附加费，商品金额不变。把这些公式塞进结算类，每增加配送产品都会修改整个结算流程。
 
-- **订单折扣计算（最经典）**
-  策略 A：满 100-20；策略 B：9 折；策略 C：会员价；策略 D：无优惠。
-  同一个订单，中途可以切换优惠方案重新算价。
-- **运费计算策略**
-  普通快递、顺丰特快、同城跑腿，运费公式完全不一样。运行时可切换。
-- **文件排序算法**
-  按价格升序、按销量、按创建时间排序，随时切换排序策略。
-- **导出文件的内容格式化逻辑**
-  导出用户报表，可以切换：精简版、完整版、财务版。
+| 类 / 接口 | 具体职责 |
+|---|---|
+| Parcel | 提供重量、偏远地区标记和商品金额 |
+| ShippingPolicy | fee() 专门表达运费算法 |
+| StandardShipping / ExpressShipping | 分别实现普通和加急收费公式 |
+| Checkout / ShippingQuote | 上下文调用所选算法，组合商品金额与运费，不参与公式细节 |
 
-### ⚠️ 什么时候不要用
+#### 一次请求怎样走
 
-- 创建完对象，后面永远不会更换实现 → 简单工厂就够了，不需要策略。
+1. 1700 克按 2 公斤计费；普通配送是 500 + 2 × 200 + 1000 = 1900 分。
+2. 对同一个包裹改用加急策略，得到 1200 + 2 × 400 + 2000 = 4000 分。
+3. 结算页展示两份应付金额 14700 和 16800 分，整个过程没有创建或修改真实订单。
 
-### 🗂️ 类图：接口与关系
+#### 类图：接口与关系
 
-![策略类图：Order 持有 Discount 接口，FullReduction 与 PercentOff 提供可替换算法](diagrams/07-strategy.zh.png)
+![7. 策略 Strategy｜行为型：同一包裹比较普通和加急配送，核心类、接口与对象关系](diagrams/07-strategy.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/07-strategy.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-// 策略接口：同一目标，多种算法
-interface Discount {
-    double calc(double price);
+record Parcel(int grams, boolean remoteArea, int goodsCents) {
+    Parcel {
+        if (grams <= 0 || goodsCents < 0) throw new IllegalArgumentException("包裹无效");
+    }
+    int kilograms() { return (grams + 999) / 1000; }
 }
-
-// 策略 A：满 100 减 20
-class FullReduction implements Discount {
-    public double calc(double price) {
-        return price >= 100 ? price - 20 : price;
+record ShippingQuote(int goodsCents, int feeCents) {
+    int payable() { return goodsCents + feeCents; }
+}
+interface ShippingPolicy { int fee(Parcel parcel); }
+class StandardShipping implements ShippingPolicy {
+    public int fee(Parcel p) {
+        return 500 + p.kilograms() * 200 + (p.remoteArea() ? 1000 : 0);
     }
 }
-
-// 策略 B：9 折
-class PercentOff implements Discount {
-    public double calc(double price) {
-        return price * 0.9;
+class ExpressShipping implements ShippingPolicy {
+    public int fee(Parcel p) {
+        return 1200 + p.kilograms() * 400 + (p.remoteArea() ? 2000 : 0);
     }
 }
-
-// 上下文 Context：持有策略，运行时可切换
-class Order {
-    private Discount discount;
-
-    public void setDiscount(Discount discount) {
-        this.discount = discount;
-    }
-
-    public double getPrice(double origin) {
-        return discount.calc(origin);
-    }
+class Checkout {
+    private ShippingPolicy policy;
+    Checkout(ShippingPolicy policy) { use(policy); }
+    void use(ShippingPolicy policy) { this.policy = java.util.Objects.requireNonNull(policy); }
+    ShippingQuote quote(Parcel parcel) { return new ShippingQuote(parcel.goodsCents(), policy.fee(parcel)); }
 }
-
 public class Main {
     public static void main(String[] args) {
-        Order order = new Order();
-
-        order.setDiscount(new FullReduction());
-        System.out.println(order.getPrice(150));   // 130.0
-
-        // 中途切换优惠方案，重新算价
-        order.setDiscount(new PercentOff());
-        System.out.println(order.getPrice(150));   // 135.0
+        Parcel parcel = new Parcel(1700, true, 12800);
+        Checkout checkout = new Checkout(new StandardShipping());
+        ShippingQuote standard = checkout.quote(parcel);
+        checkout.use(new ExpressShipping());
+        ShippingQuote express = checkout.quote(parcel);
+        System.out.printf("普通配送 fee=%d payable=%d%n", standard.feeCents(), standard.payable());
+        System.out.printf("加急配送 fee=%d payable=%d%n", express.feeCents(), express.payable());
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
 import "fmt"
 
-type Discount interface {
-	Calc(price float64) float64
+type Parcel struct {
+	Grams      int
+	RemoteArea bool
+	GoodsCents int
 }
 
-type FullReduction struct{}
-func (f FullReduction) Calc(price float64) float64 {
-	if price >= 100 {
-		return price - 20
+func (p Parcel) Kilograms() int { return (p.Grams + 999) / 1000 }
+
+type ShippingQuote struct{ GoodsCents, FeeCents int }
+
+func (q ShippingQuote) Payable() int { return q.GoodsCents + q.FeeCents }
+
+type ShippingPolicy interface{ Fee(Parcel) int }
+type StandardShipping struct{}
+
+func (StandardShipping) Fee(p Parcel) int {
+	fee := 500 + p.Kilograms()*200
+	if p.RemoteArea {
+		fee += 1000
 	}
-	return price
+	return fee
 }
 
-type PercentOff struct{}
-func (p PercentOff) Calc(price float64) float64 {
-	return price * 0.9
+type ExpressShipping struct{}
+
+func (ExpressShipping) Fee(p Parcel) int {
+	fee := 1200 + p.Kilograms()*400
+	if p.RemoteArea {
+		fee += 2000
+	}
+	return fee
 }
 
-type Order struct {
-	discount Discount
-}
-func (o *Order) SetDiscount(d Discount) {
-	o.discount = d
-}
-func (o *Order) GetPrice(origin float64) float64 {
-	return o.discount.Calc(origin)
-}
+type Checkout struct{ policy ShippingPolicy }
 
+func (c *Checkout) Use(p ShippingPolicy) { c.policy = p }
+func (c Checkout) Quote(p Parcel) (ShippingQuote, error) {
+	if p.Grams <= 0 || p.GoodsCents < 0 {
+		return ShippingQuote{}, fmt.Errorf("包裹无效")
+	}
+	if c.policy == nil {
+		return ShippingQuote{}, fmt.Errorf("未选择配送方式")
+	}
+	return ShippingQuote{p.GoodsCents, c.policy.Fee(p)}, nil
+}
 func main() {
-	order := &Order{}
-	order.SetDiscount(FullReduction{})
-	fmt.Println(order.GetPrice(150))
-
-	order.SetDiscount(PercentOff{})
-	fmt.Println(order.GetPrice(150))
+	parcel := Parcel{1700, true, 12800}
+	checkout := Checkout{StandardShipping{}}
+	standard, err := checkout.Quote(parcel)
+	if err != nil {
+		panic(err)
+	}
+	checkout.Use(ExpressShipping{})
+	express, err := checkout.Quote(parcel)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("普通配送 fee=%d payable=%d\n", standard.FeeCents, standard.Payable())
+	fmt.Printf("加急配送 fee=%d payable=%d\n", express.FeeCents, express.Payable())
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-### 一句话口诀（原文）
+#### 运行结果与关键点
 
-> 同一个任务，有多种方案可选，中途可以换方案 → 策略
+```text
+普通配送 fee=1900 payable=14700
+加急配送 fee=4000 payable=16800
+```
 
----
+新增冷链配送时实现 `ShippingPolicy`，让装配入口选择它。`Checkout.quote()` 不必新增分支，也不需要理解保温箱、温控时长等具体计价规则；如果新算法需要额外输入，应同步审视 `Parcel` 的契约是否仍然合理。
 
-## 8. 观察者 Observer（发布-订阅）｜行为型
+#### 什么时候不用，以及这个例子的边界
 
-**核心：一对多事件通知；主流程和后续动作解耦**
+运行时切换只是演示方法。即使策略在构造时注入后一直不变，只要它用于封装可替换算法，仍然可以是策略模式。只有一个简单公式且不会变化时，普通方法即可。
 
-### ✅ 典型业务场景
+### 8. 观察者 Observer｜行为型
 
-- **下单成功事件**
-  主流程：只负责创建订单，然后发出「订单创建成功」事件。
-  订阅者 1：扣减商品库存；
-  订阅者 2：发送短信通知用户；
-  订阅者 3：生成财务账单；
-  订阅者 4：更新用户积分。
-  ✅ 好处：新增后续动作，完全不用修改下单主流程代码。
-- **用户注册成功事件**
-  欢迎短信、初始化钱包、发送欢迎邮件。
-- **MQ 消息、kafka 事件监听本质就是观察者模式**
-- **配置文件变更事件**
-  配置修改后，通知所有服务模块重载配置。
+#### 业务场景：订单到账后，积分和回执各自订阅事实
 
-### ⚠️ 什么时候不要用
+订单确认到账后，需要给顾客加积分、写回执、通知邮件系统。这些是不同的附属功能。把它们全写在付款确认方法里，每次增加功能都要改主流程；邮件出错还可能阻止回执生成。本例明确规定：付款事实先成立，订阅者独立处理，通知失败要汇总返回。
 
-- 流程是强依赖、必须顺序执行；不要用观察者，直接串行调用。
+| 类 / 接口 | 具体职责 |
+|---|---|
+| OrderPaid | 包含订单号、顾客号和到账金额的不可变事件 |
+| OrderService | 检查到账金额与重复确认，再发布付款事实 |
+| PaidEvents / PaidListener | 维护订阅列表，逐个通知并收集失败 |
+| LoyaltyListener / ReceiptListener | 分别更新积分账本和本地回执列表 |
 
-### 🗂️ 类图：接口与关系
+#### 一次请求怎样走
 
-![观察者类图：Subject 保存多个 Observer，SmsNotify 和 StockService 实现通知接口](diagrams/08-observer.zh.png)
+1. O-300 到账 12800 分，`OrderService` 先将订单标记为已付款。
+2. 积分订阅者记入 128 分；第二个演示订阅者返回邮件不可用。
+3. 发布器记录失败后继续通知回执订阅者，最终得到已付款、128 积分、1 条回执和 1 个通知错误。
+
+#### 类图：接口与关系
+
+![8. 观察者 Observer｜行为型：订单到账后，积分和回执各自订阅事实，核心类、接口与对象关系](diagrams/08-observer.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/08-observer.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-import java.util.ArrayList;
-import java.util.List;
-
-// 观察者：关心事件的对象
-interface Observer {
-    void update(String msg);
-}
-
-// 被观察者（主题）：维护订阅者列表，事件发生后挨个通知
-class Subject {
-    private final List<Observer> observers = new ArrayList<>();
-
-    public void attach(Observer observer) {
-        observers.add(observer);
-    }
-
-    public void notify(String msg) {
-        for (Observer observer : observers) {
-            observer.update(msg);
+import java.util.*;
+record OrderPaid(String orderId, String customerId, int paidCents) {}
+interface PaidListener { void onPaid(OrderPaid event); }
+class PaidEvents {
+    private final List<PaidListener> listeners = new ArrayList<>();
+    void subscribe(PaidListener listener) { listeners.add(listener); }
+    List<String> publish(OrderPaid event) {
+        List<String> failures = new ArrayList<>();
+        for (PaidListener listener : List.copyOf(listeners)) {
+            try { listener.onPaid(event); }
+            catch (RuntimeException e) { failures.add(e.getMessage()); }
         }
+        return failures;
     }
 }
-
-class SmsNotify implements Observer {
-    public void update(String msg) {
-        System.out.println("短信收到事件：" + msg);
-    }
+class LoyaltyListener implements PaidListener {
+    private final Map<String, Integer> points = new HashMap<>();
+    public void onPaid(OrderPaid e) { points.merge(e.customerId(), e.paidCents() / 100, Integer::sum); }
+    int pointsOf(String customer) { return points.getOrDefault(customer, 0); }
 }
-
-class StockService implements Observer {
-    public void update(String msg) {
-        System.out.println("库存收到事件：" + msg);
-    }
+class ReceiptListener implements PaidListener {
+    private final List<String> receipts = new ArrayList<>();
+    public void onPaid(OrderPaid e) { receipts.add(e.orderId() + ":" + e.paidCents()); }
+    int count() { return receipts.size(); }
 }
-
+class OrderService {
+    private final Set<String> paidOrders = new HashSet<>();
+    private final PaidEvents events;
+    OrderService(PaidEvents events) { this.events = events; }
+    List<String> confirmPayment(OrderPaid event) {
+        if (event.paidCents() <= 0) throw new IllegalArgumentException("到账金额无效");
+        if (!paidOrders.add(event.orderId())) throw new IllegalStateException("订单已确认付款");
+        return events.publish(event); // 已付款事实先成立，再通知附属功能
+    }
+    boolean isPaid(String id) { return paidOrders.contains(id); }
+}
 public class Main {
     public static void main(String[] args) {
-        Subject subject = new Subject();
-        subject.attach(new SmsNotify());
-        subject.attach(new StockService());
-
-        // 下单主流程只发一个事件，后续动作全部解耦
-        subject.notify("订单创建成功");
+        PaidEvents events = new PaidEvents();
+        LoyaltyListener loyalty = new LoyaltyListener();
+        ReceiptListener receipts = new ReceiptListener();
+        events.subscribe(loyalty);
+        events.subscribe(e -> { throw new IllegalStateException("邮件服务不可用"); });
+        events.subscribe(receipts);
+        OrderService orders = new OrderService(events);
+        List<String> failures = orders.confirmPayment(new OrderPaid("O-300", "C-8", 12800));
+        System.out.printf("已付款=%s 积分=%d 回执数=%d 失败数=%d%n",
+            orders.isPaid("O-300"), loyalty.pointsOf("C-8"), receipts.count(), failures.size());
+        System.out.println(failures.get(0));
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
 import "fmt"
 
-type Observer interface {
-	Update(msg string)
+type OrderPaid struct {
+	OrderID, CustomerID string
+	PaidCents           int
 }
+type PaidListener interface{ OnPaid(OrderPaid) error }
+type ListenerFunc func(OrderPaid) error
 
-type Subject struct {
-	observers []Observer
-}
+func (f ListenerFunc) OnPaid(e OrderPaid) error { return f(e) }
 
-func (s *Subject) Attach(o Observer) {
-	s.observers = append(s.observers, o)
-}
+type PaidEvents struct{ listeners []PaidListener }
 
-func (s *Subject) Notify(msg string) {
-	for _, o := range s.observers {
-		o.Update(msg)
+func (b *PaidEvents) Subscribe(l PaidListener) { b.listeners = append(b.listeners, l) }
+func (b *PaidEvents) Publish(e OrderPaid) []error {
+	var failures []error
+	for _, l := range append([]PaidListener(nil), b.listeners...) {
+		if err := l.OnPaid(e); err != nil {
+			failures = append(failures, err)
+		}
 	}
+	return failures
 }
 
-type SmsNotify struct{}
-func (s SmsNotify) Update(msg string) {
-	fmt.Println("短信收到事件：", msg)
+type LoyaltyListener struct{ points map[string]int }
+
+func (l *LoyaltyListener) OnPaid(e OrderPaid) error {
+	l.points[e.CustomerID] += e.PaidCents / 100
+	return nil
+}
+func (l *LoyaltyListener) PointsOf(id string) int { return l.points[id] }
+
+type ReceiptListener struct{ receipts []string }
+
+func (l *ReceiptListener) OnPaid(e OrderPaid) error {
+	l.receipts = append(l.receipts, fmt.Sprintf("%s:%d", e.OrderID, e.PaidCents))
+	return nil
+}
+func (l *ReceiptListener) Count() int { return len(l.receipts) }
+
+type OrderService struct {
+	paidOrders map[string]bool
+	events     *PaidEvents
 }
 
-type StockService struct{}
-func (s StockService) Update(msg string) {
-	fmt.Println("库存收到事件：", msg)
+func (s *OrderService) ConfirmPayment(e OrderPaid) ([]error, error) {
+	if e.PaidCents <= 0 {
+		return nil, fmt.Errorf("到账金额无效")
+	}
+	if s.paidOrders[e.OrderID] {
+		return nil, fmt.Errorf("订单已确认付款")
+	}
+	s.paidOrders[e.OrderID] = true
+	return s.events.Publish(e), nil
 }
-
 func main() {
-	subject := &Subject{}
-	subject.Attach(SmsNotify{})
-	subject.Attach(StockService{})
-
-	subject.Notify("订单创建成功")
+	events := &PaidEvents{}
+	loyalty := &LoyaltyListener{map[string]int{}}
+	receipts := &ReceiptListener{}
+	events.Subscribe(loyalty)
+	events.Subscribe(ListenerFunc(func(OrderPaid) error { return fmt.Errorf("邮件服务不可用") }))
+	events.Subscribe(receipts)
+	orders := OrderService{map[string]bool{}, events}
+	failures, err := orders.ConfirmPayment(OrderPaid{"O-300", "C-8", 12800})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("已付款=%t 积分=%d 回执数=%d 失败数=%d\n", orders.paidOrders["O-300"], loyalty.PointsOf("C-8"), receipts.Count(), len(failures))
+	fmt.Println(failures[0])
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-> 补充：Java 内置的 `Observable/Observer` 已废弃；Spring 的 `ApplicationEventPublisher` + `@EventListener` 就是观察者模式的现成实现。进程内观察者默认同步执行，MQ/Kafka 是它思想在分布式场景下的实现（异步、削峰）。
-
-### 一句话口诀（原文）
-
-> 一件事做完之后，一堆无关的附属事情要被触发 → 观察者
-
----
-
-# 二、易混模式快速对照 + 组合实战
-
-## 📌 工厂 vs 策略 场景快速区分对照表（原文）
-
-| 业务需求 | 选模式 |
-|---|---|
-| 用户下单，一次性选支付宝，付完结束，中途不会换微信 | 简单工厂 |
-| 订单生成后，可以来回切换支付宝 / 微信重新支付 | 策略模式 +（工厂生成策略对象） |
-
-一句话：**选完就不换 → 工厂；选完还要来回换 → 策略**。
-
-## 📌 装饰器 vs 代理（原文）
-
-- **装饰器**：增强原有功能，目标对象一定会被执行；
-- **代理**：控制访问，有可能直接拦截，根本不调用真实对象。
-
-## 📌 状态 vs 策略（补充）
-
-- **状态模式**：状态之间可以互相转换，由「状态自己」决定下一个状态（订单：待支付 → 已支付 → 已发货）；
-- **策略模式**：策略之间互相独立，由「上下文 Context」决定什么时候换（折扣：9 折 ↔ 满减，互不关联）。
-
-## 📌 桥接 vs 适配器 vs 策略（补充）
-
-| 模式 | 主要解决什么问题 | 通知系统里的例子 |
-|---|---|---|
-| 桥接 Bridge | 两个维度都要独立扩展，避免为每种组合建一个类 | 普通 / 紧急通知与邮件 / 短信渠道分开定义，再自由组合 |
-| 适配器 Adapter | 已有接口不兼容，需要转换调用方式或数据 | 把短信 SDK 的 `sendSms(phone, body)` 转成系统统一的 `Sender.send(userId, content)` |
-| 策略 Strategy | 同一个目标有多种可替换算法 | 对同一类通知选择固定间隔或指数退避的重试算法 |
-
-桥接和策略都可能表现为「持有一个接口并委托调用」，区别要看设计意图：**桥接强调两套类型各自演化，策略强调替换某一项行为的算法**。仅仅注入一个接口，或支持运行时切换实现，都不足以单独判定是桥接；桥接也不要求必须在运行中切换实现。
-
-两者还能和适配器配合：先用适配器把各家发送 SDK 接到 `Sender` 接口，再让通知类型通过这个接口组合渠道。
-
-## 📌 备忘录 vs 命令 vs 策略（补充）
-
-| 模式 | 关注的问题 | 编辑器里的例子 |
-|---|---|---|
-| 备忘录 Memento | 怎样保存并恢复「之前是什么样」 | 保存编辑前的正文、光标位置，撤销时恢复 |
-| 命令 Command | 怎样封装「这次要做什么」并交给调用者管理 | 把插入文字封装成命令，按钮和快捷键共用执行入口 |
-| 策略 Strategy | 同一个目标采用哪种可替换算法 | 同一段文字选择不同的排版算法 |
-
-**命令和备忘录可以配合使用**：命令在执行前向编辑器索取快照，撤销时交还快照。命令负责操作的执行与管理，备忘录负责保存恢复所需的状态；命令本身并不要求一定支持撤销。
-
-## 📌 迭代器 vs 责任链（补充）
-
-- **迭代器**：从集合中依次取出数据，业务处理由调用方决定；
-- **责任链**：把同一个请求交给一组处理器，决定继续传递还是结束。
-
-遍历十个订单用迭代器；对一个订单依次做参数、权限和额度检查用责任链。两者都可能出现循环，但分离的职责不同。
-
-## 🚀 工厂 + 策略 组合完整示例（Java / Go 页签切换）
-
-业务中最常一起搭配使用：**工厂负责创建策略对象，上下文负责使用、切换策略对象**。
-
-思路说明：
-
-- 策略：支付宝、微信支付，属于可互换的支付算法；
-- 简单工厂：负责根据类型字符串，生成对应的策略实例；
-- 上下文 Context（Order）：持有策略，运行时可以随时更换支付策略；
-- 职责拆分：工厂 = 创建策略对象；上下文 = 使用、切换策略对象。
-
-{{< tabs >}}
-{{< tab "Java" >}}
-```java
-// ---------------------- 策略层：定义多种支付行为 ----------------------
-interface Payment {
-    void pay(double amount);
-}
-
-class Alipay implements Payment {
-    public void pay(double amount) {
-        System.out.printf("支付宝支付：%.2f 元%n", amount);
-    }
-}
-
-class WechatPay implements Payment {
-    public void pay(double amount) {
-        System.out.printf("微信支付：%.2f 元%n", amount);
-    }
-}
-
-// ---------------------- 工厂层：生产策略对象，把 if-else 创建逻辑收拢 ----------------------
-class PaymentFactory {
-    public static Payment create(String payType) {
-        switch (payType) {
-            case "alipay": return new Alipay();
-            case "wechat": return new WechatPay();
-            default:       return null;
-        }
-    }
-}
-
-// ---------------------- 上下文 Context：使用 & 切换策略 ----------------------
-class Order {
-    private Payment payment;
-
-    // 运行时更换支付策略
-    public void setPayment(Payment payment) {
-        this.payment = payment;
-    }
-
-    public void checkout(double amount) {
-        if (payment == null) {
-            System.out.println("未选择支付方式");
-            return;
-        }
-        payment.pay(amount);
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        Order order = new Order();
-
-        // 工厂生成支付宝策略，上下文使用
-        order.setPayment(PaymentFactory.create("alipay"));
-        order.checkout(100);
-
-        // 中途切换微信支付：工厂生成新策略，上下文替换
-        order.setPayment(PaymentFactory.create("wechat"));
-        order.checkout(200);
-    }
-}
-```
-{{< /tab >}}
-
-{{< tab "Go（原版）" >}}
-```go
-package main
-
-import "fmt"
-
-// ---------------------- 策略层 ----------------------
-// Payment 支付策略接口
-type Payment interface {
-	Pay(amount float64)
-}
-
-// Alipay 支付宝策略
-type Alipay struct{}
-
-func (a Alipay) Pay(amount float64) {
-	fmt.Printf("支付宝支付：%.2f 元\n", amount)
-}
-
-// WechatPay 微信支付策略
-type WechatPay struct{}
-
-func (w WechatPay) Pay(amount float64) {
-	fmt.Printf("微信支付：%.2f 元\n", amount)
-}
-
-// ---------------------- 工厂层：生产策略对象 ----------------------
-func NewPaymentStrategy(payType string) Payment {
-	switch payType {
-	case "alipay":
-		return Alipay{}
-	case "wechat":
-		return WechatPay{}
-	default:
-		return nil
-	}
-}
-
-// ---------------------- 上下文 Context：使用&切换策略 ----------------------
-type Order struct {
-	payment Payment
-}
-
-// SetPayment 运行时更换支付策略
-func (o *Order) SetPayment(p Payment) {
-	o.payment = p
-}
-
-func (o *Order) Checkout(amount float64) {
-	if o.payment == nil {
-		fmt.Println("未选择支付方式")
-		return
-	}
-	o.payment.Pay(amount)
-}
-
-// ---------------------- 主程序 ----------------------
-func main() {
-	order := &Order{}
-
-	// 工厂生成支付宝策略，上下文使用
-	p1 := NewPaymentStrategy("alipay")
-	order.SetPayment(p1)
-	order.Checkout(100)
-
-	// 中途切换微信支付，工厂生成新策略
-	p2 := NewPaymentStrategy("wechat")
-	order.SetPayment(p2)
-	order.Checkout(200)
-}
-```
-{{< /tab >}}
-{{< /tabs >}}
-
-运行输出：
+#### 运行结果与关键点
 
 ```text
-支付宝支付：100.00 元
-微信支付：200.00 元
+已付款=true 积分=128 回执数=1 失败数=1
+邮件服务不可用
 ```
 
-三者角色对比：
+要增加数据分析订阅者，只需实现 `PaidListener` 并注册。发布器不依赖积分或回执的具体类型。本例通知是同步顺序执行，错误隔离来自 `publish()` 的明确代码，并不是观察者模式自动附赠的能力。
 
-| 组件 | 干什么 |
+#### 什么时候不用，以及这个例子的边界
+
+示例的状态和事件都在内存里，进程崩溃会丢失；重复付款确认被拒绝，也没有自动重试失败订阅者。需要可靠投递时，要另行处理事件持久化、幂等和重试。库存预留、实际扣款等必须成功的主交易步骤不应随意塞进这种尽力通知流程。
+
+## 二、易混模式：从变化的位置判断
+
+| 容易混淆的模式 | 应该观察的职责 | 本文的对应例子 |
+|---|---|---|
+| 工厂 / 策略 | 工厂决定怎样创建对象；策略封装怎样完成某项计算 | 支付渠道的配置与创建 / 包裹的运费公式 |
+| 装饰器 / 代理 | 装饰器组合附加能力；代理控制访问对象的方式 | 会员与运费叠加 / 文档租户权限检查 |
+| 状态 / 策略 | 状态表达对象生命周期中动作是否合法、如何流转；策略表达可替换算法 | 付款前不能发货 / 普通与加急计费 |
+| 桥接 / 适配器 | 桥接拆开两个独立演化维度；适配器转换已有的不兼容接口 | 告警级别 × 渠道 / 克与公斤、状态码与业务错误 |
+| 命令 / 备忘录 | 命令记录要执行的动作；备忘录保存恢复所需的状态 | 加商品与用券 / 报价单完整检查点 |
+| 迭代器 / 责任链 | 迭代器依次提供数据；责任链让同一请求依次接受处理 | 多页订单遍历 / 一次采购请求的逐项校验 |
+
+**不要把“选完换不换”作为工厂与策略的分界，也不要把“内层是否被调用”作为装饰器与代理的唯一分界。** 这些可能是某个实现的行为，但设计意图才决定职责。例如一个注入后不再替换的计价算法仍然可以是策略；缓存装饰器命中时也可能不调用内层。
+
+观察者和分布式发布订阅也不等同：本例的发布者持有订阅者引用并同步调用；消息中间件进一步引入跨进程传输、持久化和投递语义。支付成功后的附属通知可以借鉴事件解耦，但可靠性仍需独立设计。
+
+### 工厂与策略怎样组合
+
+复用第 7 节的 `Parcel`、`ShippingPolicy`、两个配送策略和 `Checkout`。当结算页传入配送方式时，由工厂负责创建策略，由结算对象负责使用策略。下面的工厂和试算入口**复用第 7 节的类型**，不是另一份独立程序。
+
+{{< tabs >}}
+{{< tab "Java" >}}
+```java
+class ShippingFactory {
+    ShippingPolicy create(String method) {
+        return switch (method) {
+            case "standard" -> new StandardShipping();
+            case "express" -> new ExpressShipping();
+            default -> throw new IllegalArgumentException("不支持的配送方式");
+        };
+    }
+}
+class ShippingPreview {
+    private final ShippingFactory factory = new ShippingFactory();
+    ShippingQuote quote(String method, Parcel parcel) {
+        Checkout checkout = new Checkout(factory.create(method));
+        return checkout.quote(parcel);
+    }
+}
+// main 中调用 new ShippingPreview().quote("express", parcel)，应付金额为 16800。
+```
+{{< /tab >}}
+{{< tab "Go" >}}
+```go
+type ShippingFactory struct{}
+func (ShippingFactory) Create(method string) (ShippingPolicy, error) {
+    switch method {
+    case "standard":
+        return StandardShipping{}, nil
+    case "express":
+        return ExpressShipping{}, nil
+    default:
+        return nil, fmt.Errorf("不支持的配送方式")
+    }
+}
+type ShippingPreview struct { factory ShippingFactory }
+func (p ShippingPreview) Quote(method string, parcel Parcel) (ShippingQuote, error) {
+    policy, err := p.factory.Create(method)
+    if err != nil { return ShippingQuote{}, err }
+    checkout := Checkout{policy: policy}
+    return checkout.Quote(parcel)
+}
+// main 中调用 ShippingPreview{ShippingFactory{}}.Quote("express", parcel)，并检查 error。
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+新增冷链计费时，算法类与工厂选择入口发生变化，结算对象仍然只调用 `ShippingPolicy`。工厂并没有取代策略，策略也不负责知道怎样配置每一种实现。
+
+## 三、另外 8 个常用模式：流程、状态与历史
+
+### 9. 外观模式 Facade（结构型）
+
+#### 业务场景：一个发货入口编排预留、打包与叫件
+
+仓库操作员只想提交订单号、SKU、数量和地址。系统却需要先预留库存，再计算含包装的重量，最后向承运商叫件。每个入口若都复制这段编排，失败时是否释放库存很容易不一致。`FulfillmentFacade.dispatch()` 提供统一入口，并集中处理本例可以确定恢复的失败。
+
+| 类 / 接口 | 具体职责 |
 |---|---|
-| 策略接口 & 实现 | 定义多种支付行为 |
-| 工厂 | 统一创建策略实例，把 if-else 创建逻辑收拢 |
-| Order 上下文 | 持有策略引用，随时调用、随时替换 |
+| FulfillmentRequest / Dispatch | 把发货请求和最终运单结果封装为业务对象 |
+| Inventory | reserve() 预留库存，release() 释放，available() 查询余额 |
+| PackagingService / CarrierService | 分别生成 PackageInfo 和创建运单 |
+| FulfillmentFacade | 持有三个子系统，决定调用顺序并在叫件拒绝时释放预留 |
 
-业务好处：
+#### 一次请求怎样走
 
-- 上层业务不用到处 `new Alipay()`；
-- 如果后面新增银行卡支付，只需要：新增一个类实现 `Payment`，工厂 `switch` 加一条 `case`，业务代码（上下文 Order）无需改动。
+1. BOOK 初始库存 10，第一单预留 2 件后余量为 8。
+2. 两本书各 600 克，加上 100 克包装，叫件重量为 1300 克，返回 WB-1。
+3. 第二单预留 3 件后因空地址被承运商拒绝，门面释放这 3 件，库存恢复为 8。
 
-> 再进一步：把工厂的 `switch` 换成「注册表 + 工厂方法」，新增渠道时连工厂都不改，就完全满足开闭原则了（本文先不过度展开）。
+#### 类图：接口与关系
 
----
-
-# 三、第二梯队 8 个常用模式
-
-## 9. 外观模式 Facade（结构型）
-
-**作用：对外提供一个简单入口，隐藏内部一堆复杂子系统**
-
-**场景：下单入口，内部依次调用库存、支付、物流；上层只调用一个 `createOrder()`，不用关心内部多个子服务。**
-
-### ⚠️ 什么时候不要用（补充）
-
-- 子系统调用关系本来就简单、只有一两个类，加门面属于过度设计；
-- 门面不要越做越大变成「上帝类」——它只负责编排入口，不负责塞业务逻辑。
-
-### 🗂️ 类图：接口与关系
-
-![外观类图：OrderFacade 组合 StockService、PayService 和 LogisticsService，统一编排下单](diagrams/09-facade.zh.png)
+![9. 外观模式 Facade（结构型）：一个发货入口编排预留、打包与叫件，核心类、接口与对象关系](diagrams/09-facade.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/09-facade.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-// 子系统 1：库存
-class StockService {
-    public void deduct(int goodsId) {
-        System.out.println("扣减商品 " + goodsId + " 库存");
+import java.util.*;
+record FulfillmentRequest(String orderId, String sku, int quantity, String address) {}
+record PackageInfo(String orderId, int grams, String address) {}
+record Dispatch(String orderId, String waybill, int grams) {}
+class Inventory {
+    private final Map<String, Integer> stock = new HashMap<>(Map.of("BOOK", 10));
+    void reserve(String sku, int quantity) {
+        if (quantity <= 0 || available(sku) < quantity) throw new IllegalStateException("库存不足或数量无效");
+        stock.put(sku, available(sku) - quantity);
+    }
+    void release(String sku, int quantity) { stock.put(sku, available(sku) + quantity); }
+    int available(String sku) { return stock.getOrDefault(sku, 0); }
+}
+class PackagingService {
+    PackageInfo pack(FulfillmentRequest r) {
+        return new PackageInfo(r.orderId(), r.quantity() * 600 + 100, r.address());
     }
 }
-
-// 子系统 2：支付
-class PayService {
-    public void pay(double amount) {
-        System.out.printf("支付金额 %.2f%n", amount);
+class CarrierService {
+    private int bookings;
+    String book(PackageInfo p) {
+        if (p.address().isBlank()) throw new IllegalArgumentException("收件地址为空");
+        return "WB-" + (++bookings);
     }
 }
-
-// 子系统 3：物流
-class LogisticsService {
-    public void createShipment(String orderNo) {
-        System.out.println("创建物流单：" + orderNo);
+class FulfillmentFacade {
+    private final Inventory inventory;
+    private final PackagingService packaging;
+    private final CarrierService carrier;
+    FulfillmentFacade(Inventory i, PackagingService p, CarrierService c) {
+        inventory = i; packaging = p; carrier = c;
+    }
+    Dispatch dispatch(FulfillmentRequest request) {
+        inventory.reserve(request.sku(), request.quantity());
+        try {
+            PackageInfo parcel = packaging.pack(request);
+            String waybill = carrier.book(parcel);
+            return new Dispatch(request.orderId(), waybill, parcel.grams());
+        } catch (RuntimeException e) {
+            inventory.release(request.sku(), request.quantity());
+            throw e;
+        }
     }
 }
-
-// 外观门面：对外一个简单方法，封装所有复杂流程
-class OrderFacade {
-    private final StockService stock = new StockService();
-    private final PayService pay = new PayService();
-    private final LogisticsService logistics = new LogisticsService();
-
-    public void createOrder(int goodsId, double amount, String orderNo) {
-        stock.deduct(goodsId);
-        pay.pay(amount);
-        logistics.createShipment(orderNo);
-    }
-}
-
 public class Main {
     public static void main(String[] args) {
-        OrderFacade facade = new OrderFacade();
-        // 上层只需要调用一个方法，无需关心内部子系统
-        facade.createOrder(1001, 99.0, "ORD-001");
+        Inventory inventory = new Inventory();
+        FulfillmentFacade facade = new FulfillmentFacade(inventory, new PackagingService(), new CarrierService());
+        Dispatch d = facade.dispatch(new FulfillmentRequest("O-400", "BOOK", 2, "上海仓库路 1 号"));
+        System.out.printf("%s %s grams=%d 库存=%d%n", d.orderId(), d.waybill(), d.grams(), inventory.available("BOOK"));
+        try { facade.dispatch(new FulfillmentRequest("O-401", "BOOK", 3, "")); }
+        catch (IllegalArgumentException e) { System.out.println(e.getMessage()); }
+        System.out.println("失败后库存=" + inventory.available("BOOK"));
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
 import "fmt"
 
-// 子系统1：库存
-type StockService struct{}
-func (s *StockService) Deduct(goodsId int) {
-	fmt.Printf("扣减商品 %d 库存\n", goodsId)
+type FulfillmentRequest struct {
+	OrderID, SKU string
+	Quantity     int
+	Address      string
 }
-
-// 子系统2：支付
-type PayService struct{}
-func (p *PayService) Pay(amount float64) {
-	fmt.Printf("支付金额 %.2f\n", amount)
+type PackageInfo struct {
+	OrderID string
+	Grams   int
+	Address string
 }
-
-// 子系统3：物流
-type LogisticsService struct{}
-func (l *LogisticsService) CreateShipment(orderNo string) {
-	fmt.Printf("创建物流单：%s\n", orderNo)
+type Dispatch struct {
+	OrderID, Waybill string
+	Grams            int
 }
+type Inventory struct{ stock map[string]int }
 
-// 外观门面
-type OrderFacade struct {
-	stock  *StockService
-	pay    *PayService
-	logist *LogisticsService
-}
-
-func NewOrderFacade() *OrderFacade {
-	return &OrderFacade{
-		stock:  &StockService{},
-		pay:    &PayService{},
-		logist: &LogisticsService{},
+func (i *Inventory) Available(sku string) int { return i.stock[sku] }
+func (i *Inventory) Reserve(sku string, q int) error {
+	if q <= 0 || i.Available(sku) < q {
+		return fmt.Errorf("库存不足或数量无效")
 	}
+	i.stock[sku] -= q
+	return nil
+}
+func (i *Inventory) Release(sku string, q int) { i.stock[sku] += q }
+
+type PackagingService struct{}
+
+func (PackagingService) Pack(r FulfillmentRequest) PackageInfo {
+	return PackageInfo{r.OrderID, r.Quantity*600 + 100, r.Address}
 }
 
-// 对外一个简单方法，封装所有复杂流程
-func (f *OrderFacade) CreateOrder(goodsId int, amount float64, orderNo string) {
-	f.stock.Deduct(goodsId)
-	f.pay.Pay(amount)
-	f.logist.CreateShipment(orderNo)
+type CarrierService struct{ bookings int }
+
+func (c *CarrierService) Book(p PackageInfo) (string, error) {
+	if p.Address == "" {
+		return "", fmt.Errorf("收件地址为空")
+	}
+	c.bookings++
+	return fmt.Sprintf("WB-%d", c.bookings), nil
 }
 
+type FulfillmentFacade struct {
+	inventory *Inventory
+	packaging PackagingService
+	carrier   *CarrierService
+}
+
+func (f FulfillmentFacade) Dispatch(r FulfillmentRequest) (Dispatch, error) {
+	if err := f.inventory.Reserve(r.SKU, r.Quantity); err != nil {
+		return Dispatch{}, err
+	}
+	p := f.packaging.Pack(r)
+	waybill, err := f.carrier.Book(p)
+	if err != nil {
+		f.inventory.Release(r.SKU, r.Quantity)
+		return Dispatch{}, err
+	}
+	return Dispatch{r.OrderID, waybill, p.Grams}, nil
+}
 func main() {
-	facade := NewOrderFacade()
-	// 上层只需要调用一个方法，无需关心内部子系统
-	facade.CreateOrder(1001, 99.0, "ORD-001")
+	inventory := &Inventory{map[string]int{"BOOK": 10}}
+	facade := FulfillmentFacade{inventory, PackagingService{}, &CarrierService{}}
+	d, err := facade.Dispatch(FulfillmentRequest{"O-400", "BOOK", 2, "上海仓库路 1 号"})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s %s grams=%d 库存=%d\n", d.OrderID, d.Waybill, d.Grams, inventory.Available("BOOK"))
+	_, err = facade.Dispatch(FulfillmentRequest{"O-401", "BOOK", 3, ""})
+	fmt.Println(err)
+	fmt.Printf("失败后库存=%d\n", inventory.Available("BOOK"))
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-### 一句话口诀（补充）
+#### 运行结果与关键点
 
-> 复杂一堆子系统 → 一个入口调用
+```text
+O-400 WB-1 grams=1300 库存=8
+收件地址为空
+失败后库存=8
+```
 
----
+对外调用方只依赖一个门面入口。子系统对象通过构造参数注入，因此类图画的是持有关联；它们不是由门面私有创建并独占的组合对象。进一步引入接口可替换真实仓储或物流服务，但这个局部例子无需给每个类机械地加接口。
 
-## 10. 责任链 Chain of Responsibility（行为型）
+#### 什么时候不用，以及这个例子的边界
 
-**作用：一条处理链条，请求依次经过每个处理器，可中断**
+门面简化接口，不自动提供分布式事务。这里承运商失败一定发生在创建运单之前；若真实请求超时但对方已经接单，不能直接假定释放库存就是完整回滚，必须查询结果并设计补偿。重复发货与并发库存控制也未在本例实现。
 
-**场景：接口校验链路 → 参数校验 → 权限校验 → 限流校验 → 执行业务；审批流（员工 → 主管 → 经理）**
+### 10. 责任链 Chain of Responsibility（行为型）
 
-### ⚠️ 什么时候不要用（补充）
+#### 业务场景：采购请求逐项校验并保留通过轨迹
 
-- 环节顺序不固定、职责经常增删，链条会很难维护；
-- 只有两三个简单 `if` 校验，直接写就行，不需要责任链。
+采购入口要检查用户标识、商品数量、账号状态和可用库存。无效参数不该访问后续资源；冻结账号也不该继续查库存。每个检查负责一个原因，遇到拒绝立即停止，同时保留已经通过的步骤，方便页面解释失败位置。
 
-### 🗂️ 类图：接口与关系
+| 类 / 接口 | 具体职责 |
+|---|---|
+| PurchaseRequest / CheckContext | 请求保存用户、SKU、数量；上下文保存通过轨迹 |
+| PurchaseCheck | Java 抽象基类保存 next，固定先检查再传递 |
+| ParameterCheck / AccountCheck / StockCheck | 分别检查参数、账号和库存 |
+| Go PurchaseCheck / NextCheck | 接口定义处理入口，嵌入对象只负责转发到下一节点 |
 
-![责任链类图：具体处理器继承 Handler，Handler 通过 next 自关联连接后续处理器](diagrams/10-chain.zh.png)
+#### 一次请求怎样走
+
+1. 正常账号买 2 本书，依次通过参数、账号和库存三项检查。
+2. 冻结账号在账号节点失败，轨迹只有参数通过，库存节点未执行。
+3. 正常账号买 4 本书，但库存只有 3，轨迹停在账号通过，返回库存不足。
+
+#### 类图：接口与关系
+
+![10. 责任链 Chain of Responsibility（行为型）：采购请求逐项校验并保留通过轨迹，核心类、接口与对象关系](diagrams/10-chain.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/10-chain.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-// 处理器抽象：定义链式结构
-abstract class Handler {
-    private Handler next;
-
-    // 返回 next 方便链式串接：new ParamCheck().setNext(new AuthCheck())...
-    public Handler setNext(Handler next) {
-        this.next = next;
-        return next;
+import java.util.*;
+record PurchaseRequest(String userId, boolean active, String sku, int quantity) {}
+class CheckContext {
+    private final List<String> passed = new ArrayList<>();
+    void record(String step) { passed.add(step); }
+    String trace() { return String.join(" -> ", passed); }
+}
+abstract class PurchaseCheck {
+    private PurchaseCheck next;
+    PurchaseCheck then(PurchaseCheck next) { this.next = next; return next; }
+    final void handle(PurchaseRequest r, CheckContext context) {
+        check(r, context);
+        if (next != null) next.handle(r, context);
     }
-
-    public abstract boolean handle(int request);
-
-    // 传给下一个处理器；没有下一个就返回 true（放行）
-    protected boolean pass(int request) {
-        if (next != null) {
-            return next.handle(request);
-        }
-        return true;
+    protected abstract void check(PurchaseRequest r, CheckContext context);
+}
+class ParameterCheck extends PurchaseCheck {
+    protected void check(PurchaseRequest r, CheckContext c) {
+        if (r.userId().isBlank() || r.sku().isBlank() || r.quantity() <= 0)
+            throw new IllegalArgumentException("参数不合法");
+        c.record("参数通过");
     }
 }
-
-// 参数校验
-class ParamCheck extends Handler {
-    public boolean handle(int request) {
-        if (request <= 0) {
-            System.out.println("参数非法，终止");
-            return false;
-        }
-        System.out.println("参数校验通过");
-        return pass(request);
+class AccountCheck extends PurchaseCheck {
+    protected void check(PurchaseRequest r, CheckContext c) {
+        if (!r.active()) throw new IllegalStateException("账户已冻结");
+        c.record("账户通过");
     }
 }
-
-// 权限校验
-class AuthCheck extends Handler {
-    public boolean handle(int request) {
-        if (request < 100) {
-            System.out.println("权限不足，终止");
-            return false;
-        }
-        System.out.println("权限校验通过");
-        return pass(request);
+class StockCheck extends PurchaseCheck {
+    private final Map<String, Integer> stock;
+    StockCheck(Map<String, Integer> stock) { this.stock = Map.copyOf(stock); }
+    protected void check(PurchaseRequest r, CheckContext c) {
+        if (stock.getOrDefault(r.sku(), 0) < r.quantity()) throw new IllegalStateException("库存不足");
+        c.record("库存通过");
     }
 }
-
-// 业务执行
-class BizHandler extends Handler {
-    public boolean handle(int request) {
-        System.out.println("执行业务逻辑，请求值：" + request);
-        return true;
-    }
-}
-
 public class Main {
     public static void main(String[] args) {
-        // 串起链条：参数校验 → 权限校验 → 业务执行
-        Handler chain = new ParamCheck();
-        chain.setNext(new AuthCheck()).setNext(new BizHandler());
-        // setNext 返回的是下一个处理器；执行必须从保留的链头开始
-        chain.handle(200);
+        PurchaseCheck head = new ParameterCheck();
+        head.then(new AccountCheck()).then(new StockCheck(Map.of("BOOK", 3)));
+        for (PurchaseRequest r : List.of(
+            new PurchaseRequest("U-1", true, "BOOK", 2),
+            new PurchaseRequest("U-2", false, "BOOK", 2),
+            new PurchaseRequest("U-3", true, "BOOK", 4))) {
+            CheckContext context = new CheckContext();
+            try { head.handle(r, context); System.out.println("允许提交: " + context.trace()); }
+            catch (RuntimeException e) { System.out.println(e.getMessage() + " | " + context.trace()); }
+        }
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-// 处理器接口
-type Handler interface {
-	Handle(request int) bool
-	SetNext(h Handler)
+type PurchaseRequest struct {
+	UserID   string
+	Active   bool
+	SKU      string
+	Quantity int
 }
+type CheckContext struct{ passed []string }
 
-// 基础处理器
-type BaseHandler struct {
-	next Handler
+func (c *CheckContext) Record(step string) { c.passed = append(c.passed, step) }
+func (c *CheckContext) Trace() string      { return strings.Join(c.passed, " -> ") }
+
+type PurchaseCheck interface {
+	Handle(PurchaseRequest, *CheckContext) error
 }
-func (b *BaseHandler) SetNext(h Handler) {
-	b.next = h
-}
-func (b *BaseHandler) pass(req int) bool {
-	if b.next != nil {
-		return b.next.Handle(req)
+type NextCheck struct{ next PurchaseCheck }
+
+func (n NextCheck) Forward(r PurchaseRequest, c *CheckContext) error {
+	if n.next != nil {
+		return n.next.Handle(r, c)
 	}
-	return true
+	return nil
 }
 
-// 参数校验
-type ParamCheck struct{ BaseHandler }
-func (p *ParamCheck) Handle(request int) bool {
-	if request <= 0 {
-		fmt.Println("参数非法，终止")
-		return false
+type ParameterCheck struct{ NextCheck }
+
+func (p ParameterCheck) Handle(r PurchaseRequest, c *CheckContext) error {
+	if r.UserID == "" || r.SKU == "" || r.Quantity <= 0 {
+		return fmt.Errorf("参数不合法")
 	}
-	fmt.Println("参数校验通过")
-	return p.pass(request)
+	c.Record("参数通过")
+	return p.Forward(r, c)
 }
 
-// 权限校验
-type AuthCheck struct{ BaseHandler }
-func (a *AuthCheck) Handle(request int) bool {
-	if request < 100 {
-		fmt.Println("权限不足，终止")
-		return false
+type AccountCheck struct{ NextCheck }
+
+func (p AccountCheck) Handle(r PurchaseRequest, c *CheckContext) error {
+	if !r.Active {
+		return fmt.Errorf("账户已冻结")
 	}
-	fmt.Println("权限校验通过")
-	return a.pass(request)
+	c.Record("账户通过")
+	return p.Forward(r, c)
 }
 
-// 业务执行
-type BizHandler struct{ BaseHandler }
-func (b *BizHandler) Handle(request int) bool {
-	fmt.Println("执行业务逻辑，请求值：", request)
-	return true
+type StockCheck struct {
+	NextCheck
+	stock map[string]int
 }
 
+func (p StockCheck) Handle(r PurchaseRequest, c *CheckContext) error {
+	if p.stock[r.SKU] < r.Quantity {
+		return fmt.Errorf("库存不足")
+	}
+	c.Record("库存通过")
+	return p.Forward(r, c)
+}
 func main() {
-	param := &ParamCheck{}
-	auth := &AuthCheck{}
-	biz := &BizHandler{}
-	// 串起链条
-	param.SetNext(auth)
-	auth.SetNext(biz)
-
-	param.Handle(200)
+	stock := StockCheck{stock: map[string]int{"BOOK": 3}}
+	account := AccountCheck{NextCheck{stock}}
+	var head PurchaseCheck = ParameterCheck{NextCheck{account}}
+	requests := []PurchaseRequest{{"U-1", true, "BOOK", 2}, {"U-2", false, "BOOK", 2}, {"U-3", true, "BOOK", 4}}
+	for _, r := range requests {
+		c := &CheckContext{}
+		if err := head.Handle(r, c); err != nil {
+			fmt.Println(err, "|", c.Trace())
+		} else {
+			fmt.Println("允许提交:", c.Trace())
+		}
+	}
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-### 一句话口诀（补充）
+#### 运行结果与关键点
 
-> 校验 / 审批一条流水线，中途失败就截断
+```text
+允许提交: 参数通过 -> 账户通过 -> 库存通过
+账户已冻结 | 参数通过
+库存不足 | 参数通过 -> 账户通过
+```
 
----
+增加额度检查时，新增节点并在装配链条时插入。顺序由业务约束决定，例如先进行便宜的参数检查，再访问外部资源。Java 的 `then()` 返回下一个节点以便串接，执行时必须保留并调用链头。
 
-## 11. 状态模式 State（行为型）
+#### 什么时候不用，以及这个例子的边界
 
-**作用：对象行为随内部状态自动变化；大量 if-else 状态判断的替代品**
+这里是校验型责任链，所有节点通过才允许提交。库存检查只是读快照，不能防止并发超卖，正式提交仍要原子预留。链条可增删并不意味着不适用；真正要警惕的是顺序依赖过多、职责交叉，或者只需两三个简单判断却引入大量类。
 
-**场景：订单状态流转：待支付 → 已支付 → 已发货 → 已完成；工单、审批。**
+### 11. 状态模式 State（行为型）
 
-**和策略区别：状态之间可以互相转换，策略之间互相独立。**
+#### 业务场景：订单对同一个动作给出不同状态响应
 
-### ⚠️ 什么时候不要用（补充）
+订单待付款时可以付款或取消；付款后才允许发货；发货后不能再次付款或直接取消。区别不仅是状态名称不同，同一个 `ship()` 操作在不同状态下必须有不同结果。把所有动作与状态的组合都放进 `Order` 的多层条件分支，后续加入退款、拦截发货等逻辑会更难维护。
 
-- 状态很少（2-3 个）且流转逻辑简单，用 if-else 反而更直白；
-- 状态固定不变、没有「自动流转」的需求，不需要引入状态对象。
+| 类 / 接口 | 具体职责 |
+|---|---|
+| Order | 保存金额、付款凭据、运单和当前状态，业务动作委托给状态对象 |
+| OrderState | 定义 pay()、ship()、cancel()，默认拒绝不支持的动作 |
+| Pending / Paid | 分别实现付款、取消以及发货前校验，并决定后继状态 |
+| Shipped / Cancelled | 终态，沿用默认拒绝行为 |
+| PaymentReceipt / Shipment | 承载需要校验的交易流水、金额和运单 |
 
-### 🗂️ 类图：接口与关系
+#### 一次请求怎样走
 
-![状态类图：Order 持有 OrderState，四种状态实现接口并按顺序创建下一状态](diagrams/11-state.zh.png)
+1. 待付款时直接发货被拒绝，订单没有变化。
+2. 提交金额匹配的付款凭据后进入已付款，再附有效运单进入已发货。
+3. 已发货订单再次付款会失败；另一笔待付款订单可以直接取消，且没有付款凭据或运单。
+
+#### 类图：接口与关系
+
+![11. 状态模式 State（行为型）：订单对同一个动作给出不同状态响应，核心类、接口与对象关系](diagrams/11-state.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/11-state.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-// 状态接口
+record PaymentReceipt(String transactionId, int amountCents) {}
+record Shipment(String waybill) {}
 interface OrderState {
-    void next(Order order);
+    String name();
+    default void pay(Order o, PaymentReceipt r) { throw new IllegalStateException("当前状态不能付款"); }
+    default void ship(Order o, Shipment s) { throw new IllegalStateException("当前状态不能发货"); }
+    default void cancel(Order o) { throw new IllegalStateException("当前状态不能取消"); }
 }
-
-// 上下文订单：持有当前状态
-class Order {
-    private OrderState state;
-
-    public Order(OrderState state) {
-        this.state = state;
+class Pending implements OrderState {
+    public String name() { return "待付款"; }
+    public void pay(Order o, PaymentReceipt r) {
+        if (r.amountCents() != o.amountCents() || r.transactionId().isBlank())
+            throw new IllegalArgumentException("付款凭据不匹配");
+        o.recordPayment(r); o.transition(new Paid());
     }
-
-    public void setState(OrderState state) {
-        this.state = state;
-    }
-
-    public void action() {
-        state.next(this);
-    }
+    public void cancel(Order o) { o.transition(new Cancelled()); }
 }
-
-// 待支付
-class WaitPay implements OrderState {
-    public void next(Order order) {
-        System.out.println("订单：待支付 → 切换到已支付");
-        order.setState(new Paid());
-    }
-}
-
-// 已支付
 class Paid implements OrderState {
-    public void next(Order order) {
-        System.out.println("订单：已支付 → 切换到已发货");
-        order.setState(new Shipped());
+    public String name() { return "已付款"; }
+    public void ship(Order o, Shipment s) {
+        if (s.waybill().isBlank()) throw new IllegalArgumentException("缺少运单");
+        o.recordShipment(s); o.transition(new Shipped());
     }
 }
-
-// 已发货
-class Shipped implements OrderState {
-    public void next(Order order) {
-        System.out.println("订单：已发货 → 切换到已完成");
-        order.setState(new Completed());
+class Shipped implements OrderState { public String name() { return "已发货"; } }
+class Cancelled implements OrderState { public String name() { return "已取消"; } }
+class Order {
+    private final int amountCents;
+    private OrderState state = new Pending();
+    private PaymentReceipt payment;
+    private Shipment shipment;
+    Order(int amountCents) {
+        if (amountCents <= 0) throw new IllegalArgumentException("订单金额无效");
+        this.amountCents = amountCents;
+    }
+    int amountCents() { return amountCents; }
+    void transition(OrderState next) { state = next; }
+    void recordPayment(PaymentReceipt receipt) { payment = receipt; }
+    void recordShipment(Shipment value) { shipment = value; }
+    void pay(PaymentReceipt receipt) { state.pay(this, receipt); }
+    void ship(Shipment value) { state.ship(this, value); }
+    void cancel() { state.cancel(this); }
+    String summary() {
+        return state.name() + " payment=" + (payment == null ? "-" : payment.transactionId())
+            + " waybill=" + (shipment == null ? "-" : shipment.waybill());
     }
 }
-
-// 已完成
-class Completed implements OrderState {
-    public void next(Order order) {
-        System.out.println("订单已完成，不可变更");
-    }
-}
-
 public class Main {
     public static void main(String[] args) {
-        Order order = new Order(new WaitPay());
-        order.action();   // 待支付 → 已支付
-        order.action();   // 已支付 → 已发货
-        order.action();   // 已发货 → 已完成
-        order.action();   // 已完成，不可变更
+        Order order = new Order(12800);
+        try { order.ship(new Shipment("WB-1")); }
+        catch (IllegalStateException e) { System.out.println(e.getMessage()); }
+        order.pay(new PaymentReceipt("TX-1", 12800));
+        order.ship(new Shipment("WB-1"));
+        System.out.println(order.summary());
+        try { order.pay(new PaymentReceipt("TX-2", 12800)); }
+        catch (IllegalStateException e) { System.out.println(e.getMessage()); }
+        Order cancelled = new Order(5000); cancelled.cancel(); System.out.println(cancelled.summary());
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
 import "fmt"
 
-// 状态接口
+type PaymentReceipt struct {
+	TransactionID string
+	AmountCents   int
+}
+type Shipment struct{ Waybill string }
 type OrderState interface {
-	Next(order *Order)
+	Name() string
+	Pay(*Order, PaymentReceipt) error
+	Ship(*Order, Shipment) error
+	Cancel(*Order) error
+}
+type Unsupported struct{}
+
+func (Unsupported) Pay(*Order, PaymentReceipt) error { return fmt.Errorf("当前状态不能付款") }
+func (Unsupported) Ship(*Order, Shipment) error      { return fmt.Errorf("当前状态不能发货") }
+func (Unsupported) Cancel(*Order) error              { return fmt.Errorf("当前状态不能取消") }
+
+type Pending struct{ Unsupported }
+
+func (Pending) Name() string { return "待付款" }
+func (Pending) Pay(o *Order, r PaymentReceipt) error {
+	if r.AmountCents != o.amountCents || r.TransactionID == "" {
+		return fmt.Errorf("付款凭据不匹配")
+	}
+	o.payment = r
+	o.state = Paid{}
+	return nil
+}
+func (Pending) Cancel(o *Order) error { o.state = Cancelled{}; return nil }
+
+type Paid struct{ Unsupported }
+
+func (Paid) Name() string { return "已付款" }
+func (Paid) Ship(o *Order, s Shipment) error {
+	if s.Waybill == "" {
+		return fmt.Errorf("缺少运单")
+	}
+	o.shipment = s
+	o.state = Shipped{}
+	return nil
 }
 
-// 上下文订单
+type Shipped struct{ Unsupported }
+
+func (Shipped) Name() string { return "已发货" }
+
+type Cancelled struct{ Unsupported }
+
+func (Cancelled) Name() string { return "已取消" }
+
 type Order struct {
-	state OrderState
-}
-func (o *Order) SetState(s OrderState) {
-	o.state = s
-}
-func (o *Order) Action() {
-	o.state.Next(o)
+	amountCents int
+	state       OrderState
+	payment     PaymentReceipt
+	shipment    Shipment
 }
 
-// 待支付
-type WaitPay struct{}
-func (w *WaitPay) Next(order *Order) {
-	fmt.Println("订单：待支付 → 切换到已支付")
-	order.SetState(&Paid{})
+func NewOrder(amount int) (*Order, error) {
+	if amount <= 0 {
+		return nil, fmt.Errorf("订单金额无效")
+	}
+	return &Order{amountCents: amount, state: Pending{}}, nil
 }
-
-// 已支付
-type Paid struct{}
-func (p *Paid) Next(order *Order) {
-	fmt.Println("订单：已支付 → 切换到已发货")
-	order.SetState(&Shipped{})
+func (o *Order) Pay(r PaymentReceipt) error { return o.state.Pay(o, r) }
+func (o *Order) Ship(s Shipment) error      { return o.state.Ship(o, s) }
+func (o *Order) Cancel() error              { return o.state.Cancel(o) }
+func (o *Order) Summary() string {
+	tx, wb := o.payment.TransactionID, o.shipment.Waybill
+	if tx == "" {
+		tx = "-"
+	}
+	if wb == "" {
+		wb = "-"
+	}
+	return fmt.Sprintf("%s payment=%s waybill=%s", o.state.Name(), tx, wb)
 }
-
-// 已发货
-type Shipped struct{}
-func (s *Shipped) Next(order *Order) {
-	fmt.Println("订单：已发货 → 切换到已完成")
-	order.SetState(&Completed{})
-}
-
-// 已完成
-type Completed struct{}
-func (c *Completed) Next(order *Order) {
-	fmt.Println("订单已完成，不可变更")
-}
-
 func main() {
-	order := &Order{state:&WaitPay{}}
-	order.Action()
-	order.Action()
-	order.Action()
-	order.Action()
+	o, err := NewOrder(12800)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(o.Ship(Shipment{"WB-1"}))
+	if err = o.Pay(PaymentReceipt{"TX-1", 12800}); err != nil {
+		panic(err)
+	}
+	if err = o.Ship(Shipment{"WB-1"}); err != nil {
+		panic(err)
+	}
+	fmt.Println(o.Summary())
+	fmt.Println(o.Pay(PaymentReceipt{"TX-2", 12800}))
+	cancelled, err := NewOrder(5000)
+	if err != nil {
+		panic(err)
+	}
+	if err = cancelled.Cancel(); err != nil {
+		panic(err)
+	}
+	fmt.Println(cancelled.Summary())
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-### 一句话口诀（补充）
+#### 运行结果与关键点
 
-> 一个对象内部状态流转、自动切换行为（订单状态）
+```text
+当前状态不能发货
+已发货 payment=TX-1 waybill=WB-1
+当前状态不能付款
+已取消 payment=- waybill=-
+```
 
----
+增加待审核状态时实现 `OrderState`，决定哪些动作可用以及通过后去哪一状态。Java 用接口默认方法拒绝未实现动作；Go 嵌入 `Unsupported` 复用拒绝方法，再由具体状态覆盖允许的动作，嵌入不等同于继承。
 
-## 12. 模板方法 Template-Method（行为型）
+#### 什么时候不用，以及这个例子的边界
 
-**作用：父类定义固定流程骨架，子类重写部分步骤实现不同逻辑；流程顺序不可变**
+本例的付款凭据假定已由可信支付入口核验，金额校验不能替代真实到账验证。状态对象的内部写入方法只供同一实现模块协作，不能作为对外跳转接口。多实例并发操作同一订单时，还需要版本控制或事务保护；状态模式本身不解决并发。
 
-**场景：报表导出，固定流程：加载数据 → 格式化 → 保存文件；导出 Excel 和 PDF 只是格式化步骤不一样。**
+### 12. 模板方法 Template-Method（行为型）
 
-### ⚠️ 什么时候不要用（补充）
+#### 业务场景：销售日报固定流程，变化部分只负责格式
 
-- 流程本身不固定、经常要调整步骤顺序，模板方法反而束缚；
-- 只有一个实现、短期内没有第二个变体，不需要先抽象模板。
+运营每天按日期导出销售数据。CSV 和 HTML 都需要加载数据、拒绝空结果、格式化、保存产物，但文件后缀和内容结构不同。如果两种导出各写一套流程，后来加入统一校验时可能漏改其中一种。模板方法把这些固定步骤收进一个入口。
 
-### 🗂️ 类图：接口与关系
+| 类 / 接口 | 具体职责 |
+|---|---|
+| ReportRequest / Sale / ExportResult | 分别描述查询条件、销售行和导出产物 |
+| SalesRepository / ArtifactStore | 负责加载销售记录与保存内存产物 |
+| ReportExporter | Java 的 final export() 固定流程，保留 format() 和 extension() 扩展点 |
+| CsvExporter / HtmlExporter | 只实现格式转换和文件后缀；CSV 处理引号，HTML 处理文本转义 |
 
-![模板方法类图：ExcelExport 与 PdfExport 继承 ExportTemplate，重写 format 和 save](diagrams/12-template-method.zh.png)
+#### 一次请求怎样走
+
+1. 两个导出器都查询 9 月 1 日，仅选中当天的一行销售数据。
+2. 模板分别生成 daily.csv、daily.html，并返回行数和内容。
+3. 查询没有销售记录的日期会在格式化和保存前失败，存储中仍然只有两个产物。
+
+#### 类图：接口与关系
+
+![12. 模板方法 Template-Method（行为型）：销售日报固定流程，变化部分只负责格式，核心类、接口与对象关系](diagrams/12-template-method.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/12-template-method.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
-
-原版 Go 用「接口 + 外部函数」模拟模板，Java 里更贴切的写法是**抽象类 + final 模板方法**：公共步骤写死在基类，可变步骤留成抽象方法。
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-// 抽象模板：定义整套算法骨架
-abstract class ExportTemplate {
-
-    // final：流程顺序不可被子类改变
-    public final void runExport() {
-        loadData();   // 公共步骤：基类实现
-        format();     // 可变步骤：子类实现
-        save();       // 可变步骤：子类实现
-    }
-
-    // 公共步骤写死在基类，子类不用重复写
-    protected void loadData() {
-        System.out.println("统一加载数据库报表数据");
-    }
-
-    protected abstract void format();
-    protected abstract void save();
+import java.util.*;
+import java.util.stream.Collectors;
+record Sale(String day, String sku, int quantity, int amountCents) {}
+record ReportRequest(String day, String fileStem) {}
+record ExportResult(String path, int rows, String content) {}
+class SalesRepository {
+    private final List<Sale> sales = List.of(new Sale("2026-09-01", "BOOK", 2, 8000),
+        new Sale("2026-09-02", "CUP", 1, 3000));
+    List<Sale> load(String day) { return sales.stream().filter(s -> s.day().equals(day)).toList(); }
 }
-
-// Excel 导出：只需要实现“不同”的部分
-class ExcelExport extends ExportTemplate {
-    protected void format() {
-        System.out.println("格式化为Excel表格");
+class ArtifactStore {
+    private final Map<String, String> files = new HashMap<>();
+    void save(String path, String content) { files.put(path, content); }
+    int count() { return files.size(); }
+}
+abstract class ReportExporter {
+    private final SalesRepository repository;
+    private final ArtifactStore store;
+    ReportExporter(SalesRepository r, ArtifactStore s) { repository = r; store = s; }
+    final ExportResult export(ReportRequest request) {
+        List<Sale> rows = repository.load(request.day());
+        if (rows.isEmpty()) throw new IllegalStateException("当天没有销售数据");
+        String content = format(rows);
+        String path = request.fileStem() + extension();
+        store.save(path, content);
+        return new ExportResult(path, rows.size(), content);
     }
-
-    protected void save() {
-        System.out.println("保存为 .xlsx 文件");
+    protected abstract String format(List<Sale> rows);
+    protected abstract String extension();
+}
+class CsvExporter extends ReportExporter {
+    CsvExporter(SalesRepository r, ArtifactStore s) { super(r, s); }
+    protected String extension() { return ".csv"; }
+    protected String format(List<Sale> rows) {
+        return "sku,quantity,amountCents\n" + rows.stream().map(s ->
+            "\"" + s.sku().replace("\"", "\"\"") + "\"," + s.quantity() + "," + s.amountCents() + "\n")
+            .collect(Collectors.joining());
     }
 }
-
-// PDF 导出
-class PdfExport extends ExportTemplate {
-    protected void format() {
-        System.out.println("格式化为PDF版式");
-    }
-
-    protected void save() {
-        System.out.println("保存为 .pdf 文件");
+class HtmlExporter extends ReportExporter {
+    HtmlExporter(SalesRepository r, ArtifactStore s) { super(r, s); }
+    protected String extension() { return ".html"; }
+    private String escape(String s) { return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"); }
+    protected String format(List<Sale> rows) {
+        return "<table>" + rows.stream().map(s -> "<tr><td>" + escape(s.sku())
+            + "</td><td>" + s.quantity() + "</td><td>" + s.amountCents() + "</td></tr>")
+            .collect(Collectors.joining()) + "</table>";
     }
 }
-
 public class Main {
     public static void main(String[] args) {
-        new ExcelExport().runExport();
-        System.out.println("----");
-        new PdfExport().runExport();
+        SalesRepository repo = new SalesRepository(); ArtifactStore store = new ArtifactStore();
+        for (ReportExporter exporter : List.of(new CsvExporter(repo, store), new HtmlExporter(repo, store))) {
+            ExportResult result = exporter.export(new ReportRequest("2026-09-01", "daily"));
+            System.out.printf("%s rows=%d%n", result.path(), result.rows());
+        }
+        try { new CsvExporter(repo, store).export(new ReportRequest("2026-09-03", "empty")); }
+        catch (IllegalStateException e) { System.out.println(e.getMessage()); }
+        System.out.println("已保存文件数=" + store.count());
     }
 }
 ```
 {{< /tab >}}
 
-{{< tab "Go（原版）" >}}
+{{< tab "Go" >}}
 ```go
 package main
 
-import "fmt"
+import (
+	"encoding/csv"
+	"fmt"
+	"html"
+	"strconv"
+	"strings"
+)
 
-// 抽象模板，定义整套算法骨架
-type ExportTemplate interface {
-	LoadData()
-	Format()
-	Save()
+type Sale struct {
+	Day, SKU              string
+	Quantity, AmountCents int
 }
+type ReportRequest struct{ Day, FileStem string }
+type ExportResult struct {
+	Path    string
+	Rows    int
+	Content string
+}
+type SalesRepository struct{ sales []Sale }
 
-// 模板骨架，固定流程顺序
-func RunExport(t ExportTemplate) {
-	t.LoadData()
-	t.Format()
-	t.Save()
-}
-
-// Excel导出
-type ExcelExport struct{}
-func (e *ExcelExport) LoadData() {
-	fmt.Println("统一加载数据库报表数据")
-}
-func (e *ExcelExport) Format() {
-	fmt.Println("格式化为Excel表格")
-}
-func (e *ExcelExport) Save() {
-	fmt.Println("保存为 .xlsx 文件")
-}
-
-// PDF导出
-type PdfExport struct{}
-func (p *PdfExport) LoadData() {
-	fmt.Println("统一加载数据库报表数据")
-}
-func (p *PdfExport) Format() {
-	fmt.Println("格式化为PDF版式")
-}
-func (p *PdfExport) Save() {
-	fmt.Println("保存为 .pdf 文件")
+func (r SalesRepository) Load(day string) []Sale {
+	var rows []Sale
+	for _, s := range r.sales {
+		if s.Day == day {
+			rows = append(rows, s)
+		}
+	}
+	return rows
 }
 
+type ArtifactStore struct{ files map[string]string }
+
+func (s *ArtifactStore) Save(path, content string) { s.files[path] = content }
+
+type ReportFormat interface {
+	Format([]Sale) (string, error)
+	Extension() string
+}
+type CSVFormat struct{}
+
+func (CSVFormat) Extension() string { return ".csv" }
+func (CSVFormat) Format(rows []Sale) (string, error) {
+	var buffer strings.Builder
+	writer := csv.NewWriter(&buffer)
+	records := [][]string{{"sku", "quantity", "amountCents"}}
+	for _, s := range rows {
+		records = append(records, []string{s.SKU, strconv.Itoa(s.Quantity), strconv.Itoa(s.AmountCents)})
+	}
+	if err := writer.WriteAll(records); err != nil {
+		return "", err
+	}
+	return buffer.String(), nil
+}
+
+type HTMLFormat struct{}
+
+func (HTMLFormat) Extension() string { return ".html" }
+func (HTMLFormat) Format(rows []Sale) (string, error) {
+	var b strings.Builder
+	b.WriteString("<table>")
+	for _, s := range rows {
+		fmt.Fprintf(&b, "<tr><td>%s</td><td>%d</td><td>%d</td></tr>", html.EscapeString(s.SKU), s.Quantity, s.AmountCents)
+	}
+	b.WriteString("</table>")
+	return b.String(), nil
+}
+
+// 固定步骤放在普通方法中，变化步骤委托给接口；Go 不需要模拟继承。
+type ReportExporter struct {
+	repository SalesRepository
+	store      *ArtifactStore
+	format     ReportFormat
+}
+
+func (e ReportExporter) Export(r ReportRequest) (ExportResult, error) {
+	rows := e.repository.Load(r.Day)
+	if len(rows) == 0 {
+		return ExportResult{}, fmt.Errorf("当天没有销售数据")
+	}
+	content, err := e.format.Format(rows)
+	if err != nil {
+		return ExportResult{}, err
+	}
+	path := r.FileStem + e.format.Extension()
+	e.store.Save(path, content)
+	return ExportResult{path, len(rows), content}, nil
+}
 func main() {
-	RunExport(&ExcelExport{})
-	fmt.Println("----")
-	RunExport(&PdfExport{})
+	repo := SalesRepository{[]Sale{{"2026-09-01", "BOOK", 2, 8000}, {"2026-09-02", "CUP", 1, 3000}}}
+	store := &ArtifactStore{map[string]string{}}
+	for _, format := range []ReportFormat{CSVFormat{}, HTMLFormat{}} {
+		result, err := (ReportExporter{repo, store, format}).Export(ReportRequest{"2026-09-01", "daily"})
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("%s rows=%d\n", result.Path, result.Rows)
+	}
+	_, err := (ReportExporter{repo, store, CSVFormat{}}).Export(ReportRequest{"2026-09-03", "empty"})
+	fmt.Println(err)
+	fmt.Printf("已保存文件数=%d\n", len(store.files))
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-### 一句话口诀（补充）
+#### 运行结果与关键点
 
-> 流程骨架固定不变，只有部分步骤子类自定义
+```text
+daily.csv rows=1
+daily.html rows=1
+当天没有销售数据
+已保存文件数=2
+```
 
----
+新增格式时扩展格式化和后缀步骤，不要复制加载、空结果检查和保存逻辑。Go 的 `ReportExporter.Export()` 通过 `ReportFormat` 委托变化步骤，用组合表达同样的流程约束；它是对应实现，不是 Java 继承语法的翻译。
 
-## 13. 备忘录模式 Memento（行为型）
+#### 什么时候不用，以及这个例子的边界
 
-**核心：由对象自己生成状态快照，在不暴露内部细节的前提下，允许以后恢复到这个状态。**
+这里只保存到内存，不涉及真实磁盘和对象存储。CSV 是实际 CSV，HTML 是实际表格片段，没有把普通字符串伪装成 PDF 或 Excel 文件。若导出流程本身经常需要重排步骤，模板方法会太僵硬；用于电子表格打开不可信 CSV 时，还要另行防止公式注入。
 
-### ✅ 典型业务场景
+### 13. 备忘录模式 Memento（行为型）
 
-- **编辑器撤销：正文、光标、选区一起回退**
-  痛点：撤销按钮如果直接读取、修改编辑器的内部字段，每增加一个字段，历史管理代码也要跟着改。
-  做法：编辑器自己决定快照包含哪些状态，历史管理器只保存快照，撤销时交回编辑器恢复。
-- **复杂表单恢复到上一次保存的草稿**
-  痛点：用户改了多个关联字段，逐个写反向操作容易漏掉状态。
-  做法：在需要回退的边界保存一份完整状态，取消编辑时恢复。
-- **单机游戏存档、绘图工具的画布历史**
-  痛点：位置、属性、图层等状态需要成组恢复，不能只回退一个数值。
-  做法：由拥有这些状态的对象生成备忘录；跨进程存档还需要额外处理持久化和版本兼容。
+#### 业务场景：报价单一次撤销多个字段的修改
 
-### ⚠️ 什么时候不要用
+销售编辑一份企业报价：修改标题、把两本书改成三本，并追加 2000 分优惠。用户点一次撤销，希望整份报价回到修改前，包括标题、数量和优惠，而不只是把某个提示文本改回去。历史管理器不应理解报价单每个字段如何存储。
 
-- 状态很大、变化又频繁，全量快照会占用大量内存；可以限制历史条数，或评估增量记录。
-- 只需要撤销一个很小、可逆的操作，直接记录反向操作可能更简单。
-- 已经发生支付、发短信、写外部系统等副作用：恢复内存快照不能撤销这些结果，需要对应的业务补偿。
+| 类 / 接口 | 具体职责 |
+|---|---|
+| QuoteDraft / QuoteLine | 原发器保存标题、报价行和优惠；报价行可计算小计 |
+| QuoteDraft.Snapshot | 私有保存所属草稿、标题、报价行列表和优惠金额 |
+| History | 只管理快照栈，通过 checkpoint() 保存，通过 undo() 交还快照 |
 
-### 🗂️ 类图：接口与关系
+#### 一次请求怎样走
 
-![备忘录类图：Editor 创建 Snapshot，History 保存编辑器引用与快照栈，Snapshot 记录 owner](diagrams/13-memento.zh.png)
+1. 初始报价为两本单价 5000 分的书，总价 10000 分，先保存检查点。
+2. 数量改为 3、优惠设为 2000、标题也修改，总价变成 13000 分。
+3. 撤销后标题、数量和金额一起恢复；再撤销返回 false，其他报价单不能接收这份快照。
+
+#### 类图：接口与关系
+
+![13. 备忘录模式 Memento（行为型）：报价单一次撤销多个字段的修改，核心类、接口与对象关系](diagrams/13-memento.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/13-memento.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
-
-用一个正文编辑器演示「第二版 → 第一版 → 空白」。三个角色分别是：**Editor（原发器，拥有状态）、Snapshot（备忘录）、History（管理者，保存历史）**。每次修改前保存快照，撤销时弹出最近的一份；历史为空时返回 `false`。
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-class Editor {
-    private String text = "";
-
-    public void setText(String text) { this.text = text; }
-    public String getText() { return text; }
-
-    // 外部可以持有快照，但不能读取或改写其中的状态
-    public static final class Snapshot {
-        private final Editor owner;
-        private final String text;
-
-        private Snapshot(Editor owner, String text) {
-            this.owner = owner;
-            this.text = text;
-        }
+import java.util.*;
+record QuoteLine(String sku, int quantity, int unitPriceCents) {
+    QuoteLine {
+        if (quantity <= 0 || unitPriceCents < 0) throw new IllegalArgumentException("报价行无效");
     }
-
-    public Snapshot save() {
-        return new Snapshot(this, text);
+    int subtotal() { return quantity * unitPriceCents; }
+}
+class QuoteDraft {
+    private String title;
+    private List<QuoteLine> lines = new ArrayList<>();
+    private int discountCents;
+    QuoteDraft(String title) { this.title = title; }
+    void add(QuoteLine line) { lines.add(line); }
+    void rename(String title) { this.title = title; }
+    void changeQuantity(int index, int quantity) {
+        QuoteLine old = lines.get(index);
+        lines.set(index, new QuoteLine(old.sku(), quantity, old.unitPriceCents()));
     }
-
-    public void restore(Snapshot snapshot) {
-        if (snapshot.owner != this) {
-            throw new IllegalArgumentException("快照不属于当前编辑器");
+    void discount(int cents) {
+        if (cents < 0) throw new IllegalArgumentException("折扣不能为负");
+        discountCents = cents;
+    }
+    int total() { return Math.max(0, lines.stream().mapToInt(QuoteLine::subtotal).sum() - discountCents); }
+    String summary() { return title + " qty=" + lines.get(0).quantity() + " total=" + total(); }
+    Snapshot save() { return new Snapshot(this, title, lines, discountCents); }
+    void restore(Snapshot s) {
+        if (s.owner != this) throw new IllegalArgumentException("快照属于另一份报价");
+        title = s.title; lines = new ArrayList<>(s.lines); discountCents = s.discountCents;
+    }
+    static final class Snapshot {
+        private final QuoteDraft owner;
+        private final String title;
+        private final List<QuoteLine> lines;
+        private final int discountCents;
+        private Snapshot(QuoteDraft owner, String title, List<QuoteLine> lines, int discount) {
+            this.owner = owner; this.title = title; this.lines = List.copyOf(lines); discountCents = discount;
         }
-        text = snapshot.text;
     }
 }
-
 class History {
-    private final Editor editor;
-    private final Deque<Editor.Snapshot> snapshots = new ArrayDeque<>();
-
-    public History(Editor editor) { this.editor = editor; }
-
-    public void replace(String text) {
-        snapshots.push(editor.save()); // 先保存，再修改
-        editor.setText(text);
-    }
-
-    public boolean undo() {
+    private final QuoteDraft draft;
+    private final Deque<QuoteDraft.Snapshot> snapshots = new ArrayDeque<>();
+    History(QuoteDraft draft) { this.draft = draft; }
+    void checkpoint() { snapshots.push(draft.save()); }
+    boolean undo() {
         if (snapshots.isEmpty()) return false;
-        editor.restore(snapshots.pop());
-        return true;
+        draft.restore(snapshots.peek()); snapshots.pop(); return true;
     }
 }
-
 public class Main {
     public static void main(String[] args) {
-        Editor editor = new Editor();
-        History history = new History(editor);
-        history.replace("第一版");
-        history.replace("第二版");
-        System.out.println(editor.getText());
-        history.undo();
-        System.out.println(editor.getText());
-        history.undo();
-        System.out.println("恢复为空白：" + editor.getText().isEmpty());
-        System.out.println("还能撤销：" + history.undo());
+        QuoteDraft draft = new QuoteDraft("企业采购");
+        draft.add(new QuoteLine("BOOK", 2, 5000));
+        History history = new History(draft); history.checkpoint();
+        draft.changeQuantity(0, 3); draft.discount(2000); draft.rename("企业采购修订版");
+        System.out.println(draft.summary());
+        history.undo(); System.out.println(draft.summary());
+        System.out.println("再次撤销=" + history.undo());
+        try { new QuoteDraft("别的报价").restore(draft.save()); }
+        catch (IllegalArgumentException e) { System.out.println(e.getMessage()); }
     }
 }
 ```
@@ -1944,168 +2441,233 @@ package main
 
 import "fmt"
 
-type Editor struct {
-	text string
+type QuoteLine struct {
+	SKU                      string
+	Quantity, UnitPriceCents int
 }
 
-func (e *Editor) SetText(text string) { e.text = text }
-func (e *Editor) Text() string        { return e.text }
+func (l QuoteLine) Subtotal() int { return l.Quantity * l.UnitPriceCents }
 
-// 小写字段对包外不可见；管理者只保存快照，不读取其内容
-type snapshot struct {
-	owner *Editor
-	text  string
+type QuoteDraft struct {
+	title         string
+	lines         []QuoteLine
+	discountCents int
 }
 
-func (e *Editor) save() snapshot {
-	return snapshot{owner: e, text: e.text}
-}
-
-func (e *Editor) restore(s snapshot) {
-	if s.owner != e {
-		panic("快照不属于当前编辑器")
+func (d *QuoteDraft) Add(l QuoteLine) error {
+	if l.Quantity <= 0 || l.UnitPriceCents < 0 {
+		return fmt.Errorf("报价行无效")
 	}
-	e.text = s.text
+	d.lines = append(d.lines, l)
+	return nil
+}
+func (d *QuoteDraft) Rename(title string) { d.title = title }
+func (d *QuoteDraft) ChangeQuantity(index, q int) error {
+	if index < 0 || index >= len(d.lines) || q <= 0 {
+		return fmt.Errorf("报价行无效")
+	}
+	d.lines[index].Quantity = q
+	return nil
+}
+func (d *QuoteDraft) Discount(cents int) error {
+	if cents < 0 {
+		return fmt.Errorf("折扣不能为负")
+	}
+	d.discountCents = cents
+	return nil
+}
+func (d *QuoteDraft) Total() int {
+	total := -d.discountCents
+	for _, l := range d.lines {
+		total += l.Subtotal()
+	}
+	if total < 0 {
+		return 0
+	}
+	return total
+}
+func (d *QuoteDraft) Summary() string {
+	return fmt.Sprintf("%s qty=%d total=%d", d.title, d.lines[0].Quantity, d.Total())
+}
+
+type snapshot struct {
+	owner         *QuoteDraft
+	title         string
+	lines         []QuoteLine
+	discountCents int
+}
+
+func (d *QuoteDraft) Save() snapshot {
+	return snapshot{d, d.title, append([]QuoteLine(nil), d.lines...), d.discountCents}
+}
+func (d *QuoteDraft) Restore(s snapshot) error {
+	if s.owner != d {
+		return fmt.Errorf("快照属于另一份报价")
+	}
+	d.title = s.title
+	d.lines = append([]QuoteLine(nil), s.lines...)
+	d.discountCents = s.discountCents
+	return nil
 }
 
 type History struct {
-	editor    *Editor
+	draft     *QuoteDraft
 	snapshots []snapshot
 }
 
-func NewHistory(editor *Editor) *History {
-	return &History{editor: editor}
-}
-
-func (h *History) Replace(text string) {
-	h.snapshots = append(h.snapshots, h.editor.save()) // 先保存，再修改
-	h.editor.SetText(text)
-}
-
-func (h *History) Undo() bool {
-	if len(h.snapshots) == 0 {
-		return false
+func (h *History) Checkpoint() { h.snapshots = append(h.snapshots, h.draft.Save()) }
+func (h *History) Undo() (bool, error) {
+	n := len(h.snapshots)
+	if n == 0 {
+		return false, nil
 	}
-	last := len(h.snapshots) - 1
-	h.editor.restore(h.snapshots[last])
-	h.snapshots[last] = snapshot{} // 释放弹出记录持有的引用
-	h.snapshots = h.snapshots[:last]
-	return true
+	if err := h.draft.Restore(h.snapshots[n-1]); err != nil {
+		return false, err
+	}
+	h.snapshots = h.snapshots[:n-1]
+	return true, nil
 }
-
 func main() {
-	editor := &Editor{}
-	history := NewHistory(editor)
-	history.Replace("第一版")
-	history.Replace("第二版")
-	fmt.Println(editor.Text())
-	history.Undo()
-	fmt.Println(editor.Text())
-	history.Undo()
-	fmt.Println("恢复为空白：" + fmt.Sprint(editor.Text() == ""))
-	fmt.Println("还能撤销：" + fmt.Sprint(history.Undo()))
+	d := &QuoteDraft{title: "企业采购"}
+	if err := d.Add(QuoteLine{"BOOK", 2, 5000}); err != nil {
+		panic(err)
+	}
+	h := History{draft: d}
+	h.Checkpoint()
+	if err := d.ChangeQuantity(0, 3); err != nil {
+		panic(err)
+	}
+	if err := d.Discount(2000); err != nil {
+		panic(err)
+	}
+	d.Rename("企业采购修订版")
+	fmt.Println(d.Summary())
+	if _, err := h.Undo(); err != nil {
+		panic(err)
+	}
+	fmt.Println(d.Summary())
+	ok, err := h.Undo()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("再次撤销=%t\n", ok)
+	fmt.Println((&QuoteDraft{title: "别的报价"}).Restore(d.Save()))
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-两种语言输出一致：
+#### 运行结果与关键点
 
 ```text
-第二版
-第一版
-恢复为空白：true
-还能撤销：false
+企业采购修订版 qty=3 total=13000
+企业采购 qty=2 total=10000
+再次撤销=false
+快照属于另一份报价
 ```
 
-**关键不是保存一个对象引用，而是保存不会被后续修改污染的状态。** 这里正文是不可变的字符串，快照保存旧值即可；如果换成 Java 可变列表或 Go 的 slice / map，只复制引用或容器头部不够，需要根据状态结构做深拷贝，或使用不可变数据结构。
+以后增加收货地址或报价有效期，要把它纳入快照的保存和恢复，`History` 不需要读取或修改这些细节。Java 报价行用不可变 record，列表复制就能隔离；Go 报价行只包含值字段和字符串，复制切片后元素也与当前状态分开。若元素内部再加入 map、slice 或可变对象引用，就要继续复制相应层级。
 
-Java 示例用嵌套类的 `private` 字段隐藏快照内容；Go 的小写名称只隔离包外访问，同包代码仍可访问，因此示例中的 `History` 主动遵守「只保管、不拆解」的约定。需要语言层面的隔离时，应把编辑器和快照实现放进独立包，对外提供不暴露状态的快照接口。示例只演示单线程内存撤销，所有需要记录的编辑都经过 `History`；重做、历史容量限制需要另外实现。
+#### 什么时候不用，以及这个例子的边界
 
-Java 标准库的 `StateEdit` 也采用了类似的状态恢复思路：由被编辑对象保存编辑前后的状态，撤销与重做时恢复对应状态。参见 [StateEdit 官方文档](https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/undo/StateEdit.html)。
+这是本地草稿回退，不能撤销已经发送的报价邮件或真实支付。Go 的封装边界是包，真正项目应将快照放在草稿包内；单文件示例为了可运行放在 main 包。大量大对象快照会占用内存，可再考虑限制历史深度、增量快照或命令记录。
 
-### 一句话口诀（补充）
+### 14. 迭代器模式 Iterator（行为型）
 
-> 先存一份状态，后悔时读档 → 备忘录
+#### 业务场景：逐页读取已付款订单，调用方不管理游标
 
----
+对账程序需要累计所有已付款订单的金额。数据源分页返回订单，过滤之后可能出现空页，但空页后仍然有数据。若每个对账调用者都处理分页、缓冲区、耗尽判断和失败，重复逻辑既多又容易提前结束。这里让调用者只取下一条订单。
 
-## 14. 迭代器模式 Iterator（行为型）
+| 类 / 接口 | 具体职责 |
+|---|---|
+| OrderSource / MemoryOrderSource | 分页数据源契约和内存实现，记录请求次数 |
+| OrderRow / Page | 订单业务字段、当前页内容和下一页游标，-1 表示结束 |
+| PaidOrders | Java 实现 Iterable，每次 iterator() 创建独立遍历状态 |
+| PagedIterator | 持有数据源、缓冲区、索引和游标，按需请求下一页 |
 
-**核心：提供统一的顺序访问入口，让调用方遍历集合时，不必知道内部用数组、链表还是树来存。**
+#### 一次请求怎样走
 
-### ✅ 典型业务场景
+1. 创建迭代器不请求数据。第一次取数据时先读到全是未付款订单的空页，再继续拉取。
+2. 只累计 O-3、O-4、O-5 的金额，合计 12000 分，总共读取三页。
+3. 新建另一个迭代器从 O-3 重新开始；耗尽的迭代器不会复活。Java 连续 hasNext() 不跳过订单，Go Next() 同时返回值、是否存在和错误。
 
-- **批量处理订单、商品或消息集合**
-  痛点：业务直接依赖数组下标或链表节点，底层存储结构一换，遍历代码也要改。
-  做法：集合提供迭代器，调用方只负责取下一个元素并处理。
-- **组织架构树、文件目录遍历**
-  痛点：调用方既要做业务，又要维护递归、栈或队列。
-  做法：深度优先、广度优先遍历分别由迭代器维护访问状态，业务只消费返回的节点。
-- **分页 API、数据库游标的逐条消费**
-  痛点：每个调用方都要重复写翻页、切换缓冲区等逻辑。
-  做法：在迭代接口背后按需获取下一批；此时还要设计错误返回、取消和资源关闭，不能把查询失败当成遍历结束。
+#### 类图：接口与关系
 
-### ⚠️ 什么时候不要用
-
-- 普通数组、集合、slice 的现成遍历已经够用，直接用 Java 增强 `for` 或 Go `range`，不必额外手写迭代器。
-- 主要需求是随机访问、按键查询，迭代器不能替代索引或 map。
-- 需要并发修改集合却没有定义一致性规则：迭代器本身不保证线程安全，也不会自动提供数据快照。
-
-### 🗂️ 类图：接口与关系
-
-![迭代器类图：OrderBatch 实现 Iterable，创建实现 Iterator 接口的匿名类，每个实例保存独立游标](diagrams/14-iterator.zh.png)
+![14. 迭代器模式 Iterator（行为型）：逐页读取已付款订单，调用方不管理游标，核心类、接口与对象关系](diagrams/14-iterator.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/14-iterator.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
-
-订单批次 `OrderBatch` 隐藏内部数组 / slice，每次创建迭代器时生成一个独立游标。Java 实现 `Iterable<String>`，可直接使用增强 `for`；Go 用 `Next() (string, bool)` 表达「取到元素 / 已经结束」。
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
-class OrderBatch implements Iterable<String> {
-    private final String[] ids;
-
-    public OrderBatch(String... ids) {
-        this.ids = ids.clone(); // 不共享调用方可修改的输入数组
+import java.util.*;
+record OrderRow(String id, boolean paid, int amountCents) {}
+record Page(List<OrderRow> orders, int nextCursor) {
+    Page { orders = List.copyOf(orders); }
+}
+interface OrderSource { Page fetch(int cursor, int size); }
+class MemoryOrderSource implements OrderSource {
+    private final List<OrderRow> rows;
+    private int calls;
+    MemoryOrderSource(List<OrderRow> rows) { this.rows = List.copyOf(rows); }
+    public Page fetch(int cursor, int size) {
+        if (size <= 0 || cursor < 0 || cursor > rows.size()) throw new IllegalArgumentException("分页参数无效");
+        calls++;
+        int end = Math.min(cursor + size, rows.size());
+        // 模拟服务端分页后过滤：可能返回空页，但仍然存在下一页。
+        List<OrderRow> paid = rows.subList(cursor, end).stream().filter(OrderRow::paid).toList();
+        return new Page(paid, end == rows.size() ? -1 : end);
     }
-
-    @Override
-    public Iterator<String> iterator() {
-        return new Iterator<String>() {
-            private int index = 0; // 每个迭代器有自己的游标
-
-            @Override
-            public boolean hasNext() {
-                return index < ids.length;
-            }
-
-            @Override
-            public String next() {
-                if (!hasNext()) throw new NoSuchElementException();
-                return ids[index++];
-            }
-        };
+    int calls() { return calls; }
+}
+class PaidOrders implements Iterable<OrderRow> {
+    private final OrderSource source;
+    private final int pageSize;
+    PaidOrders(OrderSource source, int size) {
+        if (size <= 0) throw new IllegalArgumentException("分页大小必须为正");
+        this.source = source; pageSize = size;
+    }
+    public Iterator<OrderRow> iterator() { return new PagedIterator(source, pageSize); }
+}
+class PagedIterator implements Iterator<OrderRow> {
+    private final OrderSource source;
+    private final int pageSize;
+    private List<OrderRow> buffer = List.of();
+    private int index, cursor;
+    private boolean finished;
+    PagedIterator(OrderSource source, int size) { this.source = source; pageSize = size; }
+    public boolean hasNext() {
+        while (index == buffer.size() && !finished) {
+            Page page = source.fetch(cursor, pageSize);
+            if (page.nextCursor() != -1 && page.nextCursor() <= cursor)
+                throw new IllegalStateException("分页游标没有前进");
+            buffer = page.orders(); index = 0;
+            finished = page.nextCursor() == -1; cursor = page.nextCursor();
+        }
+        return index < buffer.size();
+    }
+    public OrderRow next() {
+        if (!hasNext()) throw new NoSuchElementException("没有更多订单");
+        return buffer.get(index++);
     }
 }
-
 public class Main {
     public static void main(String[] args) {
-        OrderBatch orders = new OrderBatch("O1001", "O1002");
-        Iterator<String> first = orders.iterator();
-        Iterator<String> second = orders.iterator();
-        System.out.println("迭代器 A：" + first.next());
-        System.out.println("迭代器 B：" + second.next());
-
-        // 增强 for 会取得一个新迭代器，从头遍历
-        for (String id : orders) {
-            System.out.println("处理订单：" + id);
-        }
+        MemoryOrderSource source = new MemoryOrderSource(List.of(
+            new OrderRow("O-1", false, 1000), new OrderRow("O-2", false, 2000),
+            new OrderRow("O-3", true, 3000), new OrderRow("O-4", true, 4000),
+            new OrderRow("O-5", true, 5000)));
+        PaidOrders orders = new PaidOrders(source, 2);
+        Iterator<OrderRow> a = orders.iterator();
+        System.out.println("创建时请求数=" + source.calls());
+        System.out.println("连续探测=" + a.hasNext() + "," + a.hasNext());
+        int total = 0;
+        while (a.hasNext()) { OrderRow row = a.next(); total += row.amountCents(); }
+        System.out.printf("总额=%d 请求数=%d%n", total, source.calls());
+        System.out.println("独立游标首项=" + orders.iterator().next().id());
+        try { a.next(); } catch (NoSuchElementException e) { System.out.println(e.getMessage()); }
     }
 }
 ```
@@ -2117,177 +2679,263 @@ package main
 
 import "fmt"
 
-type OrderIterator interface {
-	Next() (string, bool)
+type OrderRow struct {
+	ID          string
+	Paid        bool
+	AmountCents int
+}
+type Page struct {
+	Orders     []OrderRow
+	NextCursor int
+}
+type OrderSource interface {
+	Fetch(cursor, size int) (Page, error)
+}
+type MemoryOrderSource struct {
+	rows  []OrderRow
+	calls int
 }
 
-type OrderBatch struct {
-	ids []string
-}
-
-func NewOrderBatch(ids ...string) *OrderBatch {
-	return &OrderBatch{ids: append([]string(nil), ids...)}
-}
-
-func (b *OrderBatch) Iterator() OrderIterator {
-	return &sliceIterator{ids: b.ids} // 每次创建一个独立游标
-}
-
-type sliceIterator struct {
-	ids   []string
-	index int
-}
-
-func (it *sliceIterator) Next() (string, bool) {
-	if it.index >= len(it.ids) {
-		return "", false
+func (s *MemoryOrderSource) Fetch(cursor, size int) (Page, error) {
+	if size <= 0 || cursor < 0 || cursor > len(s.rows) {
+		return Page{}, fmt.Errorf("分页参数无效")
 	}
-	id := it.ids[it.index]
-	it.index++
-	return id, true
+	s.calls++
+	end := cursor + size
+	if end > len(s.rows) {
+		end = len(s.rows)
+	}
+	var paid []OrderRow
+	for _, r := range s.rows[cursor:end] {
+		if r.Paid {
+			paid = append(paid, r)
+		}
+	}
+	next := end
+	if end == len(s.rows) {
+		next = -1
+	}
+	return Page{paid, next}, nil
 }
 
-func main() {
-	orders := NewOrderBatch("O1001", "O1002")
-	first, second := orders.Iterator(), orders.Iterator()
-	a, _ := first.Next() // 示例已知集合非空
-	b, _ := second.Next()
-	fmt.Println("迭代器 A：" + a)
-	fmt.Println("迭代器 B：" + b)
+type OrderIterator interface {
+	Next() (OrderRow, bool, error)
+}
+type PaidOrders struct {
+	source   OrderSource
+	pageSize int
+}
 
-	it := orders.Iterator()
+func (p PaidOrders) Iterator() (OrderIterator, error) {
+	if p.pageSize <= 0 {
+		return nil, fmt.Errorf("分页大小必须为正")
+	}
+	return &PagedIterator{source: p.source, pageSize: p.pageSize}, nil
+}
+
+type PagedIterator struct {
+	source        OrderSource
+	pageSize      int
+	buffer        []OrderRow
+	index, cursor int
+	finished      bool
+}
+
+func (i *PagedIterator) Next() (OrderRow, bool, error) {
+	for i.index == len(i.buffer) && !i.finished {
+		page, err := i.source.Fetch(i.cursor, i.pageSize)
+		if err != nil {
+			return OrderRow{}, false, err
+		}
+		if page.NextCursor != -1 && page.NextCursor <= i.cursor {
+			return OrderRow{}, false, fmt.Errorf("分页游标没有前进")
+		}
+		i.buffer = page.Orders
+		i.index = 0
+		i.finished = page.NextCursor == -1
+		i.cursor = page.NextCursor
+	}
+	if i.index == len(i.buffer) {
+		return OrderRow{}, false, nil
+	}
+	row := i.buffer[i.index]
+	i.index++
+	return row, true, nil
+}
+func main() {
+	source := &MemoryOrderSource{rows: []OrderRow{{"O-1", false, 1000}, {"O-2", false, 2000},
+		{"O-3", true, 3000}, {"O-4", true, 4000}, {"O-5", true, 5000}}}
+	orders := PaidOrders{source, 2}
+	a, err := orders.Iterator()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("创建时请求数=%d\n", source.calls)
+	total := 0
 	for {
-		id, ok := it.Next()
+		row, ok, err := a.Next()
+		if err != nil {
+			panic(err)
+		}
 		if !ok {
 			break
 		}
-		fmt.Println("处理订单：" + id)
+		total += row.AmountCents
 	}
+	fmt.Printf("总额=%d 请求数=%d\n", total, source.calls)
+	b, err := orders.Iterator()
+	if err != nil {
+		panic(err)
+	}
+	first, ok, err := b.Next()
+	if err != nil || !ok {
+		panic("缺少首项")
+	}
+	fmt.Println("独立游标首项=" + first.ID)
+	_, ok, err = a.Next()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("耗尽后 ok=%t\n", ok)
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-两种语言输出一致：
+#### 运行结果与关键点
+
+Java 输出：
 
 ```text
-迭代器 A：O1001
-迭代器 B：O1001
-处理订单：O1001
-处理订单：O1002
+创建时请求数=0
+连续探测=true,true
+总额=12000 请求数=3
+独立游标首项=O-3
+没有更多订单
 ```
 
-两个迭代器都从第一条订单开始，说明**遍历位置属于迭代器，不属于集合**。示例在构造订单批次时复制输入，并且不提供修改订单号的方法；这里只演示内存集合，不涉及翻页和 I/O 错误。
+Go 输出：
 
-Java 的 `hasNext()` 不推进游标，`next()` 在耗尽后必须抛出 `NoSuchElementException`，这是 [Iterator 官方接口](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Iterator.html) 的约定。Go 示例用 `bool` 区分空字符串元素与遍历结束；现代 Go 也可用标准库 [`iter.Seq` / `iter.Seq2`](https://pkg.go.dev/iter) 配合 `range`，这里保留显式游标便于对照 Java。
+```text
+创建时请求数=0
+总额=12000 请求数=3
+独立游标首项=O-3
+耗尽后 ok=false
+```
 
-### 一句话口诀（补充）
+Java 的耗尽契约可参见 [Iterator.next() 官方说明](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Iterator.html#next())。
 
-> 只管取下一个，不管里面怎么存 → 迭代器
+数据源改成数据库或 HTTP 分页时，实现 `OrderSource` 即可，累计金额的循环不用修改。错误与耗尽必须分开表达：Go 用 error 与 ok，Java 让请求错误向外传播，耗尽后的 next() 抛 NoSuchElementException。额外检查游标递增，避免数据源异常时永远循环。
 
----
+#### 什么时候不用，以及这个例子的边界
 
-## 15. 命令模式 Command（行为型）
+本例只处理单调递增的整数游标，不代表所有服务端游标都可比较。空页是否结束应依据契约中的结束标记。内存源在本次演示期间不变；换成不断变动的远端数据后，不自动获得快照一致性或 exactly-once 遍历。普通内存列表直接循环通常更简单。
 
-**核心：把一次请求连同接收者、参数封装成命令对象，让发起请求的一方不必知道具体业务怎么执行。**
+### 15. 命令模式 Command（行为型）
 
-### ✅ 典型业务场景
+#### 业务场景：购物车加商品与用券共用可撤销入口
 
-- **编辑器按钮、菜单、快捷键共用同一项操作**
-  痛点：三个入口分别写一遍业务逻辑，修改时容易漏掉其中一个。
-  做法：把操作封装成命令，各入口只负责触发；是否保存历史由统一的调用者管理。
-- **后台任务排队、延迟执行、批量操作**
-  痛点：请求一发起就直接执行，难以把「创建任务」和「何时执行」分开。
-  做法：先生成携带参数的命令，再交给队列或调度器执行。命令模式提供封装边界，持久化、重试和幂等仍需另外设计。
-- **绘图操作撤销、设备控制历史**
-  痛点：调用方如果只知道某个方法执行过，不知道执行前的状态，就无法正确撤销。
-  做法：可撤销命令保存必要的历史信息，并提供 `undo()`；调用者维护已执行命令栈。
+购物车页面既有加购按钮，也有快捷操作和优惠券输入框。不同操作改变的状态不同，但都希望进入统一的历史列表，按最近一次操作撤销。按钮如果直接修改 map，撤销逻辑就会散落在各个组件里。命令对象把接收者、参数和恢复信息放在一起。
 
-### ⚠️ 什么时候不要用
+| 类 / 接口 | 具体职责 |
+|---|---|
+| Cart | 接收者，校验 SKU、设置数量、应用优惠券并计算总价 |
+| Command | 统一 execute() / undo() 契约 |
+| AddItemCommand | 保存 SKU、增加数量及执行前的数量 |
+| ApplyCouponCommand | 保存新优惠金额及执行前的优惠 |
+| CommandBus | 调用者，只管理命令执行与历史栈，成功后才入栈 |
 
-- 只有一个简单入口，不需要排队、记录或撤销，直接方法调用或函数回调更清楚。
-- 只是为同一任务替换算法，优先考虑策略模式。
-- 不要给每个操作都强行加 `undo()`：发短信、真实扣款等操作不能靠恢复一个字段撤销，应设计明确的业务补偿流程。
+#### 一次请求怎样走
 
-### 🗂️ 类图：接口与关系
+1. 加两本书和一个杯子，商品合计 13000 分；应用 2000 分券后实付 11000 分。
+2. 第一次撤销恢复之前的优惠，金额回到 13000 分；第二次撤销恢复杯子之前的数量，金额回到 10000 分。
+3. UNKNOWN 商品执行失败，不进入历史，历史中只剩第一次加书操作。
 
-![命令类图：Remote 保存 Command 历史，SetPowerCommand 实现命令接口并持有接收者 Light](diagrams/15-command.zh.png)
+#### 类图：接口与关系
+
+![15. 命令模式 Command（行为型）：购物车加商品与用券共用可撤销入口，核心类、接口与对象关系](diagrams/15-command.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/15-command.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
-
-用「开灯 → 再开一次 → 撤销 → 再撤销」说明四个角色：**Command（命令接口）、SetPowerCommand（具体命令）、Remote（调用者）、Light（接收者）**。`Remote` 只调用命令接口，真正修改设备状态的是 `Light`。
-
-这个例子选择实现可撤销命令。**撤销开灯要恢复执行前的状态，不能无条件关灯**：如果原本已经开着，再次开灯后的撤销仍应保持开灯。
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-interface Command {
-    void execute();
-    void undo();
-}
-
-// 接收者：拥有并修改实际状态
-class Light {
-    private boolean on;
-
-    public boolean isOn() { return on; }
-    public void setOn(boolean on) { this.on = on; }
-}
-
-class SetPowerCommand implements Command {
-    private final Light light;
-    private final boolean target;
-    private boolean previous;
-
-    public SetPowerCommand(Light light, boolean target) {
-        this.light = light;
-        this.target = target;
+import java.util.*;
+class Cart {
+    private final Map<String, Integer> prices = Map.of("BOOK", 5000, "CUP", 3000);
+    private final Map<String, Integer> quantities = new HashMap<>();
+    private int couponCents;
+    int quantity(String sku) { return quantities.getOrDefault(sku, 0); }
+    void setQuantity(String sku, int n) {
+        if (!prices.containsKey(sku) || n < 0) throw new IllegalArgumentException("商品或数量无效");
+        if (n == 0) quantities.remove(sku); else quantities.put(sku, n);
     }
-
+    int coupon() { return couponCents; }
+    void applyCoupon(int cents) {
+        if (cents < 0) throw new IllegalArgumentException("优惠券金额无效");
+        couponCents = cents;
+    }
+    int total() {
+        int goods = quantities.entrySet().stream().mapToInt(e -> prices.get(e.getKey()) * e.getValue()).sum();
+        return Math.max(0, goods - couponCents);
+    }
+}
+interface Command { void execute(); void undo(); }
+class AddItemCommand implements Command {
+    private final Cart cart;
+    private final String sku;
+    private final int quantity;
+    private int previous;
+    private boolean used, active;
+    AddItemCommand(Cart cart, String sku, int quantity) { this.cart = cart; this.sku = sku; this.quantity = quantity; }
     public void execute() {
-        previous = light.isOn(); // 执行时记录旧值，不在构造时记录
-        light.setOn(target);
+        if (used || quantity <= 0) throw new IllegalStateException("命令已使用或数量无效");
+        previous = cart.quantity(sku);
+        cart.setQuantity(sku, previous + quantity); used = true; active = true;
     }
-
     public void undo() {
-        light.setOn(previous);
+        if (!active) throw new IllegalStateException("命令未执行或已撤销");
+        cart.setQuantity(sku, previous); active = false;
     }
 }
-
-class Remote {
+class ApplyCouponCommand implements Command {
+    private final Cart cart;
+    private final int cents;
+    private int previous;
+    private boolean used, active;
+    ApplyCouponCommand(Cart cart, int cents) { this.cart = cart; this.cents = cents; }
+    public void execute() {
+        if (used) throw new IllegalStateException("命令已使用");
+        previous = cart.coupon(); cart.applyCoupon(cents); used = true; active = true;
+    }
+    public void undo() {
+        if (!active) throw new IllegalStateException("命令未执行或已撤销");
+        cart.applyCoupon(previous); active = false;
+    }
+}
+class CommandBus {
     private final Deque<Command> history = new ArrayDeque<>();
-
-    public void run(Command command) {
-        command.execute();
-        history.push(command); // 执行成功后再记入历史
-    }
-
-    public boolean undo() {
+    void run(Command command) { command.execute(); history.push(command); }
+    boolean undoLast() {
         if (history.isEmpty()) return false;
-        history.pop().undo();
-        return true;
+        history.peek().undo(); history.pop(); return true;
     }
+    int historySize() { return history.size(); }
 }
-
 public class Main {
     public static void main(String[] args) {
-        Light light = new Light();
-        Remote remote = new Remote();
-        // 每次操作创建新命令，避免覆盖历史命令的 previous
-        remote.run(new SetPowerCommand(light, true));
-        remote.run(new SetPowerCommand(light, true));
-        System.out.println("连续开灯后：" + light.isOn());
-        remote.undo();
-        System.out.println("撤销第二次：" + light.isOn());
-        remote.undo();
-        System.out.println("撤销第一次：" + light.isOn());
-        System.out.println("还能撤销：" + remote.undo());
+        Cart cart = new Cart(); CommandBus bus = new CommandBus();
+        bus.run(new AddItemCommand(cart, "BOOK", 2));
+        bus.run(new AddItemCommand(cart, "CUP", 1));
+        bus.run(new ApplyCouponCommand(cart, 2000));
+        System.out.println("应用优惠券=" + cart.total());
+        bus.undoLast(); System.out.println("撤销优惠券=" + cart.total());
+        bus.undoLast(); System.out.println("撤销加杯子=" + cart.total());
+        try { bus.run(new AddItemCommand(cart, "UNKNOWN", 1)); }
+        catch (IllegalArgumentException e) { System.out.println(e.getMessage()); }
+        System.out.println("有效历史数=" + bus.historySize());
     }
 }
 ```
@@ -2299,196 +2947,254 @@ package main
 
 import "fmt"
 
-type Command interface {
-	Execute()
-	Undo()
+type Cart struct {
+	prices, quantities map[string]int
+	couponCents        int
 }
 
-type Light struct {
-	on bool
-}
-
-func (l *Light) IsOn() bool    { return l.on }
-func (l *Light) SetOn(on bool) { l.on = on }
-
-type SetPowerCommand struct {
-	light    *Light
-	target   bool
-	previous bool
-}
-
-func NewSetPowerCommand(light *Light, target bool) *SetPowerCommand {
-	return &SetPowerCommand{light: light, target: target}
-}
-
-func (c *SetPowerCommand) Execute() {
-	c.previous = c.light.IsOn() // 执行时记录旧值
-	c.light.SetOn(c.target)
-}
-
-func (c *SetPowerCommand) Undo() {
-	c.light.SetOn(c.previous)
-}
-
-type Remote struct {
-	history []Command
-}
-
-func (r *Remote) Run(command Command) {
-	command.Execute()
-	r.history = append(r.history, command)
-}
-
-func (r *Remote) Undo() bool {
-	if len(r.history) == 0 {
-		return false
+func (c *Cart) Quantity(sku string) int { return c.quantities[sku] }
+func (c *Cart) SetQuantity(sku string, n int) error {
+	if _, ok := c.prices[sku]; !ok || n < 0 {
+		return fmt.Errorf("商品或数量无效")
 	}
-	last := len(r.history) - 1
-	r.history[last].Undo()
-	r.history[last] = nil
-	r.history = r.history[:last]
-	return true
+	if n == 0 {
+		delete(c.quantities, sku)
+	} else {
+		c.quantities[sku] = n
+	}
+	return nil
+}
+func (c *Cart) ApplyCoupon(cents int) error {
+	if cents < 0 {
+		return fmt.Errorf("优惠券金额无效")
+	}
+	c.couponCents = cents
+	return nil
+}
+func (c *Cart) Total() int {
+	goods := 0
+	for sku, n := range c.quantities {
+		goods += c.prices[sku] * n
+	}
+	total := goods - c.couponCents
+	if total < 0 {
+		return 0
+	}
+	return total
 }
 
+type Command interface {
+	Execute() error
+	Undo() error
+}
+type AddItemCommand struct {
+	cart               *Cart
+	sku                string
+	quantity, previous int
+	used, active       bool
+}
+
+func (c *AddItemCommand) Execute() error {
+	if c.used || c.quantity <= 0 {
+		return fmt.Errorf("命令已使用或数量无效")
+	}
+	c.previous = c.cart.Quantity(c.sku)
+	if err := c.cart.SetQuantity(c.sku, c.previous+c.quantity); err != nil {
+		return err
+	}
+	c.used = true
+	c.active = true
+	return nil
+}
+func (c *AddItemCommand) Undo() error {
+	if !c.active {
+		return fmt.Errorf("命令未执行或已撤销")
+	}
+	if err := c.cart.SetQuantity(c.sku, c.previous); err != nil {
+		return err
+	}
+	c.active = false
+	return nil
+}
+
+type ApplyCouponCommand struct {
+	cart            *Cart
+	cents, previous int
+	used, active    bool
+}
+
+func (c *ApplyCouponCommand) Execute() error {
+	if c.used {
+		return fmt.Errorf("命令已使用")
+	}
+	c.previous = c.cart.couponCents
+	if err := c.cart.ApplyCoupon(c.cents); err != nil {
+		return err
+	}
+	c.used = true
+	c.active = true
+	return nil
+}
+func (c *ApplyCouponCommand) Undo() error {
+	if !c.active {
+		return fmt.Errorf("命令未执行或已撤销")
+	}
+	if err := c.cart.ApplyCoupon(c.previous); err != nil {
+		return err
+	}
+	c.active = false
+	return nil
+}
+
+type CommandBus struct{ history []Command }
+
+func (b *CommandBus) Run(c Command) error {
+	if err := c.Execute(); err != nil {
+		return err
+	}
+	b.history = append(b.history, c)
+	return nil
+}
+func (b *CommandBus) UndoLast() (bool, error) {
+	n := len(b.history)
+	if n == 0 {
+		return false, nil
+	}
+	if err := b.history[n-1].Undo(); err != nil {
+		return false, err
+	}
+	b.history = b.history[:n-1]
+	return true, nil
+}
 func main() {
-	light := &Light{}
-	remote := &Remote{}
-	// 每次操作创建新命令，避免覆盖历史命令的 previous
-	remote.Run(NewSetPowerCommand(light, true))
-	remote.Run(NewSetPowerCommand(light, true))
-	fmt.Println("连续开灯后：" + fmt.Sprint(light.IsOn()))
-	remote.Undo()
-	fmt.Println("撤销第二次：" + fmt.Sprint(light.IsOn()))
-	remote.Undo()
-	fmt.Println("撤销第一次：" + fmt.Sprint(light.IsOn()))
-	fmt.Println("还能撤销：" + fmt.Sprint(remote.Undo()))
+	cart := &Cart{prices: map[string]int{"BOOK": 5000, "CUP": 3000}, quantities: map[string]int{}}
+	bus := &CommandBus{}
+	for _, c := range []Command{&AddItemCommand{cart: cart, sku: "BOOK", quantity: 2},
+		&AddItemCommand{cart: cart, sku: "CUP", quantity: 1}, &ApplyCouponCommand{cart: cart, cents: 2000}} {
+		if err := bus.Run(c); err != nil {
+			panic(err)
+		}
+	}
+	fmt.Printf("应用优惠券=%d\n", cart.Total())
+	if _, err := bus.UndoLast(); err != nil {
+		panic(err)
+	}
+	fmt.Printf("撤销优惠券=%d\n", cart.Total())
+	if _, err := bus.UndoLast(); err != nil {
+		panic(err)
+	}
+	fmt.Printf("撤销加杯子=%d\n", cart.Total())
+	fmt.Println(bus.Run(&AddItemCommand{cart: cart, sku: "UNKNOWN", quantity: 1}))
+	fmt.Printf("有效历史数=%d\n", len(bus.history))
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-两种语言输出一致：
+#### 运行结果与关键点
 
 ```text
-连续开灯后：true
-撤销第二次：true
-撤销第一次：false
-还能撤销：false
+应用优惠券=11000
+撤销优惠券=13000
+撤销加杯子=10000
+商品或数量无效
+有效历史数=1
 ```
 
-第一次命令记录旧值 `false`，第二次命令记录旧值 `true`，按后进先出撤销才会逐步回到初始状态。示例假设单线程执行、每次操作使用新的命令实例，设备状态只通过这个调用者修改；这里只修改内存字段，执行与撤销不会发生 I/O 失败。接真实设备时，还要设计错误返回、失败后的历史保留，以及外部状态已变化时能否撤销。
+新增改收货地址命令时，命令负责调用接收者方法与保存旧地址，`CommandBus` 无需了解地址字段。撤销恢复的是执行前的值，不能简单假设“减一次”总能反转。每次用户动作创建新的命令实例，已成功执行的实例不能再次执行。
 
-如果接收者的状态很复杂，可以把命令里的 `previous` 换成它生成的备忘录，执行前保存、撤销时恢复。需要注意的是，**可撤销和可重试是两件事**：把请求包装成命令，不会自动让扣款等操作变成幂等操作。
+#### 什么时候不用，以及这个例子的边界
 
-多个界面入口共享操作的实际 API 可以参考 [Swing Action 官方文档](https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/Action.html)：同一个操作对象可以供多个控件使用，并集中管理名称、图标与启用状态。
+本例只允许通过同一个 CommandBus 按后进先出顺序撤销，直接调用 undo() 或绕过它修改购物车都会破坏约定。没有实现 redo、持久化队列和并发编辑冲突。真实扣款、发短信等外部操作不能照搬字段恢复，需要单独的业务补偿；命令模式本身也不要求所有命令支持撤销。
 
-### 一句话口诀（补充）
+### 16. 桥接模式 Bridge（结构型）
 
-> 把要做的事装成命令，交给别人执行 → 命令
+#### 业务场景：告警级别与发送渠道分别扩展
 
----
+监控系统捕获 checkout 服务 errorRate=12、阈值为 5 的告警。普通通知发送摘要，紧急通知还必须包含处置手册，并要求更高优先级；邮件需要邮箱和主题正文，短信需要手机号且有长度限制。如果用 NormalEmail、UrgentEmail、NormalSms、UrgentSms 为每个组合建类，新增级别或渠道都会复制逻辑。
 
-## 16. 桥接模式 Bridge（结构型）
+| 类 / 接口 | 具体职责 |
+|---|---|
+| Alert / Recipient | 输入包含服务、指标、实测值、阈值、处置手册和联系方式 |
+| Notification | Java 抽象类持有 Sender，代表通知业务维度 |
+| NormalNotification / UrgentNotification | 决定内容、优先级和处置手册校验 |
+| Sender / EmailSender / SmsSender | 渠道维度，检查地址、转换载荷并写入本地发送队列 |
+| Delivery / DeliveryReceipt | 连接两个维度的载荷契约与发送回执 |
 
-**核心：把抽象部分与实现部分分离，用组合把它们连接起来，让两边都能独立扩展。**
+#### 一次请求怎样走
 
-这里的「抽象部分」指面向业务的高层功能，「实现部分」指它依赖的底层能力，不是简单地把一个类拆成接口和实现类。例如通知系统中，**通知级别决定怎样组织消息，发送渠道决定怎样把消息送出去**。
+1. 相同告警通过普通通知生成优先级 1 的摘要邮件。
+2. 紧急通知把处置手册加入正文，设置优先级 9，既能组合邮件也能组合短信。
+3. 邮件渠道接收两条，短信接收一条；通知子类没有判断渠道类型，渠道类也没有判断普通或紧急业务规则。
 
-### ✅ 典型业务场景
+#### 类图：接口与关系
 
-- **通知级别 × 发送渠道**
-  痛点：普通通知、紧急通知都要支持邮件和短信。如果每个组合建一个类，就会出现 `NormalEmailNotification`、`NormalSmsNotification`、`UrgentEmailNotification`、`UrgentSmsNotification`；新增站内信又要为每种通知各加一个类。
-  做法：通知类型依赖统一的发送接口，邮件、短信分别实现这个接口。新增通知类型时复用已有渠道，新增渠道时复用已有通知类型。
-- **报表种类 × 输出格式**
-  痛点：销售报表、库存报表都要输出 CSV 和 PDF，把取数、报表规则与格式生成写进每个组合类，会重复两边的逻辑。
-  做法：报表侧负责业务数据与结构，输出侧负责渲染；用稳定的数据契约连接，前提是不同格式都能表达这份结构。
-- **控件类型 × 平台绘制实现**
-  痛点：按钮、复选框各自需要多个平台版本，控件交互逻辑和平台绘制逻辑容易重复。
-  做法：控件维护高层交互行为，通过绘制接口调用平台实现，让两边分别演化。
-
-### ⚠️ 什么时候不要用
-
-- 只有一个会变化的维度，普通接口、多态或策略已经够用，不必再人为拆出第二套类型。
-- 两个维度实际上强耦合，大部分组合都不成立；硬凑统一接口会产生大量特判，应先重新划分职责和能力边界。
-- 只是在接入一个不兼容的旧接口，适配器通常更直接。
-
-### 🗂️ 类图：接口与关系
-
-![桥接类图：Notification 抽象类组合 Sender 接口，通知子类和渠道实现各自扩展](diagrams/16-bridge.zh.png)
+![16. 桥接模式 Bridge（结构型）：告警级别与发送渠道分别扩展，核心类、接口与对象关系](diagrams/16-bridge.zh.png)
 
 [下载可编辑的 Excalidraw 源文件](diagrams/16-bridge.zh.excalidraw)
 
-### ☕ 双语言示例（Java / Go 页签切换）
-
-下面组合「普通 / 紧急通知」和「邮件 / 短信渠道」。四个角色是：**Notification（抽象部分）、NormalNotification / UrgentNotification（扩展抽象）、Sender（实现接口）、EmailSender / SmsSender（具体实现）**。
-
-| 通知类型 | 邮件渠道 | 短信渠道 |
-|---|---|---|
-| 普通通知 | 普通通知 + EmailSender | 普通通知 + SmsSender |
-| 紧急通知 | 紧急通知 + EmailSender | 紧急通知 + SmsSender |
-
-每个格子都是对象组合，不需要单独定义一个类。示例仅打印发送过程，`userId` 表示接收用户；紧急通知用前缀展示不同的消息编排，不包含真实投递、重试或告警升级逻辑。
+#### 双语言完整示例
 
 {{< tabs >}}
 {{< tab "Java" >}}
 ```java
-// 实现维度：怎样发送
-interface Sender {
-    void send(String userId, String content);
+import java.util.*;
+record Alert(String service, String metric, int actual, int threshold, String runbook) {
+    String detail() { return service + " " + metric + "=" + actual + " threshold=" + threshold; }
 }
-
+record Recipient(String email, String phone) {}
+record Delivery(Recipient recipient, String subject, String body, int priority) {}
+record DeliveryReceipt(String channel, String address, int priority) {}
+interface Sender { DeliveryReceipt send(Delivery delivery); }
 class EmailSender implements Sender {
-    public void send(String userId, String content) {
-        System.out.println("[邮件] " + userId + "：" + content);
+    private final List<Delivery> outbox = new ArrayList<>();
+    public DeliveryReceipt send(Delivery d) {
+        if (d.recipient().email().isBlank()) throw new IllegalArgumentException("缺少邮箱");
+        outbox.add(d); // 真实项目在此转换为邮件服务请求
+        return new DeliveryReceipt("email", d.recipient().email(), d.priority());
     }
+    int queued() { return outbox.size(); }
 }
-
 class SmsSender implements Sender {
-    public void send(String userId, String content) {
-        System.out.println("[短信] " + userId + "：" + content);
+    private final List<String> outbox = new ArrayList<>();
+    public DeliveryReceipt send(Delivery d) {
+        if (d.recipient().phone().isBlank()) throw new IllegalArgumentException("缺少手机号");
+        String text = d.subject() + " " + d.body();
+        if (text.codePointCount(0, text.length()) > 140)
+            throw new IllegalArgumentException("短信超过 140 字符，需要拆分");
+        outbox.add(text);
+        return new DeliveryReceipt("sms", d.recipient().phone(), d.priority());
     }
+    int queued() { return outbox.size(); }
 }
-
-// 抽象维度：哪种通知；通过持有 Sender 连接发送实现
 abstract class Notification {
     protected final Sender sender;
-
-    protected Notification(Sender sender) {
-        this.sender = sender;
-    }
-
-    public abstract void notifyUser(String userId, String content);
+    Notification(Sender sender) { this.sender = Objects.requireNonNull(sender); }
+    abstract DeliveryReceipt notify(Alert alert, Recipient recipient);
 }
-
 class NormalNotification extends Notification {
-    public NormalNotification(Sender sender) { super(sender); }
-
-    public void notifyUser(String userId, String content) {
-        sender.send(userId, "【普通】" + content);
+    NormalNotification(Sender sender) { super(sender); }
+    DeliveryReceipt notify(Alert a, Recipient r) {
+        return sender.send(new Delivery(r, "告警摘要", a.detail(), 1));
     }
 }
-
 class UrgentNotification extends Notification {
-    public UrgentNotification(Sender sender) { super(sender); }
-
-    public void notifyUser(String userId, String content) {
-        sender.send(userId, "【紧急】" + content);
+    UrgentNotification(Sender sender) { super(sender); }
+    DeliveryReceipt notify(Alert a, Recipient r) {
+        if (a.runbook().isBlank()) throw new IllegalArgumentException("紧急告警必须附处置手册");
+        return sender.send(new Delivery(r, "立即处理", a.detail() + " runbook=" + a.runbook(), 9));
     }
 }
-
 public class Main {
     public static void main(String[] args) {
-        Sender email = new EmailSender();
-        Sender sms = new SmsSender();
-        Notification[] notifications = {
-            new NormalNotification(email),
-            new NormalNotification(sms),
-            new UrgentNotification(email),
-            new UrgentNotification(sms)
-        };
-        for (Notification notification : notifications) {
-            notification.notifyUser("u1001", "服务将在 22:00 维护");
+        Alert alert = new Alert("checkout", "errorRate", 12, 5, "ops/errors");
+        Recipient recipient = new Recipient("ops@example.com", "+8613800000000");
+        EmailSender email = new EmailSender(); SmsSender sms = new SmsSender();
+        for (Notification n : List.of(new NormalNotification(email), new UrgentNotification(email), new UrgentNotification(sms))) {
+            DeliveryReceipt receipt = n.notify(alert, recipient);
+            System.out.printf("%s %s priority=%d%n", receipt.channel(), receipt.address(), receipt.priority());
         }
+        System.out.printf("邮件队列=%d 短信队列=%d%n", email.queued(), sms.queued());
     }
 }
 ```
@@ -2498,119 +3204,112 @@ public class Main {
 ```go
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"unicode/utf8"
+)
 
-// 实现维度：怎样发送
+type Alert struct {
+	Service, Metric   string
+	Actual, Threshold int
+	Runbook           string
+}
+
+func (a Alert) Detail() string {
+	return fmt.Sprintf("%s %s=%d threshold=%d", a.Service, a.Metric, a.Actual, a.Threshold)
+}
+
+type Recipient struct{ Email, Phone string }
+type Delivery struct {
+	Recipient     Recipient
+	Subject, Body string
+	Priority      int
+}
+type DeliveryReceipt struct {
+	Channel, Address string
+	Priority         int
+}
 type Sender interface {
-	Send(userID, content string)
+	Send(Delivery) (DeliveryReceipt, error)
+}
+type EmailSender struct{ outbox []Delivery }
+
+func (s *EmailSender) Send(d Delivery) (DeliveryReceipt, error) {
+	if d.Recipient.Email == "" {
+		return DeliveryReceipt{}, fmt.Errorf("缺少邮箱")
+	}
+	s.outbox = append(s.outbox, d)
+	return DeliveryReceipt{"email", d.Recipient.Email, d.Priority}, nil
 }
 
-type EmailSender struct{}
+type SmsSender struct{ outbox []string }
 
-func (EmailSender) Send(userID, content string) {
-	fmt.Printf("[邮件] %s：%s\n", userID, content)
+func (s *SmsSender) Send(d Delivery) (DeliveryReceipt, error) {
+	if d.Recipient.Phone == "" {
+		return DeliveryReceipt{}, fmt.Errorf("缺少手机号")
+	}
+	text := d.Subject + " " + d.Body
+	if utf8.RuneCountInString(text) > 140 {
+		return DeliveryReceipt{}, fmt.Errorf("短信超过 140 字符，需要拆分")
+	}
+	s.outbox = append(s.outbox, text)
+	return DeliveryReceipt{"sms", d.Recipient.Phone, d.Priority}, nil
 }
 
-type SmsSender struct{}
-
-func (SmsSender) Send(userID, content string) {
-	fmt.Printf("[短信] %s：%s\n", userID, content)
-}
-
-// 抽象维度：哪种通知；具体通知通过组合持有 Sender
 type Notification interface {
-	Notify(userID, content string)
+	Notify(Alert, Recipient) (DeliveryReceipt, error)
+}
+type NormalNotification struct{ sender Sender }
+
+func (n NormalNotification) Notify(a Alert, r Recipient) (DeliveryReceipt, error) {
+	return n.sender.Send(Delivery{r, "告警摘要", a.Detail(), 1})
 }
 
-type NormalNotification struct {
-	sender Sender
-}
+type UrgentNotification struct{ sender Sender }
 
-func NewNormalNotification(sender Sender) *NormalNotification {
-	return &NormalNotification{sender: sender}
+func (n UrgentNotification) Notify(a Alert, r Recipient) (DeliveryReceipt, error) {
+	if a.Runbook == "" {
+		return DeliveryReceipt{}, fmt.Errorf("紧急告警必须附处置手册")
+	}
+	return n.sender.Send(Delivery{r, "立即处理", a.Detail() + " runbook=" + a.Runbook, 9})
 }
-
-func (n *NormalNotification) Notify(userID, content string) {
-	n.sender.Send(userID, "【普通】"+content)
-}
-
-type UrgentNotification struct {
-	sender Sender
-}
-
-func NewUrgentNotification(sender Sender) *UrgentNotification {
-	return &UrgentNotification{sender: sender}
-}
-
-func (n *UrgentNotification) Notify(userID, content string) {
-	n.sender.Send(userID, "【紧急】"+content)
-}
-
 func main() {
-	email, sms := EmailSender{}, SmsSender{}
-	notifications := []Notification{
-		NewNormalNotification(email),
-		NewNormalNotification(sms),
-		NewUrgentNotification(email),
-		NewUrgentNotification(sms),
+	alert := Alert{"checkout", "errorRate", 12, 5, "ops/errors"}
+	recipient := Recipient{"ops@example.com", "+8613800000000"}
+	email, sms := &EmailSender{}, &SmsSender{}
+	notifications := []Notification{NormalNotification{email}, UrgentNotification{email}, UrgentNotification{sms}}
+	for _, n := range notifications {
+		r, err := n.Notify(alert, recipient)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("%s %s priority=%d\n", r.Channel, r.Address, r.Priority)
 	}
-	for _, notification := range notifications {
-		notification.Notify("u1001", "服务将在 22:00 维护")
-	}
+	fmt.Printf("邮件队列=%d 短信队列=%d\n", len(email.outbox), len(sms.outbox))
 }
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-两种语言输出一致：
+#### 运行结果与关键点
 
 ```text
-[邮件] u1001：【普通】服务将在 22:00 维护
-[短信] u1001：【普通】服务将在 22:00 维护
-[邮件] u1001：【紧急】服务将在 22:00 维护
-[短信] u1001：【紧急】服务将在 22:00 维护
+email ops@example.com priority=1
+email ops@example.com priority=9
+sms +8613800000000 priority=9
+邮件队列=2 短信队列=1
 ```
 
-**连接两边的桥，就是通知对象持有的 `Sender`。** Java 用抽象类保存这条引用，Go 用结构体字段组合发送接口，不需要模拟类继承。高层的 `notifyUser()` / `Notify()` 负责组织通知，再调用底层的 `send()` / `Send()` 完成渠道发送。
+新增“汇总通知”时增加通知类型，继续组合现有 Sender；新增企业聊天渠道时实现 Sender，已有普通和紧急通知都能复用。这两套独立的扩展方向才是桥接的核心。Go 通过 Notification 与 Sender 两个接口表达契约，用结构体字段组合渠道。
 
-接下来增加一个 `InAppSender`（站内信），只需实现 `Sender` 并在组装处注入，普通、紧急通知的代码都不用改。反过来，新增一种通知类型，也能直接复用邮件、短信实现。前提是发送接口足够稳定，并且新能力符合已有契约。
+#### 什么时候不用，以及这个例子的边界
 
-如果有 M 种通知和 N 种渠道，为每个组合建类需要 M × N 个具体组合类；桥接把它们拆成 M 个通知类型和 N 个渠道实现，另加少量接口或基类。**减少的是重复的类型与实现代码，业务上可能出现的 M × N 种组合仍然存在，相应的兼容性验证也不能省略。**
+这里写入内存 outbox，不代表邮件或短信已经投递，优先级也只是载荷字段，没有实现优先队列调度。140 字符是演示规则，真实短信限制与编码、供应商分段策略有关。若某类通知根本无法通过某渠道表达，就不应强行追求任意组合，而要收紧能力契约。
 
-阅读真实 API 时，可以参考高层接口与底层驱动的分层：Java 的 `DriverManager` 会从已注册的 JDBC 驱动中选择合适的驱动建立连接；Go 的 `database/sql/driver` 定义供数据库驱动实现、由 `database/sql` 使用的接口。这有助于理解通过稳定接口连接不同层次，但要判定某段设计是否属于桥接，还需找出两边各自扩展的维度。参见 [DriverManager 官方文档](https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/DriverManager.html) 和 [Go 数据库驱动接口](https://pkg.go.dev/database/sql/driver)。
+## 四、把例子迁移到实际代码前
 
-### 一句话口诀（补充）
+这组代码刻意把复杂度放在业务对象和协作关系上。Java 的 record、集合复制，以及 Go 的值类型与切片复制，都服务于明确的数据边界；例如 [List.copyOf()](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html#copyOf(java.util.Collection)) 产生不可修改的列表，但不会递归冻结元素对象。
 
-> 两个维度各自扩展，组合搭桥 → 桥接
+简单工厂不属于 GoF 23 个经典模式，这里作为常用创建技巧单列。其余模式的归类见开篇表格；同一段实际代码也可能同时体现多个模式，例如责任链基类固定处理步骤时就带有模板方法的结构。
 
----
-
-# 四、8 个第二梯队模式速记区分（原文保留并补充）
-
-- **外观 Facade**：复杂一堆子系统 → 一个入口调用；
-- **责任链**：校验 / 审批一条流水线，中途失败就截断；
-- **状态 State**：一个对象内部状态流转、自动切换行为（订单状态）；
-- **模板方法**：流程骨架固定不变，只有部分步骤子类自定义；
-- **备忘录 Memento**：先保存对象状态，需要回退时交给原对象恢复；
-- **迭代器 Iterator**：统一取下一个元素，遍历过程不暴露集合内部结构；
-- **命令 Command**：把请求封装成对象，方便统一触发、排队或记录操作；
-- **桥接 Bridge**：把两个独立变化的维度拆开，通过组合连接起来。
-
----
-
-# 五、内容审核与补充说明
-
-对照 GoF 经典分类逐条核对过，原稿结论基本正确，这里把几处容易混淆的点明确一下：
-
-1. **分类核对**：单例、简单工厂、建造者 = 创建型；适配器、装饰器、代理、外观、桥接 = 结构型；策略、观察者、责任链、状态、模板方法、备忘录、迭代器、命令 = 行为型。
-2. **简单工厂**严格说不在 GoF 23 个经典模式里，它是「工厂方法 / 抽象工厂」的简化教学版本，教程里常把它单列出来讲，本文按原稿保留。
-3. **观察者 vs MQ**：进程内观察者默认是同步通知；MQ / Kafka 是「发布-订阅」思想在分布式下的实现，可以异步、削峰，但核心思路一致。
-4. **装饰器 vs 代理**：装饰器一定会执行目标对象；代理可能直接拦截不调用真实对象（原稿结论正确）。
-5. **适配器 vs 外观**：适配器是「接口翻译」，解决两个接口不兼容；外观是「简化入口」，隐藏内部编排。场景里「接入多个支付 SDK」是适配器，「下单聚合库存/支付/物流」是外观。
-6. **模板方法**：Go 版用「接口 + 外部函数」模拟，Java 版用「抽象类 + final 模板方法」表达，语义更严格。
-7. **代码语言**：每个模式的代码框都带 **Java / Go 页签**，两者一一对应。前 12 个模式的 Go 代码保留原稿版本；新增 4 个模式提供独立的 Java / Go 示例，可分别运行，Java 示例保存为 `Main.java`，Go 示例保存为 `main.go`。
-8. **备忘录**：保存和恢复状态不等于切换状态模式中的行为，也不等于数据库事务回滚；可变状态必须处理快照隔离。
-9. **迭代器**：统一遍历接口不代表自动获得懒加载、并发安全或快照一致性，这些取决于具体实现及其契约。
-10. **命令**：核心是请求对象化与调用解耦，撤销、持久化、重试都是按需扩展；需要撤销时，可以与备忘录配合。
-11. **桥接**：属于结构型模式，重点是抽象与实现两个维度独立扩展；采用组合、依赖接口或能切换实现，本身都不是充分判断条件。
-12. **类图与示例对应**：16 张类图标明已有接口、抽象类和对象关系，不为没有接口的示例额外添加接口。责任链的 Java 入口保留链头后再调用 `handle()`，避免连续 `setNext()` 返回链尾后跳过前面的校验。
+判断是否值得引入一个模式，可以直接落到本节代码里：新增规则时要改哪个类，失败发生后哪些对象已经变化，下一位维护者能否从接口看出调用约定。如果一个接口没有隔离任何会变化的职责，或者一个包装层没有承担任何业务工作，继续增加类并不会让设计更好。

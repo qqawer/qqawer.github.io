@@ -36,14 +36,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "05  装饰器 Decorator",
+      "originalText": "05  装饰器 Decorator · 会员折扣与运费按顺序叠加",
+      "id": "title",
       "type": "text",
-      "id": "decorator_title",
       "x": 40,
       "y": 20,
-      "width": 1180,
-      "height": 40,
-      "text": "05  装饰器 Decorator"
+      "width": 1480,
+      "height": 37.5,
+      "text": "05  装饰器 Decorator · 会员折扣与运费按顺序叠加"
     },
     {
       "angle": 0,
@@ -73,14 +73,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "装饰器与被装饰对象实现同一个接口；装饰器还持有这个接口类型的对象。",
+      "originalText": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建",
+      "id": "subtitle",
       "type": "text",
-      "id": "decorator_subtitle",
       "x": 40,
-      "y": 70,
-      "width": 1180,
-      "height": 25,
-      "text": "装饰器与被装饰对象实现同一个接口；装饰器还持有这个接口类型的对象。"
+      "y": 80,
+      "width": 1480,
+      "height": 22.5,
+      "text": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建"
     },
     {
       "angle": 0,
@@ -92,7 +92,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_handler_group"
+        "pricing_group"
       ],
       "frameId": null,
       "index": null,
@@ -103,27 +103,35 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "decorator_biz_realizes",
+          "id": "rel_catalog_pricing_0",
           "type": "arrow"
         },
         {
-          "id": "decorator_log_realizes",
+          "id": "rel_member_pricing_1",
           "type": "arrow"
         },
         {
-          "id": "decorator_wraps",
+          "id": "rel_shipping_pricing_2",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_member_pricing_3",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_shipping_pricing_4",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "pricing",
       "type": "rectangle",
-      "id": "decorator_handler",
-      "x": 430,
-      "y": 140,
-      "width": 350,
-      "height": 170
+      "x": 490,
+      "y": 150,
+      "width": 450,
+      "height": 180
     },
     {
       "angle": 0,
@@ -135,7 +143,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_handler_group"
+        "pricing_group"
       ],
       "frameId": null,
       "index": null,
@@ -148,21 +156,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "«interface»\nHandler",
+      "originalText": "«interface»\nPricing",
+      "id": "pricing_name",
       "type": "text",
-      "id": "decorator_handler_name",
-      "x": 450,
-      "y": 155,
-      "width": 310,
-      "height": 55,
-      "text": "«interface»\nHandler"
+      "x": 506,
+      "y": 162,
+      "width": 418,
+      "height": 50,
+      "text": "«interface»\nPricing"
     },
     {
       "angle": 0,
@@ -174,7 +182,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_handler_group"
+        "pricing_group"
       ],
       "frameId": null,
       "index": null,
@@ -193,11 +201,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "pricing_divider",
       "type": "line",
-      "id": "decorator_handler_divider",
-      "x": 430,
-      "y": 218,
-      "width": 350,
+      "x": 490,
+      "y": 220,
+      "width": 450,
       "height": 0,
       "points": [
         [
@@ -205,7 +213,7 @@
           0
         ],
         [
-          350,
+          450,
           0
         ]
       ]
@@ -220,7 +228,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_handler_group"
+        "pricing_group"
       ],
       "frameId": null,
       "index": null,
@@ -240,14 +248,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ execute(): void",
+      "originalText": "+ quote(Cart): Quote",
+      "id": "pricing_members",
       "type": "text",
-      "id": "decorator_handler_members",
-      "x": 450,
-      "y": 242,
-      "width": 310,
-      "height": 30,
-      "text": "+ execute(): void"
+      "x": 506,
+      "y": 232,
+      "width": 418,
+      "height": 22.5,
+      "text": "+ quote(Cart): Quote"
     },
     {
       "angle": 0,
@@ -259,7 +267,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_biz_group"
+        "catalog_group"
       ],
       "frameId": null,
       "index": null,
@@ -270,18 +278,18 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "decorator_biz_realizes",
+          "id": "rel_catalog_pricing_0",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "catalog",
       "type": "rectangle",
-      "id": "decorator_biz",
-      "x": 70,
-      "y": 450,
-      "width": 350,
+      "x": 40,
+      "y": 550,
+      "width": 400,
       "height": 180
     },
     {
@@ -294,7 +302,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_biz_group"
+        "catalog_group"
       ],
       "frameId": null,
       "index": null,
@@ -307,21 +315,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "BizTask",
+      "originalText": "CatalogPricing",
+      "id": "catalog_name",
       "type": "text",
-      "id": "decorator_biz_name",
-      "x": 90,
-      "y": 465,
-      "width": 310,
-      "height": 30,
-      "text": "BizTask"
+      "x": 56,
+      "y": 562,
+      "width": 368,
+      "height": 25,
+      "text": "CatalogPricing"
     },
     {
       "angle": 0,
@@ -333,7 +341,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_biz_group"
+        "catalog_group"
       ],
       "frameId": null,
       "index": null,
@@ -352,11 +360,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "catalog_divider",
       "type": "line",
-      "id": "decorator_biz_divider",
-      "x": 70,
-      "y": 509,
-      "width": 350,
+      "x": 40,
+      "y": 620,
+      "width": 400,
       "height": 0,
       "points": [
         [
@@ -364,7 +372,7 @@
           0
         ],
         [
-          350,
+          400,
           0
         ]
       ]
@@ -379,7 +387,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_biz_group"
+        "catalog_group"
       ],
       "frameId": null,
       "index": null,
@@ -399,14 +407,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ execute(): void",
+      "originalText": "+ quote(Cart): Quote\n汇总单价 × 数量",
+      "id": "catalog_members",
       "type": "text",
-      "id": "decorator_biz_members",
-      "x": 90,
-      "y": 529,
-      "width": 310,
-      "height": 30,
-      "text": "+ execute(): void"
+      "x": 56,
+      "y": 632,
+      "width": 368,
+      "height": 45,
+      "text": "+ quote(Cart): Quote\n汇总单价 × 数量"
     },
     {
       "angle": 0,
@@ -418,7 +426,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_log_group"
+        "member_group"
       ],
       "frameId": null,
       "index": null,
@@ -429,23 +437,23 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "decorator_log_realizes",
+          "id": "rel_member_pricing_1",
           "type": "arrow"
         },
         {
-          "id": "decorator_wraps",
+          "id": "rel_member_pricing_3",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "member",
       "type": "rectangle",
-      "id": "decorator_log",
-      "x": 790,
-      "y": 450,
-      "width": 390,
-      "height": 180
+      "x": 540,
+      "y": 550,
+      "width": 420,
+      "height": 200
     },
     {
       "angle": 0,
@@ -457,7 +465,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_log_group"
+        "member_group"
       ],
       "frameId": null,
       "index": null,
@@ -470,21 +478,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "LogDecorator",
+      "originalText": "MemberPricing",
+      "id": "member_name",
       "type": "text",
-      "id": "decorator_log_name",
-      "x": 810,
-      "y": 465,
-      "width": 350,
-      "height": 30,
-      "text": "LogDecorator"
+      "x": 556,
+      "y": 562,
+      "width": 388,
+      "height": 25,
+      "text": "MemberPricing"
     },
     {
       "angle": 0,
@@ -496,7 +504,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_log_group"
+        "member_group"
       ],
       "frameId": null,
       "index": null,
@@ -515,11 +523,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "member_divider",
       "type": "line",
-      "id": "decorator_log_divider",
-      "x": 790,
-      "y": 509,
-      "width": 390,
+      "x": 540,
+      "y": 620,
+      "width": 420,
       "height": 0,
       "points": [
         [
@@ -527,7 +535,7 @@
           0
         ],
         [
-          390,
+          420,
           0
         ]
       ]
@@ -542,7 +550,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "decorator_log_group"
+        "member_group"
       ],
       "frameId": null,
       "index": null,
@@ -562,14 +570,53 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "- target: Handler {final}\n+ LogDecorator(target)\n+ execute(): void",
+      "originalText": "- next: Pricing\n+ quote(Cart): Quote\n对商品金额打九折",
+      "id": "member_members",
       "type": "text",
-      "id": "decorator_log_members",
-      "x": 810,
-      "y": 529,
-      "width": 350,
-      "height": 80,
-      "text": "- target: Handler {final}\n+ LogDecorator(target)\n+ execute(): void"
+      "x": 556,
+      "y": 632,
+      "width": 388,
+      "height": 67.5,
+      "text": "- next: Pricing\n+ quote(Cart): Quote\n对商品金额打九折"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "#93c5fd",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "shipping_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 500015,
+      "version": 1,
+      "versionNonce": 502014,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "rel_shipping_pricing_2",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_shipping_pricing_4",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "id": "shipping",
+      "type": "rectangle",
+      "x": 1040,
+      "y": 550,
+      "width": 400,
+      "height": 200
     },
     {
       "angle": 0,
@@ -580,44 +627,9 @@
       "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 500015,
-      "version": 1,
-      "versionNonce": 502014,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "Java：new LogDecorator(new BizTask()).execute()\n执行顺序：前置日志 → target.execute() → 后置日志。\nGo 原例使用函数：type Handler func()；WithLog(h) 返回包装函数，不存在类继承。",
-      "type": "text",
-      "id": "decorator_note",
-      "x": 40,
-      "y": 695,
-      "width": 1190,
-      "height": 80,
-      "text": "Java：new LogDecorator(new BizTask()).execute()\n执行顺序：前置日志 → target.execute() → 后置日志。\nGo 原例使用函数：type Handler func()；WithLog(h) 返回包装函数，不存在类继承。"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "dashed",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "shipping_group"
+      ],
       "frameId": null,
       "index": null,
       "roundness": null,
@@ -629,44 +641,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": {
-        "elementId": "decorator_biz",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "decorator_handler",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": null,
-      "endArrowhead": "triangle_outline",
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "decorator_biz_realizes",
-      "x": 245,
-      "y": 448,
-      "width": 265,
-      "height": 136,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          -70
-        ],
-        [
-          265,
-          -70
-        ],
-        [
-          265,
-          -136
-        ]
-      ]
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "ShippingPricing",
+      "id": "shipping_name",
+      "type": "text",
+      "x": 1056,
+      "y": 562,
+      "width": 368,
+      "height": 25,
+      "text": "ShippingPricing"
     },
     {
       "angle": 0,
@@ -674,10 +663,12 @@
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
-      "strokeStyle": "dashed",
+      "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "shipping_group"
+      ],
       "frameId": null,
       "index": null,
       "roundness": null,
@@ -689,42 +680,26 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": {
-        "elementId": "decorator_log",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "decorator_handler",
-        "focus": 0,
-        "gap": 2
-      },
+      "startBinding": null,
+      "endBinding": null,
       "startArrowhead": null,
-      "endArrowhead": "triangle_outline",
+      "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "decorator_log_realizes",
-      "x": 900,
-      "y": 448,
-      "width": 200,
-      "height": 136,
+      "id": "shipping_divider",
+      "type": "line",
+      "x": 1040,
+      "y": 620,
+      "width": 400,
+      "height": 0,
       "points": [
         [
           0,
           0
         ],
         [
-          0,
-          -70
-        ],
-        [
-          -200,
-          -70
-        ],
-        [
-          -200,
-          -136
+          400,
+          0
         ]
       ]
     },
@@ -737,7 +712,9 @@
       "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "shipping_group"
+      ],
       "frameId": null,
       "index": null,
       "roundness": null,
@@ -756,18 +733,18 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "实现",
+      "originalText": "- next: Pricing\n+ quote(Cart): Quote\n按内层商品金额判断包邮",
+      "id": "shipping_members",
       "type": "text",
-      "id": "decorator_realizes_label",
-      "x": 560,
-      "y": 347,
-      "width": 100,
-      "height": 25,
-      "text": "实现"
+      "x": 1056,
+      "y": 632,
+      "width": 368,
+      "height": 67.5,
+      "text": "- next: Pricing\n+ quote(Cart): Quote\n按内层商品金额判断包邮"
     },
     {
       "angle": 0,
-      "strokeColor": "#1e3a5f",
+      "strokeColor": "#374151",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -786,26 +763,63 @@
       "updated": 1,
       "link": null,
       "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "业务数据：Cart(lines, member) → Quote(goodsCents, shippingCents)；每层既实现 Pricing，也可持有 Pricing。\n12000 → 会员 10800 → 运费 800 → 合计 11600；Go 同样用接口组合。包装顺序会改变包邮判断。",
+      "id": "notes",
+      "type": "text",
+      "x": 40,
+      "y": 850,
+      "width": 1510,
+      "height": 45,
+      "text": "业务数据：Cart(lines, member) → Quote(goodsCents, shippingCents)；每层既实现 Pricing，也可持有 Pricing。\n12000 → 会员 10800 → 运费 800 → 合计 11600；Go 同样用接口组合。包装顺序会改变包邮判断。"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 500020,
+      "version": 1,
+      "versionNonce": 502019,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
       "startBinding": {
-        "elementId": "decorator_log",
+        "elementId": "catalog",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "decorator_handler",
+        "elementId": "pricing",
         "focus": 0,
         "gap": 2
       },
       "startArrowhead": null,
-      "endArrowhead": "arrow",
+      "endArrowhead": "triangle_outline",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_catalog_pricing_0",
       "type": "arrow",
-      "id": "decorator_wraps",
-      "x": 1100,
-      "y": 448,
-      "width": 318,
-      "height": 218,
+      "x": 240,
+      "y": 548,
+      "width": 350,
+      "height": 216,
       "points": [
         [
           0,
@@ -813,11 +827,195 @@
         ],
         [
           0,
-          -218
+          -118
         ],
         [
-          -318,
-          -218
+          350,
+          -118
+        ],
+        [
+          350,
+          -216
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 500021,
+      "version": 1,
+      "versionNonce": 502020,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "member",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "pricing",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "triangle_outline",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_member_pricing_1",
+      "type": "arrow",
+      "x": 710,
+      "y": 548,
+      "width": 0,
+      "height": 216,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          -216
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 500022,
+      "version": 1,
+      "versionNonce": 502021,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "shipping",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "pricing",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "triangle_outline",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_shipping_pricing_2",
+      "type": "arrow",
+      "x": 1240,
+      "y": 548,
+      "width": 390,
+      "height": 216,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          -118
+        ],
+        [
+          -390,
+          -118
+        ],
+        [
+          -390,
+          -216
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 500023,
+      "version": 1,
+      "versionNonce": 502022,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "member",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "pricing",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_member_pricing_3",
+      "type": "arrow",
+      "x": 538,
+      "y": 670,
+      "width": 88,
+      "height": 405,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -58,
+          0
+        ],
+        [
+          -58,
+          -285
+        ],
+        [
+          -88,
+          -285
+        ],
+        [
+          -88,
+          -405
+        ],
+        [
+          -50,
+          -405
         ]
       ]
     },
@@ -834,9 +1032,9 @@
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 500020,
+      "seed": 500024,
       "version": 1,
-      "versionNonce": 502019,
+      "versionNonce": 502023,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -849,14 +1047,119 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "target: 1\n持有，可继续包装装饰器",
+      "originalText": "next 1",
+      "id": "rel_member_pricing_3_label",
       "type": "text",
-      "id": "decorator_wraps_label",
-      "x": 850,
-      "y": 170,
-      "width": 310,
-      "height": 55,
-      "text": "target: 1\n持有，可继续包装装饰器"
+      "x": 300,
+      "y": 345,
+      "width": 180,
+      "height": 24,
+      "text": "next 1"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 500025,
+      "version": 1,
+      "versionNonce": 502024,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "shipping",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "pricing",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_shipping_pricing_4",
+      "type": "arrow",
+      "x": 1442,
+      "y": 665,
+      "width": 568,
+      "height": 400,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          68,
+          0
+        ],
+        [
+          68,
+          -290
+        ],
+        [
+          -467,
+          -290
+        ],
+        [
+          -467,
+          -400
+        ],
+        [
+          -500,
+          -400
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 500026,
+      "version": 1,
+      "versionNonce": 502025,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "next 1",
+      "id": "rel_shipping_pricing_4_label",
+      "type": "text",
+      "x": 1120,
+      "y": 340,
+      "width": 180,
+      "height": 24,
+      "text": "next 1"
     }
   ]
 }

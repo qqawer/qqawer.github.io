@@ -36,14 +36,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "15  命令 Command",
+      "originalText": "15  命令 Command · 购物车加商品与用券共用可撤销入口",
+      "id": "title",
       "type": "text",
-      "id": "command_title",
       "x": 40,
       "y": 20,
-      "width": 1250,
-      "height": 40,
-      "text": "15  命令 Command"
+      "width": 1480,
+      "height": 37.5,
+      "text": "15  命令 Command · 购物车加商品与用券共用可撤销入口"
     },
     {
       "angle": 0,
@@ -73,14 +73,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "Remote 管理命令，具体命令保存请求参数与旧值，Light 负责实际状态修改。",
+      "originalText": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建",
+      "id": "subtitle",
       "type": "text",
-      "id": "command_subtitle",
       "x": 40,
-      "y": 70,
-      "width": 1250,
-      "height": 25,
-      "text": "Remote 管理命令，具体命令保存请求参数与旧值，Light 负责实际状态修改。"
+      "y": 80,
+      "width": 1480,
+      "height": 22.5,
+      "text": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建"
     },
     {
       "angle": 0,
@@ -92,7 +92,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_remote_group"
+        "bus_group"
       ],
       "frameId": null,
       "index": null,
@@ -103,19 +103,19 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "command_history",
+          "id": "rel_bus_command_0",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "bus",
       "type": "rectangle",
-      "id": "command_remote",
       "x": 40,
-      "y": 160,
-      "width": 430,
-      "height": 230
+      "y": 150,
+      "width": 470,
+      "height": 220
     },
     {
       "angle": 0,
@@ -127,7 +127,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_remote_group"
+        "bus_group"
       ],
       "frameId": null,
       "index": null,
@@ -140,21 +140,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "Remote  / 调用者",
+      "originalText": "CommandBus",
+      "id": "bus_name",
       "type": "text",
-      "id": "command_remote_name",
-      "x": 60,
-      "y": 176,
-      "width": 390,
-      "height": 30,
-      "text": "Remote  / 调用者"
+      "x": 56,
+      "y": 162,
+      "width": 438,
+      "height": 25,
+      "text": "CommandBus"
     },
     {
       "angle": 0,
@@ -166,7 +166,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_remote_group"
+        "bus_group"
       ],
       "frameId": null,
       "index": null,
@@ -185,11 +185,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "bus_divider",
       "type": "line",
-      "id": "command_remote_divider",
       "x": 40,
       "y": 220,
-      "width": 430,
+      "width": 470,
       "height": 0,
       "points": [
         [
@@ -197,7 +197,7 @@
           0
         ],
         [
-          430,
+          470,
           0
         ]
       ]
@@ -212,7 +212,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_remote_group"
+        "bus_group"
       ],
       "frameId": null,
       "index": null,
@@ -232,14 +232,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "- history: Deque<Command>\n+ run(command): void\n+ undo(): boolean",
+      "originalText": "- history: Deque<Command>\nrun(Command)\nundoLast(): boolean\nhistorySize(): int",
+      "id": "bus_members",
       "type": "text",
-      "id": "command_remote_members",
-      "x": 60,
-      "y": 240,
-      "width": 390,
-      "height": 120,
-      "text": "- history: Deque<Command>\n+ run(command): void\n+ undo(): boolean"
+      "x": 56,
+      "y": 232,
+      "width": 438,
+      "height": 90,
+      "text": "- history: Deque<Command>\nrun(Command)\nundoLast(): boolean\nhistorySize(): int"
     },
     {
       "angle": 0,
@@ -251,7 +251,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_interface_group"
+        "command_group"
       ],
       "frameId": null,
       "index": null,
@@ -262,23 +262,27 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "command_history",
+          "id": "rel_bus_command_0",
           "type": "arrow"
         },
         {
-          "id": "command_realizes",
+          "id": "rel_add_command_1",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_coupon_command_2",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "command",
       "type": "rectangle",
-      "id": "command_interface",
-      "x": 820,
+      "x": 930,
       "y": 150,
-      "width": 420,
-      "height": 200
+      "width": 450,
+      "height": 190
     },
     {
       "angle": 0,
@@ -290,7 +294,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_interface_group"
+        "command_group"
       ],
       "frameId": null,
       "index": null,
@@ -303,7 +307,7 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
@@ -311,12 +315,12 @@
       "lineHeight": 1.25,
       "autoResize": false,
       "originalText": "«interface»\nCommand",
+      "id": "command_name",
       "type": "text",
-      "id": "command_interface_name",
-      "x": 840,
-      "y": 166,
-      "width": 380,
-      "height": 55,
+      "x": 946,
+      "y": 162,
+      "width": 418,
+      "height": 50,
       "text": "«interface»\nCommand"
     },
     {
@@ -329,7 +333,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_interface_group"
+        "command_group"
       ],
       "frameId": null,
       "index": null,
@@ -348,11 +352,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "command_divider",
       "type": "line",
-      "id": "command_interface_divider",
-      "x": 820,
-      "y": 228,
-      "width": 420,
+      "x": 930,
+      "y": 220,
+      "width": 450,
       "height": 0,
       "points": [
         [
@@ -360,7 +364,7 @@
           0
         ],
         [
-          420,
+          450,
           0
         ]
       ]
@@ -375,7 +379,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_interface_group"
+        "command_group"
       ],
       "frameId": null,
       "index": null,
@@ -395,14 +399,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ execute(): void\n+ undo(): void",
+      "originalText": "+ execute()\n+ undo()",
+      "id": "command_members",
       "type": "text",
-      "id": "command_interface_members",
-      "x": 840,
-      "y": 250,
-      "width": 380,
-      "height": 60,
-      "text": "+ execute(): void\n+ undo(): void"
+      "x": 946,
+      "y": 232,
+      "width": 418,
+      "height": 45,
+      "text": "+ execute()\n+ undo()"
     },
     {
       "angle": 0,
@@ -414,7 +418,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_light_group"
+        "cart_group"
       ],
       "frameId": null,
       "index": null,
@@ -425,19 +429,23 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "command_receiver",
+          "id": "rel_add_cart_3",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_coupon_cart_4",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "cart",
       "type": "rectangle",
-      "id": "command_light",
       "x": 40,
-      "y": 530,
-      "width": 430,
-      "height": 220
+      "y": 560,
+      "width": 470,
+      "height": 280
     },
     {
       "angle": 0,
@@ -449,7 +457,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_light_group"
+        "cart_group"
       ],
       "frameId": null,
       "index": null,
@@ -462,21 +470,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "Light  / 接收者",
+      "originalText": "Cart",
+      "id": "cart_name",
       "type": "text",
-      "id": "command_light_name",
-      "x": 60,
-      "y": 546,
-      "width": 390,
-      "height": 30,
-      "text": "Light  / 接收者"
+      "x": 56,
+      "y": 572,
+      "width": 438,
+      "height": 25,
+      "text": "Cart"
     },
     {
       "angle": 0,
@@ -488,7 +496,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_light_group"
+        "cart_group"
       ],
       "frameId": null,
       "index": null,
@@ -507,11 +515,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "cart_divider",
       "type": "line",
-      "id": "command_light_divider",
       "x": 40,
-      "y": 590,
-      "width": 430,
+      "y": 630,
+      "width": 470,
       "height": 0,
       "points": [
         [
@@ -519,7 +527,7 @@
           0
         ],
         [
-          430,
+          470,
           0
         ]
       ]
@@ -534,7 +542,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_light_group"
+        "cart_group"
       ],
       "frameId": null,
       "index": null,
@@ -554,14 +562,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "- on: boolean\n+ isOn(): boolean\n+ setOn(on): void",
+      "originalText": "- prices / quantities\n- couponCents: int\nquantity(sku): int\nsetQuantity(sku, n)\napplyCoupon(cents) / coupon()\ntotal(): int",
+      "id": "cart_members",
       "type": "text",
-      "id": "command_light_members",
-      "x": 60,
-      "y": 610,
-      "width": 390,
-      "height": 110,
-      "text": "- on: boolean\n+ isOn(): boolean\n+ setOn(on): void"
+      "x": 56,
+      "y": 642,
+      "width": 438,
+      "height": 135,
+      "text": "- prices / quantities\n- couponCents: int\nquantity(sku): int\nsetQuantity(sku, n)\napplyCoupon(cents) / coupon()\ntotal(): int"
     },
     {
       "angle": 0,
@@ -573,7 +581,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_power_group"
+        "add_group"
       ],
       "frameId": null,
       "index": null,
@@ -584,23 +592,23 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "command_realizes",
+          "id": "rel_add_command_1",
           "type": "arrow"
         },
         {
-          "id": "command_receiver",
+          "id": "rel_add_cart_3",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "add",
       "type": "rectangle",
-      "id": "command_power",
-      "x": 820,
-      "y": 530,
-      "width": 490,
-      "height": 290
+      "x": 610,
+      "y": 560,
+      "width": 400,
+      "height": 240
     },
     {
       "angle": 0,
@@ -612,7 +620,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_power_group"
+        "add_group"
       ],
       "frameId": null,
       "index": null,
@@ -625,21 +633,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "SetPowerCommand",
+      "originalText": "AddItemCommand",
+      "id": "add_name",
       "type": "text",
-      "id": "command_power_name",
-      "x": 840,
-      "y": 546,
-      "width": 450,
-      "height": 30,
-      "text": "SetPowerCommand"
+      "x": 626,
+      "y": 572,
+      "width": 368,
+      "height": 25,
+      "text": "AddItemCommand"
     },
     {
       "angle": 0,
@@ -651,7 +659,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_power_group"
+        "add_group"
       ],
       "frameId": null,
       "index": null,
@@ -670,11 +678,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "add_divider",
       "type": "line",
-      "id": "command_power_divider",
-      "x": 820,
-      "y": 590,
-      "width": 490,
+      "x": 610,
+      "y": 630,
+      "width": 400,
       "height": 0,
       "points": [
         [
@@ -682,7 +690,7 @@
           0
         ],
         [
-          490,
+          400,
           0
         ]
       ]
@@ -697,7 +705,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "command_power_group"
+        "add_group"
       ],
       "frameId": null,
       "index": null,
@@ -717,14 +725,53 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "- light: Light {final}\n- target: boolean {final}\n- previous: boolean\n+ SetPowerCommand(light, target)\n+ execute(): void\n+ undo(): void",
+      "originalText": "- cart: Cart\n- sku / quantity / previous\n- used / active: boolean\n+ execute() / undo()",
+      "id": "add_members",
       "type": "text",
-      "id": "command_power_members",
-      "x": 840,
-      "y": 610,
-      "width": 450,
-      "height": 170,
-      "text": "- light: Light {final}\n- target: boolean {final}\n- previous: boolean\n+ SetPowerCommand(light, target)\n+ execute(): void\n+ undo(): void"
+      "x": 626,
+      "y": 642,
+      "width": 368,
+      "height": 90,
+      "text": "- cart: Cart\n- sku / quantity / previous\n- used / active: boolean\n+ execute() / undo()"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "#93c5fd",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "coupon_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1500019,
+      "version": 1,
+      "versionNonce": 1502018,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "rel_coupon_command_2",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_coupon_cart_4",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "id": "coupon",
+      "type": "rectangle",
+      "x": 1090,
+      "y": 560,
+      "width": 380,
+      "height": 240
     },
     {
       "angle": 0,
@@ -735,44 +782,9 @@
       "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1500019,
-      "version": 1,
-      "versionNonce": 1502018,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "Remote.run()：execute() 后入栈；Remote.undo()：弹出命令并调用 undo()。\nSetPowerCommand.execute() 读取旧值；undo() 恢复 previous，而不是简单取反。\nGo：Command 接口 + Remote.history []Command；每次操作创建新的 *SetPowerCommand。",
-      "type": "text",
-      "id": "command_note",
-      "x": 40,
-      "y": 885,
-      "width": 1260,
-      "height": 85,
-      "text": "Remote.run()：execute() 后入栈；Remote.undo()：弹出命令并调用 undo()。\nSetPowerCommand.execute() 读取旧值；undo() 恢复 previous，而不是简单取反。\nGo：Command 接口 + Remote.history []Command；每次操作创建新的 *SetPowerCommand。"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "coupon_group"
+      ],
       "frameId": null,
       "index": null,
       "roundness": null,
@@ -784,25 +796,56 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": {
-        "elementId": "command_remote",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "command_interface",
-        "focus": 0,
-        "gap": 2
-      },
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "ApplyCouponCommand",
+      "id": "coupon_name",
+      "type": "text",
+      "x": 1106,
+      "y": 572,
+      "width": 348,
+      "height": 25,
+      "text": "ApplyCouponCommand"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "coupon_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1500021,
+      "version": 1,
+      "versionNonce": 1502020,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": null,
+      "endBinding": null,
       "startArrowhead": null,
-      "endArrowhead": "arrow",
+      "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "command_history",
-      "x": 472,
-      "y": 300,
-      "width": 346,
+      "id": "coupon_divider",
+      "type": "line",
+      "x": 1090,
+      "y": 630,
+      "width": 380,
       "height": 0,
       "points": [
         [
@@ -810,7 +853,7 @@
           0
         ],
         [
-          346,
+          380,
           0
         ]
       ]
@@ -824,13 +867,15 @@
       "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "coupon_group"
+      ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1500021,
+      "seed": 1500022,
       "version": 1,
-      "versionNonce": 1502020,
+      "versionNonce": 1502021,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -843,66 +888,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "history: 0..*\n保存命令 / 调用接口",
+      "originalText": "- cart: Cart\n- cents / previous\n- used / active: boolean\n+ execute() / undo()",
+      "id": "coupon_members",
       "type": "text",
-      "id": "command_history_label",
-      "x": 550,
-      "y": 241,
-      "width": 255,
-      "height": 50,
-      "text": "history: 0..*\n保存命令 / 调用接口"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "dashed",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1500022,
-      "version": 1,
-      "versionNonce": 1502021,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "startBinding": {
-        "elementId": "command_power",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "command_interface",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": null,
-      "endArrowhead": "triangle_outline",
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "command_realizes",
-      "x": 1030,
-      "y": 528,
-      "width": 0,
-      "height": 176,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          -176
-        ]
-      ]
+      "x": 1106,
+      "y": 642,
+      "width": 348,
+      "height": 90,
+      "text": "- cart: Cart\n- cents / previous\n- used / active: boolean\n+ execute() / undo()"
     },
     {
       "angle": 0,
@@ -932,14 +925,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "实现",
+      "originalText": "调用：execute() 成功后入 history；undoLast() 恢复旧值后出栈。失败命令不入栈，每次动作创建新实例。\nGo：Command 接口 + 两个具体命令指针；Cart 保存商品价格、数量和优惠。撤销恢复 previous，而非盲目反向运算。",
+      "id": "notes",
       "type": "text",
-      "id": "command_realizes_label",
-      "x": 1050,
-      "y": 424,
-      "width": 110,
-      "height": 25,
-      "text": "实现"
+      "x": 40,
+      "y": 990,
+      "width": 1510,
+      "height": 45,
+      "text": "调用：execute() 成功后入 history；undoLast() 恢复旧值后出栈。失败命令不入栈，每次动作创建新实例。\nGo：Command 接口 + 两个具体命令指针；Cart 保存商品价格、数量和优惠。撤销恢复 previous，而非盲目反向运算。"
     },
     {
       "angle": 0,
@@ -963,12 +956,12 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "command_power",
+        "elementId": "bus",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "command_light",
+        "elementId": "command",
         "focus": 0,
         "gap": 2
       },
@@ -976,11 +969,11 @@
       "endArrowhead": "arrow",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_bus_command_0",
       "type": "arrow",
-      "id": "command_receiver",
-      "x": 818,
-      "y": 660,
-      "width": 346,
+      "x": 512,
+      "y": 260,
+      "width": 416,
       "height": 0,
       "points": [
         [
@@ -988,7 +981,7 @@
           0
         ],
         [
-          -346,
+          416,
           0
         ]
       ]
@@ -1021,14 +1014,312 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "light: 1\n持有接收者 / 读写状态",
+      "originalText": "history 0..*",
+      "id": "rel_bus_command_0_label",
       "type": "text",
-      "id": "command_receiver_label",
-      "x": 540,
-      "y": 596,
-      "width": 260,
-      "height": 50,
-      "text": "light: 1\n持有接收者 / 读写状态"
+      "x": 640,
+      "y": 220,
+      "width": 180,
+      "height": 24,
+      "text": "history 0..*"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1500026,
+      "version": 1,
+      "versionNonce": 1502025,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "add",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "command",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "triangle_outline",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_add_command_1",
+      "type": "arrow",
+      "x": 810,
+      "y": 558,
+      "width": 220,
+      "height": 216,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          -108
+        ],
+        [
+          220,
+          -108
+        ],
+        [
+          220,
+          -216
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1500027,
+      "version": 1,
+      "versionNonce": 1502026,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "coupon",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "command",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "triangle_outline",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_coupon_command_2",
+      "type": "arrow",
+      "x": 1280,
+      "y": 558,
+      "width": 0,
+      "height": 216,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          -216
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1500028,
+      "version": 1,
+      "versionNonce": 1502027,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "add",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "cart",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_add_cart_3",
+      "type": "arrow",
+      "x": 608,
+      "y": 685,
+      "width": 96,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -96,
+          0
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1500029,
+      "version": 1,
+      "versionNonce": 1502028,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "cart 1",
+      "id": "rel_add_cart_3_label",
+      "type": "text",
+      "x": 520,
+      "y": 650,
+      "width": 180,
+      "height": 24,
+      "text": "cart 1"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1500030,
+      "version": 1,
+      "versionNonce": 1502029,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "coupon",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "cart",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_coupon_cart_4",
+      "type": "arrow",
+      "x": 1280,
+      "y": 802,
+      "width": 1010,
+      "height": 108,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          108
+        ],
+        [
+          -1010,
+          108
+        ],
+        [
+          -1010,
+          40
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1500031,
+      "version": 1,
+      "versionNonce": 1502030,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "cart 1",
+      "id": "rel_coupon_cart_4_label",
+      "type": "text",
+      "x": 720,
+      "y": 875,
+      "width": 180,
+      "height": 24,
+      "text": "cart 1"
     }
   ]
 }

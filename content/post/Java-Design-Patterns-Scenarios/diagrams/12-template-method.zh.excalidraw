@@ -36,14 +36,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "12  模板方法 Template Method",
+      "originalText": "12  模板方法 Template · 销售日报固定流程，变化部分只负责格式",
+      "id": "title",
       "type": "text",
-      "id": "template_title",
       "x": 40,
       "y": 20,
-      "width": 1200,
-      "height": 40,
-      "text": "12  模板方法 Template Method"
+      "width": 1480,
+      "height": 37.5,
+      "text": "12  模板方法 Template · 销售日报固定流程，变化部分只负责格式"
     },
     {
       "angle": 0,
@@ -73,14 +73,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "父类固定流程，子类实现可变步骤；final 约束模板方法不能被重写。",
+      "originalText": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建",
+      "id": "subtitle",
       "type": "text",
-      "id": "template_subtitle",
       "x": 40,
-      "y": 70,
-      "width": 1200,
-      "height": 25,
-      "text": "父类固定流程，子类实现可变步骤；final 约束模板方法不能被重写。"
+      "y": 80,
+      "width": 1480,
+      "height": 22.5,
+      "text": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建"
     },
     {
       "angle": 0,
@@ -92,7 +92,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_base_group"
+        "base_group"
       ],
       "frameId": null,
       "index": null,
@@ -103,22 +103,30 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "template_excel_extends",
+          "id": "rel_base_repo_0",
           "type": "arrow"
         },
         {
-          "id": "template_pdf_extends",
+          "id": "rel_base_store_1",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_csv_base_2",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_html_base_3",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "base",
       "type": "rectangle",
-      "id": "template_base",
-      "x": 380,
+      "x": 450,
       "y": 150,
-      "width": 520,
+      "width": 550,
       "height": 290
     },
     {
@@ -131,7 +139,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_base_group"
+        "base_group"
       ],
       "frameId": null,
       "index": null,
@@ -144,21 +152,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "«abstract class»\nExportTemplate",
+      "originalText": "«abstract class»\nReportExporter",
+      "id": "base_name",
       "type": "text",
-      "id": "template_base_name",
-      "x": 400,
-      "y": 166,
-      "width": 480,
-      "height": 55,
-      "text": "«abstract class»\nExportTemplate"
+      "x": 466,
+      "y": 162,
+      "width": 518,
+      "height": 50,
+      "text": "«abstract class»\nReportExporter"
     },
     {
       "angle": 0,
@@ -170,7 +178,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_base_group"
+        "base_group"
       ],
       "frameId": null,
       "index": null,
@@ -189,11 +197,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "base_divider",
       "type": "line",
-      "id": "template_base_divider",
-      "x": 380,
-      "y": 235,
-      "width": 520,
+      "x": 450,
+      "y": 220,
+      "width": 550,
       "height": 0,
       "points": [
         [
@@ -201,7 +209,7 @@
           0
         ],
         [
-          520,
+          550,
           0
         ]
       ]
@@ -216,7 +224,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_base_group"
+        "base_group"
       ],
       "frameId": null,
       "index": null,
@@ -236,14 +244,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ runExport(): void {final}\n# loadData(): void\n# format(): void {abstract}\n# save(): void {abstract}",
+      "originalText": "- repository: SalesRepository\n- store: ArtifactStore\nexport(ReportRequest) {final}\n# format(List<Sale>): String\n# extension(): String",
+      "id": "base_members",
       "type": "text",
-      "id": "template_base_members",
-      "x": 400,
-      "y": 255,
-      "width": 480,
-      "height": 150,
-      "text": "+ runExport(): void {final}\n# loadData(): void\n# format(): void {abstract}\n# save(): void {abstract}"
+      "x": 466,
+      "y": 232,
+      "width": 518,
+      "height": 112.5,
+      "text": "- repository: SalesRepository\n- store: ArtifactStore\nexport(ReportRequest) {final}\n# format(List<Sale>): String\n# extension(): String"
     },
     {
       "angle": 0,
@@ -255,7 +263,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_excel_group"
+        "repo_group"
       ],
       "frameId": null,
       "index": null,
@@ -266,19 +274,19 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "template_excel_extends",
+          "id": "rel_base_repo_0",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "repo",
       "type": "rectangle",
-      "id": "template_excel",
-      "x": 110,
-      "y": 610,
-      "width": 390,
-      "height": 180
+      "x": 40,
+      "y": 150,
+      "width": 330,
+      "height": 220
     },
     {
       "angle": 0,
@@ -290,7 +298,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_excel_group"
+        "repo_group"
       ],
       "frameId": null,
       "index": null,
@@ -303,21 +311,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "ExcelExport",
+      "originalText": "SalesRepository",
+      "id": "repo_name",
       "type": "text",
-      "id": "template_excel_name",
-      "x": 130,
-      "y": 625,
-      "width": 350,
-      "height": 30,
-      "text": "ExcelExport"
+      "x": 56,
+      "y": 162,
+      "width": 298,
+      "height": 25,
+      "text": "SalesRepository"
     },
     {
       "angle": 0,
@@ -329,7 +337,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_excel_group"
+        "repo_group"
       ],
       "frameId": null,
       "index": null,
@@ -348,11 +356,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "repo_divider",
       "type": "line",
-      "id": "template_excel_divider",
-      "x": 110,
-      "y": 669,
-      "width": 390,
+      "x": 40,
+      "y": 220,
+      "width": 330,
       "height": 0,
       "points": [
         [
@@ -360,7 +368,7 @@
           0
         ],
         [
-          390,
+          330,
           0
         ]
       ]
@@ -375,7 +383,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_excel_group"
+        "repo_group"
       ],
       "frameId": null,
       "index": null,
@@ -395,14 +403,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "# format(): void\n# save(): void",
+      "originalText": "- sales: List<Sale>\nload(day): List<Sale>",
+      "id": "repo_members",
       "type": "text",
-      "id": "template_excel_members",
-      "x": 130,
-      "y": 689,
-      "width": 350,
-      "height": 60,
-      "text": "# format(): void\n# save(): void"
+      "x": 56,
+      "y": 232,
+      "width": 298,
+      "height": 45,
+      "text": "- sales: List<Sale>\nload(day): List<Sale>"
     },
     {
       "angle": 0,
@@ -414,7 +422,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_pdf_group"
+        "store_group"
       ],
       "frameId": null,
       "index": null,
@@ -425,19 +433,19 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "template_pdf_extends",
+          "id": "rel_base_store_1",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "store",
       "type": "rectangle",
-      "id": "template_pdf",
-      "x": 800,
-      "y": 610,
-      "width": 390,
-      "height": 180
+      "x": 1110,
+      "y": 150,
+      "width": 340,
+      "height": 220
     },
     {
       "angle": 0,
@@ -449,7 +457,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_pdf_group"
+        "store_group"
       ],
       "frameId": null,
       "index": null,
@@ -462,21 +470,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "PdfExport",
+      "originalText": "ArtifactStore",
+      "id": "store_name",
       "type": "text",
-      "id": "template_pdf_name",
-      "x": 820,
-      "y": 625,
-      "width": 350,
-      "height": 30,
-      "text": "PdfExport"
+      "x": 1126,
+      "y": 162,
+      "width": 308,
+      "height": 25,
+      "text": "ArtifactStore"
     },
     {
       "angle": 0,
@@ -488,7 +496,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_pdf_group"
+        "store_group"
       ],
       "frameId": null,
       "index": null,
@@ -507,11 +515,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "store_divider",
       "type": "line",
-      "id": "template_pdf_divider",
-      "x": 800,
-      "y": 669,
-      "width": 390,
+      "x": 1110,
+      "y": 220,
+      "width": 340,
       "height": 0,
       "points": [
         [
@@ -519,7 +527,7 @@
           0
         ],
         [
-          390,
+          340,
           0
         ]
       ]
@@ -534,7 +542,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "template_pdf_group"
+        "store_group"
       ],
       "frameId": null,
       "index": null,
@@ -554,14 +562,49 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "# format(): void\n# save(): void",
+      "originalText": "- files: Map<path, content>\nsave(path, content)\ncount(): int",
+      "id": "store_members",
       "type": "text",
-      "id": "template_pdf_members",
-      "x": 820,
-      "y": 689,
-      "width": 350,
-      "height": 60,
-      "text": "# format(): void\n# save(): void"
+      "x": 1126,
+      "y": 232,
+      "width": 308,
+      "height": 67.5,
+      "text": "- files: Map<path, content>\nsave(path, content)\ncount(): int"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "#93c5fd",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "csv_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200015,
+      "version": 1,
+      "versionNonce": 1202014,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "rel_csv_base_2",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "id": "csv",
+      "type": "rectangle",
+      "x": 170,
+      "y": 650,
+      "width": 440,
+      "height": 190
     },
     {
       "angle": 0,
@@ -572,44 +615,9 @@
       "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1200015,
-      "version": 1,
-      "versionNonce": 1202014,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "runExport() 的固定顺序：loadData() → format() → save()。\nJava：这里是抽象类继承，没有额外自定义接口。\nGo：ExportTemplate 是接口；外部 RunExport(t) 依次调用 LoadData / Format / Save。",
-      "type": "text",
-      "id": "template_sequence",
-      "x": 40,
-      "y": 855,
-      "width": 1210,
-      "height": 90,
-      "text": "runExport() 的固定顺序：loadData() → format() → save()。\nJava：这里是抽象类继承，没有额外自定义接口。\nGo：ExportTemplate 是接口；外部 RunExport(t) 依次调用 LoadData / Format / Save。"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "csv_group"
+      ],
       "frameId": null,
       "index": null,
       "roundness": null,
@@ -621,44 +629,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": {
-        "elementId": "template_excel",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "template_base",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": null,
-      "endArrowhead": "triangle_outline",
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "template_excel_extends",
-      "x": 305,
-      "y": 608,
-      "width": 175,
-      "height": 166,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          -88
-        ],
-        [
-          175,
-          -88
-        ],
-        [
-          175,
-          -166
-        ]
-      ]
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "CsvExporter",
+      "id": "csv_name",
+      "type": "text",
+      "x": 186,
+      "y": 662,
+      "width": 408,
+      "height": 25,
+      "text": "CsvExporter"
     },
     {
       "angle": 0,
@@ -669,7 +654,9 @@
       "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "csv_group"
+      ],
       "frameId": null,
       "index": null,
       "roundness": null,
@@ -681,42 +668,26 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": {
-        "elementId": "template_pdf",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "template_base",
-        "focus": 0,
-        "gap": 2
-      },
+      "startBinding": null,
+      "endBinding": null,
       "startArrowhead": null,
-      "endArrowhead": "triangle_outline",
+      "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "template_pdf_extends",
-      "x": 995,
-      "y": 608,
-      "width": 185,
-      "height": 166,
+      "id": "csv_divider",
+      "type": "line",
+      "x": 170,
+      "y": 720,
+      "width": 440,
+      "height": 0,
       "points": [
         [
           0,
           0
         ],
         [
-          0,
-          -88
-        ],
-        [
-          -185,
-          -88
-        ],
-        [
-          -185,
-          -166
+          440,
+          0
         ]
       ]
     },
@@ -729,7 +700,9 @@
       "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "csv_group"
+      ],
       "frameId": null,
       "index": null,
       "roundness": null,
@@ -748,14 +721,508 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "继承\n重写可变步骤",
+      "originalText": "# format(List<Sale>): String\n# extension(): String",
+      "id": "csv_members",
       "type": "text",
-      "id": "template_extends_label",
-      "x": 590,
-      "y": 495,
-      "width": 130,
-      "height": 55,
-      "text": "继承\n重写可变步骤"
+      "x": 186,
+      "y": 732,
+      "width": 408,
+      "height": 45,
+      "text": "# format(List<Sale>): String\n# extension(): String"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "#93c5fd",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "html_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200019,
+      "version": 1,
+      "versionNonce": 1202018,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "rel_html_base_3",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "id": "html",
+      "type": "rectangle",
+      "x": 850,
+      "y": 650,
+      "width": 440,
+      "height": 190
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "html_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200020,
+      "version": 1,
+      "versionNonce": 1202019,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "HtmlExporter",
+      "id": "html_name",
+      "type": "text",
+      "x": 866,
+      "y": 662,
+      "width": 408,
+      "height": 25,
+      "text": "HtmlExporter"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "html_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200021,
+      "version": 1,
+      "versionNonce": 1202020,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "html_divider",
+      "type": "line",
+      "x": 850,
+      "y": 720,
+      "width": 440,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          440,
+          0
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "html_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200022,
+      "version": 1,
+      "versionNonce": 1202021,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "# format(List<Sale>): String\n# extension(): String",
+      "id": "html_members",
+      "type": "text",
+      "x": 866,
+      "y": 732,
+      "width": 408,
+      "height": 45,
+      "text": "# format(List<Sale>): String\n# extension(): String"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200023,
+      "version": 1,
+      "versionNonce": 1202022,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "业务数据：ReportRequest(day, fileStem) → List<Sale> → ExportResult(path, rows, content)。\n固定步骤：加载 → 非空检查 → 格式化 → 保存。Go：ReportExporter 组合 ReportFormat，由 CSVFormat / HTMLFormat 实现。",
+      "id": "notes",
+      "type": "text",
+      "x": 40,
+      "y": 930,
+      "width": 1510,
+      "height": 45,
+      "text": "业务数据：ReportRequest(day, fileStem) → List<Sale> → ExportResult(path, rows, content)。\n固定步骤：加载 → 非空检查 → 格式化 → 保存。Go：ReportExporter 组合 ReportFormat，由 CSVFormat / HTMLFormat 实现。"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200024,
+      "version": 1,
+      "versionNonce": 1202023,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "base",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "repo",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_base_repo_0",
+      "type": "arrow",
+      "x": 448,
+      "y": 260,
+      "width": 76,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -76,
+          0
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200025,
+      "version": 1,
+      "versionNonce": 1202024,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "1",
+      "id": "rel_base_repo_0_label",
+      "type": "text",
+      "x": 400,
+      "y": 225,
+      "width": 180,
+      "height": 24,
+      "text": "1"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200026,
+      "version": 1,
+      "versionNonce": 1202025,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "base",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "store",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_base_store_1",
+      "type": "arrow",
+      "x": 1002,
+      "y": 260,
+      "width": 106,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          106,
+          0
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200027,
+      "version": 1,
+      "versionNonce": 1202026,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "1",
+      "id": "rel_base_store_1_label",
+      "type": "text",
+      "x": 1045,
+      "y": 225,
+      "width": 180,
+      "height": 24,
+      "text": "1"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200028,
+      "version": 1,
+      "versionNonce": 1202027,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "csv",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "base",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "triangle_outline",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_csv_base_2",
+      "type": "arrow",
+      "x": 390,
+      "y": 648,
+      "width": 190,
+      "height": 206,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          -118
+        ],
+        [
+          190,
+          -118
+        ],
+        [
+          190,
+          -206
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1200029,
+      "version": 1,
+      "versionNonce": 1202028,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "html",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "base",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "triangle_outline",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_html_base_3",
+      "type": "arrow",
+      "x": 1070,
+      "y": 648,
+      "width": 195,
+      "height": 206,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          -118
+        ],
+        [
+          -195,
+          -118
+        ],
+        [
+          -195,
+          -206
+        ]
+      ]
     }
   ]
 }

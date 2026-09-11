@@ -36,14 +36,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "09  外观 Facade",
+      "originalText": "09  外观 Facade · 一个发货入口编排预留、打包与叫件",
+      "id": "title",
       "type": "text",
-      "id": "facade_title",
       "x": 40,
       "y": 20,
-      "width": 1290,
-      "height": 40,
-      "text": "09  外观 Facade"
+      "width": 1480,
+      "height": 37.5,
+      "text": "09  外观 Facade · 一个发货入口编排预留、打包与叫件"
     },
     {
       "angle": 0,
@@ -73,56 +73,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "一个下单入口编排三个子系统；本例没有自定义接口，不额外虚构服务接口。",
+      "originalText": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建",
+      "id": "subtitle",
       "type": "text",
-      "id": "facade_subtitle",
       "x": 40,
-      "y": 70,
-      "width": 1290,
-      "height": 25,
-      "text": "一个下单入口编排三个子系统；本例没有自定义接口，不额外虚构服务接口。"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900003,
-      "version": 1,
-      "versionNonce": 902002,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "id": "facade_client_calls",
-          "type": "arrow"
-        }
-      ],
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "main()",
-      "type": "text",
-      "id": "facade_client",
-      "x": 40,
-      "y": 260,
-      "width": 180,
-      "height": 30,
-      "text": "main()"
+      "y": 80,
+      "width": 1480,
+      "height": 22.5,
+      "text": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建"
     },
     {
       "angle": 0,
@@ -134,41 +92,37 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "facade_facade_group"
+        "facade_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 900004,
+      "seed": 900003,
       "version": 1,
-      "versionNonce": 902003,
+      "versionNonce": 902002,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "facade_client_calls",
+          "id": "rel_facade_stock_0",
           "type": "arrow"
         },
         {
-          "id": "facade_owns_stock",
+          "id": "rel_facade_pack_1",
           "type": "arrow"
         },
         {
-          "id": "facade_owns_pay",
-          "type": "arrow"
-        },
-        {
-          "id": "facade_owns_logistics",
+          "id": "rel_facade_carrier_2",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "facade",
       "type": "rectangle",
-      "id": "facade_facade",
-      "x": 400,
+      "x": 440,
       "y": 150,
-      "width": 500,
+      "width": 530,
       "height": 270
     },
     {
@@ -181,7 +135,46 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "facade_facade_group"
+        "facade_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 900004,
+      "version": 1,
+      "versionNonce": 902003,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "FulfillmentFacade",
+      "id": "facade_name",
+      "type": "text",
+      "x": 456,
+      "y": 162,
+      "width": 498,
+      "height": 25,
+      "text": "FulfillmentFacade"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "facade_group"
       ],
       "frameId": null,
       "index": null,
@@ -194,25 +187,32 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "OrderFacade",
-      "type": "text",
-      "id": "facade_facade_name",
-      "x": 420,
-      "y": 166,
-      "width": 460,
-      "height": 30,
-      "text": "OrderFacade"
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "facade_divider",
+      "type": "line",
+      "x": 440,
+      "y": 220,
+      "width": 530,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          530,
+          0
+        ]
+      ]
     },
     {
       "angle": 0,
-      "strokeColor": "#1e3a5f",
+      "strokeColor": "#374151",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -220,7 +220,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "facade_facade_group"
+        "facade_group"
       ],
       "frameId": null,
       "index": null,
@@ -233,52 +233,6 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": null,
-      "endBinding": null,
-      "startArrowhead": null,
-      "endArrowhead": null,
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "line",
-      "id": "facade_facade_divider",
-      "x": 400,
-      "y": 210,
-      "width": 500,
-      "height": 0,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          500,
-          0
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "facade_facade_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900007,
-      "version": 1,
-      "versionNonce": 902006,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
       "fontSize": 18,
       "fontFamily": 3,
       "textAlign": "left",
@@ -286,14 +240,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "- stock: StockService {final}\n- pay: PayService {final}\n- logistics: LogisticsService {final}\n+ createOrder(goodsId, amount,\n  orderNo): void",
+      "originalText": "- inventory: Inventory\n- packaging: PackagingService\n- carrier: CarrierService\ndispatch(FulfillmentRequest)\n  : Dispatch",
+      "id": "facade_members",
       "type": "text",
-      "id": "facade_facade_members",
-      "x": 420,
-      "y": 230,
-      "width": 460,
-      "height": 170,
-      "text": "- stock: StockService {final}\n- pay: PayService {final}\n- logistics: LogisticsService {final}\n+ createOrder(goodsId, amount,\n  orderNo): void"
+      "x": 456,
+      "y": 232,
+      "width": 498,
+      "height": 112.5,
+      "text": "- inventory: Inventory\n- packaging: PackagingService\n- carrier: CarrierService\ndispatch(FulfillmentRequest)\n  : Dispatch"
     },
     {
       "angle": 0,
@@ -305,30 +259,30 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "facade_stock_group"
+        "stock_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 900008,
+      "seed": 900007,
       "version": 1,
-      "versionNonce": 902007,
+      "versionNonce": 902006,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "facade_owns_stock",
+          "id": "rel_facade_stock_0",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "stock",
       "type": "rectangle",
-      "id": "facade_stock",
       "x": 40,
-      "y": 560,
-      "width": 370,
-      "height": 145
+      "y": 580,
+      "width": 440,
+      "height": 220
     },
     {
       "angle": 0,
@@ -340,7 +294,46 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "facade_stock_group"
+        "stock_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 900008,
+      "version": 1,
+      "versionNonce": 902007,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "Inventory",
+      "id": "stock_name",
+      "type": "text",
+      "x": 56,
+      "y": 592,
+      "width": 408,
+      "height": 25,
+      "text": "Inventory"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "stock_group"
       ],
       "frameId": null,
       "index": null,
@@ -353,25 +346,32 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "StockService",
-      "type": "text",
-      "id": "facade_stock_name",
-      "x": 60,
-      "y": 575,
-      "width": 330,
-      "height": 30,
-      "text": "StockService"
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "stock_divider",
+      "type": "line",
+      "x": 40,
+      "y": 650,
+      "width": 440,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          440,
+          0
+        ]
+      ]
     },
     {
       "angle": 0,
-      "strokeColor": "#1e3a5f",
+      "strokeColor": "#374151",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -379,7 +379,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "facade_stock_group"
+        "stock_group"
       ],
       "frameId": null,
       "index": null,
@@ -392,52 +392,6 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": null,
-      "endBinding": null,
-      "startArrowhead": null,
-      "endArrowhead": null,
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "line",
-      "id": "facade_stock_divider",
-      "x": 40,
-      "y": 619,
-      "width": 370,
-      "height": 0,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          370,
-          0
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "facade_stock_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900011,
-      "version": 1,
-      "versionNonce": 902010,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
       "fontSize": 18,
       "fontFamily": 3,
       "textAlign": "left",
@@ -445,14 +399,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ deduct(goodsId): void",
+      "originalText": "- stock: Map<sku, int>\nreserve(sku, quantity)\nrelease(sku, quantity)\navailable(sku): int",
+      "id": "stock_members",
       "type": "text",
-      "id": "facade_stock_members",
-      "x": 60,
-      "y": 639,
-      "width": 330,
-      "height": 30,
-      "text": "+ deduct(goodsId): void"
+      "x": 56,
+      "y": 662,
+      "width": 408,
+      "height": 90,
+      "text": "- stock: Map<sku, int>\nreserve(sku, quantity)\nrelease(sku, quantity)\navailable(sku): int"
     },
     {
       "angle": 0,
@@ -464,30 +418,30 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "facade_pay_group"
+        "pack_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 900012,
+      "seed": 900011,
       "version": 1,
-      "versionNonce": 902011,
+      "versionNonce": 902010,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "facade_owns_pay",
+          "id": "rel_facade_pack_1",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "pack",
       "type": "rectangle",
-      "id": "facade_pay",
-      "x": 510,
-      "y": 560,
-      "width": 350,
-      "height": 145
+      "x": 550,
+      "y": 580,
+      "width": 400,
+      "height": 220
     },
     {
       "angle": 0,
@@ -499,7 +453,46 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "facade_pay_group"
+        "pack_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 900012,
+      "version": 1,
+      "versionNonce": 902011,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "PackagingService",
+      "id": "pack_name",
+      "type": "text",
+      "x": 566,
+      "y": 592,
+      "width": 368,
+      "height": 25,
+      "text": "PackagingService"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "pack_group"
       ],
       "frameId": null,
       "index": null,
@@ -512,214 +505,16 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "PayService",
-      "type": "text",
-      "id": "facade_pay_name",
-      "x": 530,
-      "y": 575,
-      "width": 310,
-      "height": 30,
-      "text": "PayService"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "facade_pay_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900014,
-      "version": 1,
-      "versionNonce": 902013,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "pack_divider",
       "type": "line",
-      "id": "facade_pay_divider",
-      "x": 510,
-      "y": 619,
-      "width": 350,
-      "height": 0,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          350,
-          0
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "facade_pay_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900015,
-      "version": 1,
-      "versionNonce": 902014,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "+ pay(amount): void",
-      "type": "text",
-      "id": "facade_pay_members",
-      "x": 530,
-      "y": 639,
-      "width": 310,
-      "height": 30,
-      "text": "+ pay(amount): void"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "#93c5fd",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "facade_logistics_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900016,
-      "version": 1,
-      "versionNonce": 902015,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "id": "facade_owns_logistics",
-          "type": "arrow"
-        }
-      ],
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "type": "rectangle",
-      "id": "facade_logistics",
-      "x": 960,
-      "y": 560,
-      "width": 400,
-      "height": 145
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "facade_logistics_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900017,
-      "version": 1,
-      "versionNonce": 902016,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 22,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "LogisticsService",
-      "type": "text",
-      "id": "facade_logistics_name",
-      "x": 980,
-      "y": 575,
-      "width": 360,
-      "height": 30,
-      "text": "LogisticsService"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "facade_logistics_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900018,
-      "version": 1,
-      "versionNonce": 902017,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "startBinding": null,
-      "endBinding": null,
-      "startArrowhead": null,
-      "endArrowhead": null,
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "line",
-      "id": "facade_logistics_divider",
-      "x": 960,
-      "y": 619,
+      "x": 550,
+      "y": 650,
       "width": 400,
       "height": 0,
       "points": [
@@ -743,8 +538,204 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "facade_logistics_group"
+        "pack_group"
       ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 900014,
+      "version": 1,
+      "versionNonce": 902013,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "pack(FulfillmentRequest)\n  : PackageInfo",
+      "id": "pack_members",
+      "type": "text",
+      "x": 566,
+      "y": 662,
+      "width": 368,
+      "height": 45,
+      "text": "pack(FulfillmentRequest)\n  : PackageInfo"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "#93c5fd",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "carrier_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 900015,
+      "version": 1,
+      "versionNonce": 902014,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "rel_facade_carrier_2",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "id": "carrier",
+      "type": "rectangle",
+      "x": 1030,
+      "y": 580,
+      "width": 400,
+      "height": 220
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "carrier_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 900016,
+      "version": 1,
+      "versionNonce": 902015,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "CarrierService",
+      "id": "carrier_name",
+      "type": "text",
+      "x": 1046,
+      "y": 592,
+      "width": 368,
+      "height": 25,
+      "text": "CarrierService"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "carrier_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 900017,
+      "version": 1,
+      "versionNonce": 902016,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "carrier_divider",
+      "type": "line",
+      "x": 1030,
+      "y": 650,
+      "width": 400,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          400,
+          0
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "carrier_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 900018,
+      "version": 1,
+      "versionNonce": 902017,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "- bookings: int\nbook(PackageInfo): String",
+      "id": "carrier_members",
+      "type": "text",
+      "x": 1046,
+      "y": 662,
+      "width": 368,
+      "height": 45,
+      "text": "- bookings: int\nbook(PackageInfo): String"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
       "frameId": null,
       "index": null,
       "roundness": null,
@@ -763,18 +754,18 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ createShipment(orderNo): void",
+      "originalText": "业务数据：FulfillmentRequest(orderId, sku, quantity, address) → PackageInfo → Dispatch(orderId, waybill, grams)。\nreserve() → pack() → book()；叫件被明确拒绝时 release()。Java / Go 都注入子系统，实线表示持有引用。",
+      "id": "notes",
       "type": "text",
-      "id": "facade_logistics_members",
-      "x": 980,
-      "y": 639,
-      "width": 360,
-      "height": 30,
-      "text": "+ createShipment(orderNo): void"
+      "x": 40,
+      "y": 890,
+      "width": 1510,
+      "height": 45,
+      "text": "业务数据：FulfillmentRequest(orderId, sku, quantity, address) → PackageInfo → Dispatch(orderId, waybill, grams)。\nreserve() → pack() → book()；叫件被明确拒绝时 release()。Java / Go 都注入子系统，实线表示持有引用。"
     },
     {
       "angle": 0,
-      "strokeColor": "#374151",
+      "strokeColor": "#1e3a5f",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -793,29 +784,52 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "本例由外观内部创建并拥有三个子服务，实心菱形表示组合。\n调用顺序：stock.deduct() → pay.pay() → logistics.createShipment()。\nGo：NewOrderFacade() 初始化三个指针字段，CreateOrder() 执行同样的编排。",
-      "type": "text",
-      "id": "facade_note",
-      "x": 40,
-      "y": 770,
-      "width": 1310,
-      "height": 70,
-      "text": "本例由外观内部创建并拥有三个子服务，实心菱形表示组合。\n调用顺序：stock.deduct() → pay.pay() → logistics.createShipment()。\nGo：NewOrderFacade() 初始化三个指针字段，CreateOrder() 执行同样的编排。"
+      "startBinding": {
+        "elementId": "facade",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "stock",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_facade_stock_0",
+      "type": "arrow",
+      "x": 500,
+      "y": 422,
+      "width": 240,
+      "height": 156,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          68
+        ],
+        [
+          -240,
+          68
+        ],
+        [
+          -240,
+          156
+        ]
+      ]
     },
     {
       "angle": 0,
-      "strokeColor": "#1e3a5f",
+      "strokeColor": "#374151",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
-      "strokeStyle": "dashed",
+      "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
       "groupIds": [],
@@ -830,40 +844,25 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": {
-        "elementId": "facade_client",
-        "focus": 0,
-        "gap": 5
-      },
-      "endBinding": {
-        "elementId": "facade_facade",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": null,
-      "endArrowhead": "arrow",
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "facade_client_calls",
-      "x": 225,
-      "y": 275,
-      "width": 173,
-      "height": 0,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          173,
-          0
-        ]
-      ]
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "inventory 1",
+      "id": "rel_facade_stock_0_label",
+      "type": "text",
+      "x": 50,
+      "y": 460,
+      "width": 180,
+      "height": 24,
+      "text": "inventory 1"
     },
     {
       "angle": 0,
-      "strokeColor": "#374151",
+      "strokeColor": "#1e3a5f",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -882,25 +881,40 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "createOrder()",
-      "type": "text",
-      "id": "facade_calls_label",
-      "x": 245,
-      "y": 235,
-      "width": 150,
-      "height": 25,
-      "text": "createOrder()"
+      "startBinding": {
+        "elementId": "facade",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "pack",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_facade_pack_1",
+      "type": "arrow",
+      "x": 745,
+      "y": 422,
+      "width": 0,
+      "height": 156,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          156
+        ]
+      ]
     },
     {
       "angle": 0,
-      "strokeColor": "#1e3a5f",
+      "strokeColor": "#374151",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -919,48 +933,25 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": {
-        "elementId": "facade_facade",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "facade_stock",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": "diamond",
-      "endArrowhead": null,
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "facade_owns_stock",
-      "x": 480,
-      "y": 422,
-      "width": 255,
-      "height": 136,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          68
-        ],
-        [
-          -255,
-          68
-        ],
-        [
-          -255,
-          136
-        ]
-      ]
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "packaging 1",
+      "id": "rel_facade_pack_1_label",
+      "type": "text",
+      "x": 755,
+      "y": 485,
+      "width": 180,
+      "height": 24,
+      "text": "packaging 1"
     },
     {
       "angle": 0,
-      "strokeColor": "#374151",
+      "strokeColor": "#1e3a5f",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -979,25 +970,48 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "stock: 1",
-      "type": "text",
-      "id": "facade_stock_label",
-      "x": 255,
-      "y": 450,
-      "width": 180,
-      "height": 25,
-      "text": "stock: 1"
+      "startBinding": {
+        "elementId": "facade",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "carrier",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_facade_carrier_2",
+      "type": "arrow",
+      "x": 910,
+      "y": 422,
+      "width": 320,
+      "height": 156,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          68
+        ],
+        [
+          320,
+          68
+        ],
+        [
+          320,
+          156
+        ]
+      ]
     },
     {
       "angle": 0,
-      "strokeColor": "#1e3a5f",
+      "strokeColor": "#374151",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -1016,58 +1030,6 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": {
-        "elementId": "facade_facade",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "facade_pay",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": "diamond",
-      "endArrowhead": null,
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "facade_owns_pay",
-      "x": 685,
-      "y": 422,
-      "width": 0,
-      "height": 136,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          136
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900026,
-      "version": 1,
-      "versionNonce": 902025,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
       "fontSize": 18,
       "fontFamily": 3,
       "textAlign": "left",
@@ -1075,111 +1037,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "pay: 1",
+      "originalText": "carrier 1",
+      "id": "rel_facade_carrier_2_label",
       "type": "text",
-      "id": "facade_pay_label",
-      "x": 705,
-      "y": 477,
-      "width": 150,
-      "height": 25,
-      "text": "pay: 1"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900027,
-      "version": 1,
-      "versionNonce": 902026,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "startBinding": {
-        "elementId": "facade_facade",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "facade_logistics",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": "diamond",
-      "endArrowhead": null,
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "facade_owns_logistics",
-      "x": 820,
-      "y": 422,
-      "width": 340,
-      "height": 136,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          68
-        ],
-        [
-          340,
-          68
-        ],
-        [
-          340,
-          136
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 900028,
-      "version": 1,
-      "versionNonce": 902027,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "logistics: 1",
-      "type": "text",
-      "id": "facade_logistics_label",
-      "x": 942,
-      "y": 450,
-      "width": 230,
-      "height": 25,
-      "text": "logistics: 1"
+      "x": 1130,
+      "y": 460,
+      "width": 180,
+      "height": 24,
+      "text": "carrier 1"
     }
   ]
 }

@@ -36,14 +36,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "10  责任链 Chain of Responsibility",
+      "originalText": "10  责任链 Chain · 采购请求逐项校验并保留通过轨迹",
+      "id": "title",
       "type": "text",
-      "id": "chain_title",
       "x": 40,
       "y": 20,
-      "width": 1250,
-      "height": 40,
-      "text": "10  责任链 Chain of Responsibility"
+      "width": 1480,
+      "height": 37.5,
+      "text": "10  责任链 Chain · 采购请求逐项校验并保留通过轨迹"
     },
     {
       "angle": 0,
@@ -73,14 +73,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "Java 抽象类提供链结构；每个处理器保存 next，决定是否继续传递。",
+      "originalText": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建",
+      "id": "subtitle",
       "type": "text",
-      "id": "chain_subtitle",
       "x": 40,
-      "y": 70,
-      "width": 1250,
-      "height": 25,
-      "text": "Java 抽象类提供链结构；每个处理器保存 next，决定是否继续传递。"
+      "y": 80,
+      "width": 1480,
+      "height": 22.5,
+      "text": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建"
     },
     {
       "angle": 0,
@@ -92,7 +92,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_handler_group"
+        "base_group"
       ],
       "frameId": null,
       "index": null,
@@ -103,31 +103,31 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "chain_param_extends",
+          "id": "rel_base_base_0",
           "type": "arrow"
         },
         {
-          "id": "chain_auth_extends",
+          "id": "rel_param_base_1",
           "type": "arrow"
         },
         {
-          "id": "chain_biz_extends",
+          "id": "rel_account_base_2",
           "type": "arrow"
         },
         {
-          "id": "chain_next",
+          "id": "rel_stock_base_3",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "base",
       "type": "rectangle",
-      "id": "chain_handler",
-      "x": 410,
+      "x": 450,
       "y": 150,
-      "width": 500,
-      "height": 280
+      "width": 550,
+      "height": 270
     },
     {
       "angle": 0,
@@ -139,7 +139,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_handler_group"
+        "base_group"
       ],
       "frameId": null,
       "index": null,
@@ -152,21 +152,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "«abstract class»\nHandler",
+      "originalText": "«abstract class»\nPurchaseCheck",
+      "id": "base_name",
       "type": "text",
-      "id": "chain_handler_name",
-      "x": 430,
-      "y": 166,
-      "width": 460,
-      "height": 55,
-      "text": "«abstract class»\nHandler"
+      "x": 466,
+      "y": 162,
+      "width": 518,
+      "height": 50,
+      "text": "«abstract class»\nPurchaseCheck"
     },
     {
       "angle": 0,
@@ -178,7 +178,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_handler_group"
+        "base_group"
       ],
       "frameId": null,
       "index": null,
@@ -197,11 +197,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "base_divider",
       "type": "line",
-      "id": "chain_handler_divider",
-      "x": 410,
-      "y": 235,
-      "width": 500,
+      "x": 450,
+      "y": 220,
+      "width": 550,
       "height": 0,
       "points": [
         [
@@ -209,7 +209,7 @@
           0
         ],
         [
-          500,
+          550,
           0
         ]
       ]
@@ -224,7 +224,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_handler_group"
+        "base_group"
       ],
       "frameId": null,
       "index": null,
@@ -244,14 +244,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "- next: Handler\n+ setNext(next): Handler\n+ handle(request): boolean {abstract}\n# pass(request): boolean",
+      "originalText": "- next: PurchaseCheck\nthen(next): PurchaseCheck\nhandle(request, context) {final}\n# check(request, context) {abstract}",
+      "id": "base_members",
       "type": "text",
-      "id": "chain_handler_members",
-      "x": 430,
-      "y": 255,
-      "width": 460,
-      "height": 145,
-      "text": "- next: Handler\n+ setNext(next): Handler\n+ handle(request): boolean {abstract}\n# pass(request): boolean"
+      "x": 466,
+      "y": 232,
+      "width": 518,
+      "height": 90,
+      "text": "- next: PurchaseCheck\nthen(next): PurchaseCheck\nhandle(request, context) {final}\n# check(request, context) {abstract}"
     },
     {
       "angle": 0,
@@ -263,7 +263,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_param_group"
+        "param_group"
       ],
       "frameId": null,
       "index": null,
@@ -274,19 +274,19 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "chain_param_extends",
+          "id": "rel_param_base_1",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "param",
       "type": "rectangle",
-      "id": "chain_param",
       "x": 40,
-      "y": 580,
-      "width": 360,
-      "height": 145
+      "y": 590,
+      "width": 400,
+      "height": 200
     },
     {
       "angle": 0,
@@ -298,7 +298,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_param_group"
+        "param_group"
       ],
       "frameId": null,
       "index": null,
@@ -311,21 +311,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "ParamCheck",
+      "originalText": "ParameterCheck",
+      "id": "param_name",
       "type": "text",
-      "id": "chain_param_name",
-      "x": 60,
-      "y": 595,
-      "width": 320,
-      "height": 30,
-      "text": "ParamCheck"
+      "x": 56,
+      "y": 602,
+      "width": 368,
+      "height": 25,
+      "text": "ParameterCheck"
     },
     {
       "angle": 0,
@@ -337,7 +337,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_param_group"
+        "param_group"
       ],
       "frameId": null,
       "index": null,
@@ -356,11 +356,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "param_divider",
       "type": "line",
-      "id": "chain_param_divider",
       "x": 40,
-      "y": 639,
-      "width": 360,
+      "y": 660,
+      "width": 400,
       "height": 0,
       "points": [
         [
@@ -368,7 +368,7 @@
           0
         ],
         [
-          360,
+          400,
           0
         ]
       ]
@@ -383,7 +383,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_param_group"
+        "param_group"
       ],
       "frameId": null,
       "index": null,
@@ -403,14 +403,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ handle(request): boolean",
+      "originalText": "# check(request, context)\n校验用户、SKU、数量",
+      "id": "param_members",
       "type": "text",
-      "id": "chain_param_members",
-      "x": 60,
-      "y": 659,
-      "width": 320,
-      "height": 30,
-      "text": "+ handle(request): boolean"
+      "x": 56,
+      "y": 672,
+      "width": 368,
+      "height": 45,
+      "text": "# check(request, context)\n校验用户、SKU、数量"
     },
     {
       "angle": 0,
@@ -422,7 +422,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_auth_group"
+        "account_group"
       ],
       "frameId": null,
       "index": null,
@@ -433,19 +433,19 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "chain_auth_extends",
+          "id": "rel_account_base_2",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "account",
       "type": "rectangle",
-      "id": "chain_auth",
-      "x": 490,
-      "y": 580,
-      "width": 360,
-      "height": 145
+      "x": 550,
+      "y": 590,
+      "width": 400,
+      "height": 200
     },
     {
       "angle": 0,
@@ -457,7 +457,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_auth_group"
+        "account_group"
       ],
       "frameId": null,
       "index": null,
@@ -470,21 +470,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "AuthCheck",
+      "originalText": "AccountCheck",
+      "id": "account_name",
       "type": "text",
-      "id": "chain_auth_name",
-      "x": 510,
-      "y": 595,
-      "width": 320,
-      "height": 30,
-      "text": "AuthCheck"
+      "x": 566,
+      "y": 602,
+      "width": 368,
+      "height": 25,
+      "text": "AccountCheck"
     },
     {
       "angle": 0,
@@ -496,7 +496,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_auth_group"
+        "account_group"
       ],
       "frameId": null,
       "index": null,
@@ -515,11 +515,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "account_divider",
       "type": "line",
-      "id": "chain_auth_divider",
-      "x": 490,
-      "y": 639,
-      "width": 360,
+      "x": 550,
+      "y": 660,
+      "width": 400,
       "height": 0,
       "points": [
         [
@@ -527,7 +527,7 @@
           0
         ],
         [
-          360,
+          400,
           0
         ]
       ]
@@ -542,7 +542,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_auth_group"
+        "account_group"
       ],
       "frameId": null,
       "index": null,
@@ -562,14 +562,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ handle(request): boolean",
+      "originalText": "# check(request, context)\n拒绝冻结账号",
+      "id": "account_members",
       "type": "text",
-      "id": "chain_auth_members",
-      "x": 510,
-      "y": 659,
-      "width": 320,
-      "height": 30,
-      "text": "+ handle(request): boolean"
+      "x": 566,
+      "y": 672,
+      "width": 368,
+      "height": 45,
+      "text": "# check(request, context)\n拒绝冻结账号"
     },
     {
       "angle": 0,
@@ -581,7 +581,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_biz_group"
+        "stock_group"
       ],
       "frameId": null,
       "index": null,
@@ -592,19 +592,19 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "chain_biz_extends",
+          "id": "rel_stock_base_3",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "stock",
       "type": "rectangle",
-      "id": "chain_biz",
-      "x": 940,
-      "y": 580,
-      "width": 360,
-      "height": 145
+      "x": 1050,
+      "y": 590,
+      "width": 400,
+      "height": 200
     },
     {
       "angle": 0,
@@ -616,7 +616,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_biz_group"
+        "stock_group"
       ],
       "frameId": null,
       "index": null,
@@ -629,21 +629,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "BizHandler",
+      "originalText": "StockCheck",
+      "id": "stock_name",
       "type": "text",
-      "id": "chain_biz_name",
-      "x": 960,
-      "y": 595,
-      "width": 320,
-      "height": 30,
-      "text": "BizHandler"
+      "x": 1066,
+      "y": 602,
+      "width": 368,
+      "height": 25,
+      "text": "StockCheck"
     },
     {
       "angle": 0,
@@ -655,7 +655,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_biz_group"
+        "stock_group"
       ],
       "frameId": null,
       "index": null,
@@ -674,11 +674,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "stock_divider",
       "type": "line",
-      "id": "chain_biz_divider",
-      "x": 940,
-      "y": 639,
-      "width": 360,
+      "x": 1050,
+      "y": 660,
+      "width": 400,
       "height": 0,
       "points": [
         [
@@ -686,7 +686,7 @@
           0
         ],
         [
-          360,
+          400,
           0
         ]
       ]
@@ -701,7 +701,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "chain_biz_group"
+        "stock_group"
       ],
       "frameId": null,
       "index": null,
@@ -721,14 +721,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ handle(request): boolean",
+      "originalText": "- stock: Map<sku, int>\n# check(request, context)\n拒绝库存不足",
+      "id": "stock_members",
       "type": "text",
-      "id": "chain_biz_members",
-      "x": 960,
-      "y": 659,
-      "width": 320,
-      "height": 30,
-      "text": "+ handle(request): boolean"
+      "x": 1066,
+      "y": 672,
+      "width": 368,
+      "height": 67.5,
+      "text": "- stock: Map<sku, int>\n# check(request, context)\n拒绝库存不足"
     },
     {
       "angle": 0,
@@ -758,14 +758,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "对象链：ParamCheck.next → AuthCheck.next → BizHandler；从链头 handle(200)。\nGo：Handler 是接口；三个处理器嵌入 BaseHandler 并实现 Handle()。\nBaseHandler 只提供 SetNext() / pass()，自身没有 Handle()，不单独实现 Handler。",
+      "originalText": "业务数据：PurchaseRequest(userId, active, sku, quantity)；CheckContext 保存通过轨迹。链从 ParameterCheck 开始。\nGo：PurchaseCheck 接口 + NextCheck.next 转发；三个检查实现 Handle()，NextCheck 自身不实现该接口。",
+      "id": "notes",
       "type": "text",
-      "id": "chain_note",
       "x": 40,
-      "y": 790,
-      "width": 1260,
-      "height": 100,
-      "text": "对象链：ParamCheck.next → AuthCheck.next → BizHandler；从链头 handle(200)。\nGo：Handler 是接口；三个处理器嵌入 BaseHandler 并实现 Handle()。\nBaseHandler 只提供 SetNext() / pass()，自身没有 Handle()，不单独实现 Handler。"
+      "y": 890,
+      "width": 1510,
+      "height": 45,
+      "text": "业务数据：PurchaseRequest(userId, active, sku, quantity)；CheckContext 保存通过轨迹。链从 ParameterCheck 开始。\nGo：PurchaseCheck 接口 + NextCheck.next 转发；三个检查实现 Handle()，NextCheck 自身不实现该接口。"
     },
     {
       "angle": 0,
@@ -789,47 +789,51 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "chain_param",
+        "elementId": "base",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "chain_handler",
+        "elementId": "base",
         "focus": 0,
         "gap": 2
       },
       "startArrowhead": null,
-      "endArrowhead": "triangle_outline",
+      "endArrowhead": "arrow",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_base_base_0",
       "type": "arrow",
-      "id": "chain_param_extends",
-      "x": 220,
-      "y": 578,
-      "width": 280,
-      "height": 146,
+      "x": 1002,
+      "y": 240,
+      "width": 350,
+      "height": 235,
       "points": [
         [
           0,
           0
         ],
         [
-          0,
-          -78
+          268,
+          0
         ],
         [
-          280,
-          -78
+          268,
+          235
         ],
         [
-          280,
-          -146
+          -82,
+          235
+        ],
+        [
+          -82,
+          182
         ]
       ]
     },
     {
       "angle": 0,
-      "strokeColor": "#1e3a5f",
+      "strokeColor": "#374151",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -848,36 +852,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": {
-        "elementId": "chain_auth",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "chain_handler",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": null,
-      "endArrowhead": "triangle_outline",
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "chain_auth_extends",
-      "x": 670,
-      "y": 578,
-      "width": 0,
-      "height": 146,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          -146
-        ]
-      ]
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "next 0..1",
+      "id": "rel_base_base_0_label",
+      "type": "text",
+      "x": 1110,
+      "y": 200,
+      "width": 180,
+      "height": 24,
+      "text": "next 0..1"
     },
     {
       "angle": 0,
@@ -901,12 +890,12 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "chain_biz",
+        "elementId": "param",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "chain_handler",
+        "elementId": "base",
         "focus": 0,
         "gap": 2
       },
@@ -914,12 +903,12 @@
       "endArrowhead": "triangle_outline",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_param_base_1",
       "type": "arrow",
-      "id": "chain_biz_extends",
-      "x": 1120,
-      "y": 578,
-      "width": 300,
-      "height": 146,
+      "x": 240,
+      "y": 588,
+      "width": 310,
+      "height": 166,
       "points": [
         [
           0,
@@ -927,21 +916,21 @@
         ],
         [
           0,
-          -78
+          -68
         ],
         [
-          -300,
-          -78
+          310,
+          -68
         ],
         [
-          -300,
-          -146
+          310,
+          -166
         ]
       ]
     },
     {
       "angle": 0,
-      "strokeColor": "#374151",
+      "strokeColor": "#1e3a5f",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -960,21 +949,36 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "继承",
-      "type": "text",
-      "id": "chain_extends_label",
-      "x": 696,
-      "y": 478,
-      "width": 140,
-      "height": 25,
-      "text": "继承"
+      "startBinding": {
+        "elementId": "account",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "base",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "triangle_outline",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_account_base_2",
+      "type": "arrow",
+      "x": 750,
+      "y": 588,
+      "width": 0,
+      "height": 166,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          -166
+        ]
+      ]
     },
     {
       "angle": 0,
@@ -998,80 +1002,43 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "chain_handler",
+        "elementId": "stock",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "chain_handler",
+        "elementId": "base",
         "focus": 0,
         "gap": 2
       },
       "startArrowhead": null,
-      "endArrowhead": "arrow",
+      "endArrowhead": "triangle_outline",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_stock_base_3",
       "type": "arrow",
-      "id": "chain_next",
-      "x": 912,
-      "y": 228,
-      "width": 128,
-      "height": 142,
+      "x": 1250,
+      "y": 588,
+      "width": 400,
+      "height": 166,
       "points": [
         [
           0,
           0
         ],
         [
-          128,
-          0
-        ],
-        [
-          128,
-          142
-        ],
-        [
           0,
-          142
+          -53
+        ],
+        [
+          -400,
+          -53
+        ],
+        [
+          -400,
+          -166
         ]
       ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1000025,
-      "version": 1,
-      "versionNonce": 1002024,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "next: 0..1\n持有下一个处理器",
-      "type": "text",
-      "id": "chain_next_label",
-      "x": 1060,
-      "y": 270,
-      "width": 240,
-      "height": 55,
-      "text": "next: 0..1\n持有下一个处理器"
     }
   ]
 }

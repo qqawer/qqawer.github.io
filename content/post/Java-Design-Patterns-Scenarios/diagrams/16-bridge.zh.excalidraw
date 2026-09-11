@@ -36,14 +36,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "16  桥接 Bridge",
+      "originalText": "16  桥接 Bridge · 告警级别与发送渠道分别扩展",
+      "id": "title",
       "type": "text",
-      "id": "bridge_title",
       "x": 40,
       "y": 20,
-      "width": 1270,
-      "height": 40,
-      "text": "16  桥接 Bridge"
+      "width": 1480,
+      "height": 37.5,
+      "text": "16  桥接 Bridge · 告警级别与发送渠道分别扩展"
     },
     {
       "angle": 0,
@@ -73,88 +73,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "通知类型与渠道实现各自扩展；跨维度通过 Sender 引用组合，避免组合类成倍增加。",
+      "originalText": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建",
+      "id": "subtitle",
       "type": "text",
-      "id": "bridge_subtitle",
       "x": 40,
-      "y": 70,
-      "width": 1270,
-      "height": 25,
-      "text": "通知类型与渠道实现各自扩展；跨维度通过 Sender 引用组合，避免组合类成倍增加。"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e40af",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1600003,
-      "version": 1,
-      "versionNonce": 1602002,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "抽象维度：哪种通知",
-      "type": "text",
-      "id": "bridge_left_label",
-      "x": 40,
-      "y": 116,
-      "width": 540,
-      "height": 25,
-      "text": "抽象维度：哪种通知"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e40af",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1600004,
-      "version": 1,
-      "versionNonce": 1602003,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "实现维度：怎样发送",
-      "type": "text",
-      "id": "bridge_right_label",
-      "x": 780,
-      "y": 116,
-      "width": 500,
-      "height": 25,
-      "text": "实现维度：怎样发送"
+      "y": 80,
+      "width": 1480,
+      "height": 22.5,
+      "text": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建"
     },
     {
       "angle": 0,
@@ -166,38 +92,38 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_notification_group"
+        "notification_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600005,
+      "seed": 1600003,
       "version": 1,
-      "versionNonce": 1602004,
+      "versionNonce": 1602002,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "bridge_bridge",
+          "id": "rel_notification_sender_0",
           "type": "arrow"
         },
         {
-          "id": "bridge_normal_extends",
+          "id": "rel_normal_notification_1",
           "type": "arrow"
         },
         {
-          "id": "bridge_urgent_extends",
+          "id": "rel_urgent_notification_2",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "notification",
       "type": "rectangle",
-      "id": "bridge_notification",
       "x": 40,
-      "y": 170,
-      "width": 540,
-      "height": 260
+      "y": 150,
+      "width": 560,
+      "height": 240
     },
     {
       "angle": 0,
@@ -209,20 +135,20 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_notification_group"
+        "notification_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600006,
+      "seed": 1600004,
       "version": 1,
-      "versionNonce": 1602005,
+      "versionNonce": 1602003,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
@@ -230,12 +156,12 @@
       "lineHeight": 1.25,
       "autoResize": false,
       "originalText": "«abstract class»\nNotification",
+      "id": "notification_name",
       "type": "text",
-      "id": "bridge_notification_name",
-      "x": 60,
-      "y": 186,
-      "width": 500,
-      "height": 55,
+      "x": 56,
+      "y": 162,
+      "width": 528,
+      "height": 50,
       "text": "«abstract class»\nNotification"
     },
     {
@@ -248,14 +174,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_notification_group"
+        "notification_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600007,
+      "seed": 1600005,
       "version": 1,
-      "versionNonce": 1602006,
+      "versionNonce": 1602004,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -267,11 +193,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "notification_divider",
       "type": "line",
-      "id": "bridge_notification_divider",
       "x": 40,
-      "y": 255,
-      "width": 540,
+      "y": 220,
+      "width": 560,
       "height": 0,
       "points": [
         [
@@ -279,7 +205,7 @@
           0
         ],
         [
-          540,
+          560,
           0
         ]
       ]
@@ -294,7 +220,89 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_notification_group"
+        "notification_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1600006,
+      "version": 1,
+      "versionNonce": 1602005,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "# sender: Sender {final}\nnotify(Alert, Recipient)\n  : DeliveryReceipt {abstract}",
+      "id": "notification_members",
+      "type": "text",
+      "x": 56,
+      "y": 232,
+      "width": 528,
+      "height": 67.5,
+      "text": "# sender: Sender {final}\nnotify(Alert, Recipient)\n  : DeliveryReceipt {abstract}"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "#60a5fa",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "sender_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1600007,
+      "version": 1,
+      "versionNonce": 1602006,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "rel_notification_sender_0",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_email_sender_3",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_sms_sender_4",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "id": "sender",
+      "type": "rectangle",
+      "x": 870,
+      "y": 150,
+      "width": 510,
+      "height": 210
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "sender_group"
       ],
       "frameId": null,
       "index": null,
@@ -307,89 +315,7 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "# sender: Sender {final}\n# Notification(sender)\n+ notifyUser(userId, content): void\n  {abstract}",
-      "type": "text",
-      "id": "bridge_notification_members",
-      "x": 60,
-      "y": 275,
-      "width": 500,
-      "height": 130,
-      "text": "# sender: Sender {final}\n# Notification(sender)\n+ notifyUser(userId, content): void\n  {abstract}"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "#60a5fa",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "bridge_sender_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1600009,
-      "version": 1,
-      "versionNonce": 1602008,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "id": "bridge_bridge",
-          "type": "arrow"
-        },
-        {
-          "id": "bridge_email_realizes",
-          "type": "arrow"
-        },
-        {
-          "id": "bridge_sms_realizes",
-          "type": "arrow"
-        }
-      ],
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "type": "rectangle",
-      "id": "bridge_sender",
-      "x": 780,
-      "y": 170,
-      "width": 450,
-      "height": 200
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "bridge_sender_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1600010,
-      "version": 1,
-      "versionNonce": 1602009,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
@@ -397,12 +323,12 @@
       "lineHeight": 1.25,
       "autoResize": false,
       "originalText": "«interface»\nSender",
+      "id": "sender_name",
       "type": "text",
-      "id": "bridge_sender_name",
-      "x": 800,
-      "y": 186,
-      "width": 410,
-      "height": 55,
+      "x": 886,
+      "y": 162,
+      "width": 478,
+      "height": 50,
       "text": "«interface»\nSender"
     },
     {
@@ -415,14 +341,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_sender_group"
+        "sender_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600011,
+      "seed": 1600009,
       "version": 1,
-      "versionNonce": 1602010,
+      "versionNonce": 1602008,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -434,11 +360,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "sender_divider",
       "type": "line",
-      "id": "bridge_sender_divider",
-      "x": 780,
-      "y": 248,
-      "width": 450,
+      "x": 870,
+      "y": 220,
+      "width": 510,
       "height": 0,
       "points": [
         [
@@ -446,7 +372,7 @@
           0
         ],
         [
-          450,
+          510,
           0
         ]
       ]
@@ -461,14 +387,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_sender_group"
+        "sender_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600012,
+      "seed": 1600010,
       "version": 1,
-      "versionNonce": 1602011,
+      "versionNonce": 1602009,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -481,14 +407,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ send(userId, content): void",
+      "originalText": "+ send(Delivery): DeliveryReceipt",
+      "id": "sender_members",
       "type": "text",
-      "id": "bridge_sender_members",
-      "x": 800,
-      "y": 270,
-      "width": 410,
-      "height": 60,
-      "text": "+ send(userId, content): void"
+      "x": 886,
+      "y": 232,
+      "width": 478,
+      "height": 22.5,
+      "text": "+ send(Delivery): DeliveryReceipt"
     },
     {
       "angle": 0,
@@ -500,30 +426,30 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_normal_group"
+        "normal_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600013,
+      "seed": 1600011,
       "version": 1,
-      "versionNonce": 1602012,
+      "versionNonce": 1602010,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "bridge_normal_extends",
+          "id": "rel_normal_notification_1",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "normal",
       "type": "rectangle",
-      "id": "bridge_normal",
       "x": 40,
-      "y": 610,
-      "width": 270,
-      "height": 170
+      "y": 600,
+      "width": 330,
+      "height": 190
     },
     {
       "angle": 0,
@@ -535,14 +461,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_normal_group"
+        "normal_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600014,
+      "seed": 1600012,
       "version": 1,
-      "versionNonce": 1602013,
+      "versionNonce": 1602011,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -556,12 +482,12 @@
       "lineHeight": 1.25,
       "autoResize": false,
       "originalText": "NormalNotification",
+      "id": "normal_name",
       "type": "text",
-      "id": "bridge_normal_name",
-      "x": 60,
-      "y": 626,
-      "width": 230,
-      "height": 30,
+      "x": 56,
+      "y": 612,
+      "width": 298,
+      "height": 25,
       "text": "NormalNotification"
     },
     {
@@ -574,14 +500,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_normal_group"
+        "normal_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600015,
+      "seed": 1600013,
       "version": 1,
-      "versionNonce": 1602014,
+      "versionNonce": 1602012,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -593,11 +519,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "normal_divider",
       "type": "line",
-      "id": "bridge_normal_divider",
       "x": 40,
-      "y": 669,
-      "width": 270,
+      "y": 670,
+      "width": 330,
       "height": 0,
       "points": [
         [
@@ -605,7 +531,7 @@
           0
         ],
         [
-          270,
+          330,
           0
         ]
       ]
@@ -620,14 +546,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_normal_group"
+        "normal_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600016,
+      "seed": 1600014,
       "version": 1,
-      "versionNonce": 1602015,
+      "versionNonce": 1602013,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -640,14 +566,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ notifyUser(userId,\n  content): void",
+      "originalText": "notify(Alert, Recipient)\n摘要 + priority=1",
+      "id": "normal_members",
       "type": "text",
-      "id": "bridge_normal_members",
-      "x": 60,
-      "y": 689,
-      "width": 230,
-      "height": 60,
-      "text": "+ notifyUser(userId,\n  content): void"
+      "x": 56,
+      "y": 682,
+      "width": 298,
+      "height": 45,
+      "text": "notify(Alert, Recipient)\n摘要 + priority=1"
     },
     {
       "angle": 0,
@@ -659,30 +585,30 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_urgent_group"
+        "urgent_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600017,
+      "seed": 1600015,
       "version": 1,
-      "versionNonce": 1602016,
+      "versionNonce": 1602014,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "bridge_urgent_extends",
+          "id": "rel_urgent_notification_2",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "urgent",
       "type": "rectangle",
-      "id": "bridge_urgent",
-      "x": 350,
-      "y": 610,
-      "width": 290,
-      "height": 170
+      "x": 450,
+      "y": 600,
+      "width": 370,
+      "height": 190
     },
     {
       "angle": 0,
@@ -694,14 +620,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_urgent_group"
+        "urgent_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600018,
+      "seed": 1600016,
       "version": 1,
-      "versionNonce": 1602017,
+      "versionNonce": 1602015,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -715,12 +641,12 @@
       "lineHeight": 1.25,
       "autoResize": false,
       "originalText": "UrgentNotification",
+      "id": "urgent_name",
       "type": "text",
-      "id": "bridge_urgent_name",
-      "x": 370,
-      "y": 626,
-      "width": 250,
-      "height": 30,
+      "x": 466,
+      "y": 612,
+      "width": 338,
+      "height": 25,
       "text": "UrgentNotification"
     },
     {
@@ -733,14 +659,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_urgent_group"
+        "urgent_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600019,
+      "seed": 1600017,
       "version": 1,
-      "versionNonce": 1602018,
+      "versionNonce": 1602016,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -752,11 +678,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "urgent_divider",
       "type": "line",
-      "id": "bridge_urgent_divider",
-      "x": 350,
-      "y": 669,
-      "width": 290,
+      "x": 450,
+      "y": 670,
+      "width": 370,
       "height": 0,
       "points": [
         [
@@ -764,7 +690,7 @@
           0
         ],
         [
-          290,
+          370,
           0
         ]
       ]
@@ -779,14 +705,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_urgent_group"
+        "urgent_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600020,
+      "seed": 1600018,
       "version": 1,
-      "versionNonce": 1602019,
+      "versionNonce": 1602017,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -799,14 +725,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ notifyUser(userId,\n  content): void",
+      "originalText": "notify(Alert, Recipient)\n处置手册 + priority=9",
+      "id": "urgent_members",
       "type": "text",
-      "id": "bridge_urgent_members",
-      "x": 370,
-      "y": 689,
-      "width": 250,
-      "height": 60,
-      "text": "+ notifyUser(userId,\n  content): void"
+      "x": 466,
+      "y": 682,
+      "width": 338,
+      "height": 45,
+      "text": "notify(Alert, Recipient)\n处置手册 + priority=9"
     },
     {
       "angle": 0,
@@ -818,30 +744,30 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_email_group"
+        "email_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600021,
+      "seed": 1600019,
       "version": 1,
-      "versionNonce": 1602020,
+      "versionNonce": 1602018,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "bridge_email_realizes",
+          "id": "rel_email_sender_3",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "email",
       "type": "rectangle",
-      "id": "bridge_email",
-      "x": 760,
-      "y": 610,
-      "width": 250,
-      "height": 170
+      "x": 910,
+      "y": 600,
+      "width": 280,
+      "height": 210
     },
     {
       "angle": 0,
@@ -853,14 +779,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_email_group"
+        "email_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600022,
+      "seed": 1600020,
       "version": 1,
-      "versionNonce": 1602021,
+      "versionNonce": 1602019,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -874,12 +800,12 @@
       "lineHeight": 1.25,
       "autoResize": false,
       "originalText": "EmailSender",
+      "id": "email_name",
       "type": "text",
-      "id": "bridge_email_name",
-      "x": 780,
-      "y": 626,
-      "width": 210,
-      "height": 30,
+      "x": 926,
+      "y": 612,
+      "width": 248,
+      "height": 25,
       "text": "EmailSender"
     },
     {
@@ -892,14 +818,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_email_group"
+        "email_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600023,
+      "seed": 1600021,
       "version": 1,
-      "versionNonce": 1602022,
+      "versionNonce": 1602020,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -911,11 +837,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "email_divider",
       "type": "line",
-      "id": "bridge_email_divider",
-      "x": 760,
-      "y": 669,
-      "width": 250,
+      "x": 910,
+      "y": 670,
+      "width": 280,
       "height": 0,
       "points": [
         [
@@ -923,7 +849,7 @@
           0
         ],
         [
-          250,
+          280,
           0
         ]
       ]
@@ -938,14 +864,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_email_group"
+        "email_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600024,
+      "seed": 1600022,
       "version": 1,
-      "versionNonce": 1602023,
+      "versionNonce": 1602021,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -958,14 +884,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ send(userId,\n  content): void",
+      "originalText": "- outbox:\n  List<Delivery>\n+ send(Delivery)\nqueued(): int",
+      "id": "email_members",
       "type": "text",
-      "id": "bridge_email_members",
-      "x": 780,
-      "y": 689,
-      "width": 210,
-      "height": 60,
-      "text": "+ send(userId,\n  content): void"
+      "x": 926,
+      "y": 682,
+      "width": 248,
+      "height": 90,
+      "text": "- outbox:\n  List<Delivery>\n+ send(Delivery)\nqueued(): int"
     },
     {
       "angle": 0,
@@ -977,30 +903,30 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_sms_group"
+        "sms_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600025,
+      "seed": 1600023,
       "version": 1,
-      "versionNonce": 1602024,
+      "versionNonce": 1602022,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "bridge_sms_realizes",
+          "id": "rel_sms_sender_4",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "sms",
       "type": "rectangle",
-      "id": "bridge_sms",
-      "x": 1050,
-      "y": 610,
-      "width": 250,
-      "height": 170
+      "x": 1260,
+      "y": 600,
+      "width": 280,
+      "height": 190
     },
     {
       "angle": 0,
@@ -1012,14 +938,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_sms_group"
+        "sms_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600026,
+      "seed": 1600024,
       "version": 1,
-      "versionNonce": 1602025,
+      "versionNonce": 1602023,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -1033,12 +959,12 @@
       "lineHeight": 1.25,
       "autoResize": false,
       "originalText": "SmsSender",
+      "id": "sms_name",
       "type": "text",
-      "id": "bridge_sms_name",
-      "x": 1070,
-      "y": 626,
-      "width": 210,
-      "height": 30,
+      "x": 1276,
+      "y": 612,
+      "width": 248,
+      "height": 25,
       "text": "SmsSender"
     },
     {
@@ -1051,14 +977,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_sms_group"
+        "sms_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600027,
+      "seed": 1600025,
       "version": 1,
-      "versionNonce": 1602026,
+      "versionNonce": 1602024,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -1070,11 +996,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "sms_divider",
       "type": "line",
-      "id": "bridge_sms_divider",
-      "x": 1050,
-      "y": 669,
-      "width": 250,
+      "x": 1260,
+      "y": 670,
+      "width": 280,
       "height": 0,
       "points": [
         [
@@ -1082,7 +1008,7 @@
           0
         ],
         [
-          250,
+          280,
           0
         ]
       ]
@@ -1097,14 +1023,14 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "bridge_sms_group"
+        "sms_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 1600028,
+      "seed": 1600026,
       "version": 1,
-      "versionNonce": 1602027,
+      "versionNonce": 1602025,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -1117,14 +1043,103 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ send(userId,\n  content): void",
+      "originalText": "- outbox: List<String>\n+ send(Delivery)\nqueued(): int",
+      "id": "sms_members",
       "type": "text",
-      "id": "bridge_sms_members",
-      "x": 1070,
-      "y": 689,
-      "width": 210,
-      "height": 60,
-      "text": "+ send(userId,\n  content): void"
+      "x": 1276,
+      "y": 682,
+      "width": 248,
+      "height": 67.5,
+      "text": "- outbox: List<String>\n+ send(Delivery)\nqueued(): int"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1600027,
+      "version": 1,
+      "versionNonce": 1602026,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "业务数据：Alert(service, metric, actual, threshold, runbook) + Recipient(email, phone) → Delivery → DeliveryReceipt。\n左侧决定告警内容与优先级，右侧校验渠道地址并写本地队列。Go：Notification / Sender 两个接口，通过字段组合。",
+      "id": "notes",
+      "type": "text",
+      "x": 40,
+      "y": 900,
+      "width": 1510,
+      "height": 45,
+      "text": "业务数据：Alert(service, metric, actual, threshold, runbook) + Recipient(email, phone) → Delivery → DeliveryReceipt。\n左侧决定告警内容与优先级，右侧校验渠道地址并写本地队列。Go：Notification / Sender 两个接口，通过字段组合。"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 1600028,
+      "version": 1,
+      "versionNonce": 1602027,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "notification",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "sender",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_notification_sender_0",
+      "type": "arrow",
+      "x": 602,
+      "y": 270,
+      "width": 266,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          266,
+          0
+        ]
+      ]
     },
     {
       "angle": 0,
@@ -1154,14 +1169,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "组合示例：new UrgentNotification(new SmsSender()).notifyUser(userId, content)。\nGo：Notification 和 Sender 都是接口；具体通知通过 sender 字段组合渠道，没有继承。\n*NormalNotification / *UrgentNotification 实现 Notify()；两个 Sender 实现 Send()。\n新增通知类型不改渠道类，新增渠道实现不改通知类。",
+      "originalText": "sender 1",
+      "id": "rel_notification_sender_0_label",
       "type": "text",
-      "id": "bridge_note",
-      "x": 40,
-      "y": 850,
-      "width": 1270,
-      "height": 100,
-      "text": "组合示例：new UrgentNotification(new SmsSender()).notifyUser(userId, content)。\nGo：Notification 和 Sender 都是接口；具体通知通过 sender 字段组合渠道，没有继承。\n*NormalNotification / *UrgentNotification 实现 Notify()；两个 Sender 实现 Send()。\n新增通知类型不改渠道类，新增渠道实现不改通知类。"
+      "x": 670,
+      "y": 230,
+      "width": 180,
+      "height": 24,
+      "text": "sender 1"
     },
     {
       "angle": 0,
@@ -1185,39 +1200,47 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "bridge_notification",
+        "elementId": "normal",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "bridge_sender",
+        "elementId": "notification",
         "focus": 0,
         "gap": 2
       },
       "startArrowhead": null,
-      "endArrowhead": "arrow",
+      "endArrowhead": "triangle_outline",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_normal_notification_1",
       "type": "arrow",
-      "id": "bridge_bridge",
-      "x": 582,
-      "y": 315,
-      "width": 196,
-      "height": 0,
+      "x": 205,
+      "y": 598,
+      "width": 25,
+      "height": 206,
       "points": [
         [
           0,
           0
         ],
         [
-          196,
-          0
+          0,
+          -118
+        ],
+        [
+          -25,
+          -118
+        ],
+        [
+          -25,
+          -206
         ]
       ]
     },
     {
       "angle": 0,
-      "strokeColor": "#374151",
+      "strokeColor": "#1e3a5f",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -1236,21 +1259,44 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "sender: 1\n持有 / 委托",
-      "type": "text",
-      "id": "bridge_bridge_label",
-      "x": 610,
-      "y": 254,
-      "width": 165,
-      "height": 50,
-      "text": "sender: 1\n持有 / 委托"
+      "startBinding": {
+        "elementId": "urgent",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "notification",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "triangle_outline",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_urgent_notification_2",
+      "type": "arrow",
+      "x": 635,
+      "y": 598,
+      "width": 145,
+      "height": 206,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          -118
+        ],
+        [
+          -145,
+          -118
+        ],
+        [
+          -145,
+          -206
+        ]
+      ]
     },
     {
       "angle": 0,
@@ -1258,7 +1304,7 @@
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
-      "strokeStyle": "solid",
+      "strokeStyle": "dashed",
       "roughness": 0,
       "opacity": 100,
       "groupIds": [],
@@ -1274,12 +1320,12 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "bridge_normal",
+        "elementId": "email",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "bridge_notification",
+        "elementId": "sender",
         "focus": 0,
         "gap": 2
       },
@@ -1287,12 +1333,12 @@
       "endArrowhead": "triangle_outline",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_email_sender_3",
       "type": "arrow",
-      "id": "bridge_normal_extends",
-      "x": 175,
-      "y": 608,
+      "x": 1050,
+      "y": 598,
       "width": 0,
-      "height": 176,
+      "height": 236,
       "points": [
         [
           0,
@@ -1300,7 +1346,7 @@
         ],
         [
           0,
-          -176
+          -236
         ]
       ]
     },
@@ -1310,7 +1356,7 @@
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
-      "strokeStyle": "solid",
+      "strokeStyle": "dashed",
       "roughness": 0,
       "opacity": 100,
       "groupIds": [],
@@ -1326,12 +1372,12 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "bridge_urgent",
+        "elementId": "sms",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "bridge_notification",
+        "elementId": "sender",
         "focus": 0,
         "gap": 2
       },
@@ -1339,100 +1385,11 @@
       "endArrowhead": "triangle_outline",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_sms_sender_4",
       "type": "arrow",
-      "id": "bridge_urgent_extends",
-      "x": 495,
-      "y": 608,
-      "width": 0,
-      "height": 176,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          -176
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1600034,
-      "version": 1,
-      "versionNonce": 1602033,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "继承",
-      "type": "text",
-      "id": "bridge_extends_label",
-      "x": 290,
-      "y": 506,
-      "width": 120,
-      "height": 25,
-      "text": "继承"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "dashed",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1600035,
-      "version": 1,
-      "versionNonce": 1602034,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "startBinding": {
-        "elementId": "bridge_email",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "bridge_sender",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": null,
-      "endArrowhead": "triangle_outline",
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "bridge_email_realizes",
-      "x": 885,
-      "y": 608,
-      "width": 0,
+      "x": 1400,
+      "y": 598,
+      "width": 130,
       "height": 236,
       "points": [
         [
@@ -1441,98 +1398,17 @@
         ],
         [
           0,
-          -236
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "dashed",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1600036,
-      "version": 1,
-      "versionNonce": 1602035,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "startBinding": {
-        "elementId": "bridge_sms",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "bridge_sender",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": null,
-      "endArrowhead": "triangle_outline",
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "bridge_sms_realizes",
-      "x": 1175,
-      "y": 608,
-      "width": 0,
-      "height": 236,
-      "points": [
-        [
-          0,
-          0
+          -118
         ],
         [
-          0,
+          -130,
+          -118
+        ],
+        [
+          -130,
           -236
         ]
       ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 1600037,
-      "version": 1,
-      "versionNonce": 1602036,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "实现",
-      "type": "text",
-      "id": "bridge_realizes_label",
-      "x": 995,
-      "y": 506,
-      "width": 120,
-      "height": 25,
-      "text": "实现"
     }
   ]
 }

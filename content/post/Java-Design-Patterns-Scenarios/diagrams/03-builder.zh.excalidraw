@@ -36,14 +36,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "03  建造者 Builder",
+      "originalText": "03  建造者 Builder · 构建一份有效且独立的报表任务",
+      "id": "title",
       "type": "text",
-      "id": "builder_title",
       "x": 40,
       "y": 20,
-      "width": 1100,
-      "height": 40,
-      "text": "03  建造者 Builder"
+      "width": 1480,
+      "height": 37.5,
+      "text": "03  建造者 Builder · 构建一份有效且独立的报表任务"
     },
     {
       "angle": 0,
@@ -73,14 +73,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "构建过程与最终对象分离；本例是链式 Builder，没有额外的 Builder 接口或 Director。",
+      "originalText": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建",
+      "id": "subtitle",
       "type": "text",
-      "id": "builder_subtitle",
       "x": 40,
-      "y": 70,
-      "width": 1140,
-      "height": 25,
-      "text": "构建过程与最终对象分离；本例是链式 Builder，没有额外的 Builder 接口或 Director。"
+      "y": 80,
+      "width": 1480,
+      "height": 22.5,
+      "text": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建"
     },
     {
       "angle": 0,
@@ -92,7 +92,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "builder_builder_group"
+        "builder_group"
       ],
       "frameId": null,
       "index": null,
@@ -103,19 +103,23 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "builder_create",
+          "id": "rel_builder_job_0",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_builder_range_1",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "builder",
       "type": "rectangle",
-      "id": "builder_builder",
       "x": 40,
       "y": 150,
-      "width": 480,
-      "height": 300
+      "width": 550,
+      "height": 330
     },
     {
       "angle": 0,
@@ -127,7 +131,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "builder_builder_group"
+        "builder_group"
       ],
       "frameId": null,
       "index": null,
@@ -140,21 +144,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "Order.Builder {static nested}",
+      "originalText": "ReportJob.Builder",
+      "id": "builder_name",
       "type": "text",
-      "id": "builder_builder_name",
-      "x": 60,
-      "y": 166,
-      "width": 440,
-      "height": 30,
-      "text": "Order.Builder {static nested}"
+      "x": 56,
+      "y": 162,
+      "width": 518,
+      "height": 25,
+      "text": "ReportJob.Builder"
     },
     {
       "angle": 0,
@@ -166,7 +170,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "builder_builder_group"
+        "builder_group"
       ],
       "frameId": null,
       "index": null,
@@ -185,11 +189,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "builder_divider",
       "type": "line",
-      "id": "builder_builder_divider",
       "x": 40,
-      "y": 212,
-      "width": 480,
+      "y": 220,
+      "width": 550,
       "height": 0,
       "points": [
         [
@@ -197,7 +201,7 @@
           0
         ],
         [
-          480,
+          550,
           0
         ]
       ]
@@ -212,7 +216,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "builder_builder_group"
+        "builder_group"
       ],
       "frameId": null,
       "index": null,
@@ -232,14 +236,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "- orderNo / userId / goodsId\n- discount: double\n+ setOrderNo(no): Builder\n+ setUserId(id): Builder\n+ setGoodsId(id): Builder\n+ setDiscount(d): Builder\n+ build(): Order",
+      "originalText": "- range: DateRange\n- columns: List<String>\ncolumn(name): Builder\nsendTo(email): Builder\nlimit(n): Builder\nbuild(): ReportJob",
+      "id": "builder_members",
       "type": "text",
-      "id": "builder_builder_members",
-      "x": 60,
-      "y": 231,
-      "width": 440,
-      "height": 190,
-      "text": "- orderNo / userId / goodsId\n- discount: double\n+ setOrderNo(no): Builder\n+ setUserId(id): Builder\n+ setGoodsId(id): Builder\n+ setDiscount(d): Builder\n+ build(): Order"
+      "x": 56,
+      "y": 232,
+      "width": 518,
+      "height": 135,
+      "text": "- range: DateRange\n- columns: List<String>\ncolumn(name): Builder\nsendTo(email): Builder\nlimit(n): Builder\nbuild(): ReportJob"
     },
     {
       "angle": 0,
@@ -251,7 +255,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "builder_order_group"
+        "job_group"
       ],
       "frameId": null,
       "index": null,
@@ -262,19 +266,23 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "builder_create",
+          "id": "rel_builder_job_0",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_job_range_2",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "job",
       "type": "rectangle",
-      "id": "builder_order",
-      "x": 750,
+      "x": 850,
       "y": 150,
-      "width": 390,
-      "height": 300
+      "width": 510,
+      "height": 330
     },
     {
       "angle": 0,
@@ -286,7 +294,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "builder_order_group"
+        "job_group"
       ],
       "frameId": null,
       "index": null,
@@ -299,21 +307,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "Order",
+      "originalText": "ReportJob",
+      "id": "job_name",
       "type": "text",
-      "id": "builder_order_name",
-      "x": 770,
-      "y": 166,
-      "width": 350,
-      "height": 30,
-      "text": "Order"
+      "x": 866,
+      "y": 162,
+      "width": 478,
+      "height": 25,
+      "text": "ReportJob"
     },
     {
       "angle": 0,
@@ -325,7 +333,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "builder_order_group"
+        "job_group"
       ],
       "frameId": null,
       "index": null,
@@ -344,11 +352,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "job_divider",
       "type": "line",
-      "id": "builder_order_divider",
-      "x": 750,
-      "y": 212,
-      "width": 390,
+      "x": 850,
+      "y": 220,
+      "width": 510,
       "height": 0,
       "points": [
         [
@@ -356,7 +364,7 @@
           0
         ],
         [
-          390,
+          510,
           0
         ]
       ]
@@ -371,7 +379,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "builder_order_group"
+        "job_group"
       ],
       "frameId": null,
       "index": null,
@@ -391,14 +399,177 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "- orderNo: String {final}\n- userId: int {final}\n- goodsId: int {final}\n- discount: double {final}\n- Order(b: Builder)\n+ toString(): String",
+      "originalText": "- range: DateRange\n- columns: List<String>\n- recipient: String\n- rowLimit: int\ndescribe(): String",
+      "id": "job_members",
       "type": "text",
-      "id": "builder_order_members",
-      "x": 770,
-      "y": 231,
-      "width": 350,
-      "height": 180,
-      "text": "- orderNo: String {final}\n- userId: int {final}\n- goodsId: int {final}\n- discount: double {final}\n- Order(b: Builder)\n+ toString(): String"
+      "x": 866,
+      "y": 232,
+      "width": 478,
+      "height": 112.5,
+      "text": "- range: DateRange\n- columns: List<String>\n- recipient: String\n- rowLimit: int\ndescribe(): String"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "#93c5fd",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "range_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 300011,
+      "version": 1,
+      "versionNonce": 302010,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "rel_builder_range_1",
+          "type": "arrow"
+        },
+        {
+          "id": "rel_job_range_2",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "id": "range",
+      "type": "rectangle",
+      "x": 430,
+      "y": 650,
+      "width": 540,
+      "height": 190
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "range_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 300012,
+      "version": 1,
+      "versionNonce": 302011,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "DateRange «record»",
+      "id": "range_name",
+      "type": "text",
+      "x": 446,
+      "y": 662,
+      "width": 508,
+      "height": 25,
+      "text": "DateRange «record»"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "range_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 300013,
+      "version": 1,
+      "versionNonce": 302012,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "range_divider",
+      "type": "line",
+      "x": 430,
+      "y": 720,
+      "width": 540,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          540,
+          0
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "range_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 300014,
+      "version": 1,
+      "versionNonce": 302013,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "from: LocalDate / to: LocalDate\n构造时校验 from <= to",
+      "id": "range_members",
+      "type": "text",
+      "x": 446,
+      "y": 732,
+      "width": 508,
+      "height": 45,
+      "text": "from: LocalDate / to: LocalDate\n构造时校验 from <= to"
     },
     {
       "angle": 0,
@@ -413,9 +584,9 @@
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 300011,
+      "seed": 300015,
       "version": 1,
-      "versionNonce": 302010,
+      "versionNonce": 302014,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -428,14 +599,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "构建：new Order.Builder().setOrderNo(\"O1001\").build()\nGo：OrderBuilder 内含 order 值，Build() 返回 Order 值副本。\nJava 的静态嵌套类不表示 Order 实例拥有一个 Builder 实例。",
+      "originalText": "构建：column(\"orderId\").column(\"amount\").limit(500).sendTo(email).build()；继续追加列不影响旧任务。\nJava：List.copyOf()；Go：ReportBuilder.Build() 复制 columns 底层数组。日期和值对象与构建步骤分离。",
+      "id": "notes",
       "type": "text",
-      "id": "builder_note",
       "x": 40,
-      "y": 520,
-      "width": 1120,
-      "height": 80,
-      "text": "构建：new Order.Builder().setOrderNo(\"O1001\").build()\nGo：OrderBuilder 内含 order 值，Build() 返回 Order 值副本。\nJava 的静态嵌套类不表示 Order 实例拥有一个 Builder 实例。"
+      "y": 920,
+      "width": 1510,
+      "height": 45,
+      "text": "构建：column(\"orderId\").column(\"amount\").limit(500).sendTo(email).build()；继续追加列不影响旧任务。\nJava：List.copyOf()；Go：ReportBuilder.Build() 复制 columns 底层数组。日期和值对象与构建步骤分离。"
     },
     {
       "angle": 0,
@@ -450,21 +621,21 @@
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 300012,
+      "seed": 300016,
       "version": 1,
-      "versionNonce": 302011,
+      "versionNonce": 302015,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "builder_builder",
+        "elementId": "builder",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "builder_order",
+        "elementId": "job",
         "focus": 0,
         "gap": 2
       },
@@ -472,11 +643,11 @@
       "endArrowhead": "arrow",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_builder_job_0",
       "type": "arrow",
-      "id": "builder_create",
-      "x": 522,
-      "y": 300,
-      "width": 226,
+      "x": 592,
+      "y": 315,
+      "width": 256,
       "height": 0,
       "points": [
         [
@@ -484,7 +655,7 @@
           0
         ],
         [
-          226,
+          256,
           0
         ]
       ]
@@ -502,9 +673,9 @@
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 300013,
+      "seed": 300017,
       "version": 1,
-      "versionNonce": 302012,
+      "versionNonce": 302016,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1,
@@ -517,14 +688,208 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "«create»\nbuild() 返回",
+      "originalText": "build(): «create»",
+      "id": "rel_builder_job_0_label",
       "type": "text",
-      "id": "builder_create_label",
-      "x": 550,
-      "y": 251,
+      "x": 615,
+      "y": 275,
+      "width": 187,
+      "height": 24,
+      "text": "build(): «create»"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 300018,
+      "version": 1,
+      "versionNonce": 302017,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "builder",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "range",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_builder_range_1",
+      "type": "arrow",
+      "x": 310,
+      "y": 482,
+      "width": 240,
+      "height": 166,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          78
+        ],
+        [
+          240,
+          78
+        ],
+        [
+          240,
+          166
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 300019,
+      "version": 1,
+      "versionNonce": 302018,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "range 1",
+      "id": "rel_builder_range_1_label",
+      "type": "text",
+      "x": 330,
+      "y": 520,
       "width": 180,
-      "height": 50,
-      "text": "«create»\nbuild() 返回"
+      "height": 24,
+      "text": "range 1"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 300020,
+      "version": 1,
+      "versionNonce": 302019,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "startBinding": {
+        "elementId": "job",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "range",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_job_range_2",
+      "type": "arrow",
+      "x": 1100,
+      "y": 482,
+      "width": 250,
+      "height": 166,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          78
+        ],
+        [
+          -250,
+          78
+        ],
+        [
+          -250,
+          166
+        ]
+      ]
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 300021,
+      "version": 1,
+      "versionNonce": 302020,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "range 1",
+      "id": "rel_job_range_2_label",
+      "type": "text",
+      "x": 1120,
+      "y": 520,
+      "width": 180,
+      "height": 24,
+      "text": "range 1"
     }
   ]
 }

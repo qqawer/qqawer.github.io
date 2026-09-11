@@ -36,14 +36,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "04  适配器 Adapter",
+      "originalText": "04  适配器 Adapter · 把以克计重的发货单接到旧快递 SDK",
+      "id": "title",
       "type": "text",
-      "id": "adapter_title",
       "x": 40,
       "y": 20,
-      "width": 1150,
-      "height": 40,
-      "text": "04  适配器 Adapter"
+      "width": 1480,
+      "height": 37.5,
+      "text": "04  适配器 Adapter · 把以克计重的发货单接到旧快递 SDK"
     },
     {
       "angle": 0,
@@ -73,56 +73,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "调用方只认识 Target；Adapter 翻译调用，并持有已有的 OldSdk。",
+      "originalText": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建",
+      "id": "subtitle",
       "type": "text",
-      "id": "adapter_subtitle",
       "x": 40,
-      "y": 70,
-      "width": 1180,
-      "height": 25,
-      "text": "调用方只认识 Target；Adapter 翻译调用，并持有已有的 OldSdk。"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 400003,
-      "version": 1,
-      "versionNonce": 402002,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "id": "adapter_client_uses",
-          "type": "arrow"
-        }
-      ],
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "main()\ntarget.request()",
-      "type": "text",
-      "id": "adapter_client",
-      "x": 40,
-      "y": 201,
-      "width": 240,
-      "height": 55,
-      "text": "main()\ntarget.request()"
+      "y": 80,
+      "width": 1480,
+      "height": 22.5,
+      "text": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建"
     },
     {
       "angle": 0,
@@ -134,34 +92,30 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "adapter_target_group"
+        "provider_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 400004,
+      "seed": 400003,
       "version": 1,
-      "versionNonce": 402003,
+      "versionNonce": 402002,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "adapter_client_uses",
-          "type": "arrow"
-        },
-        {
-          "id": "adapter_realizes",
+          "id": "rel_adapter_provider_0",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "provider",
       "type": "rectangle",
-      "id": "adapter_target",
-      "x": 420,
-      "y": 140,
-      "width": 350,
-      "height": 170
+      "x": 450,
+      "y": 150,
+      "width": 520,
+      "height": 210
     },
     {
       "angle": 0,
@@ -173,7 +127,46 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "adapter_target_group"
+        "provider_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 400004,
+      "version": 1,
+      "versionNonce": 402003,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "«interface»\nShippingProvider",
+      "id": "provider_name",
+      "type": "text",
+      "x": 466,
+      "y": 162,
+      "width": 488,
+      "height": 50,
+      "text": "«interface»\nShippingProvider"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "provider_group"
       ],
       "frameId": null,
       "index": null,
@@ -186,25 +179,32 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "«interface»\nTarget",
-      "type": "text",
-      "id": "adapter_target_name",
-      "x": 440,
-      "y": 155,
-      "width": 310,
-      "height": 55,
-      "text": "«interface»\nTarget"
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "provider_divider",
+      "type": "line",
+      "x": 450,
+      "y": 220,
+      "width": 520,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          520,
+          0
+        ]
+      ]
     },
     {
       "angle": 0,
-      "strokeColor": "#1e3a5f",
+      "strokeColor": "#374151",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -212,7 +212,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "adapter_target_group"
+        "provider_group"
       ],
       "frameId": null,
       "index": null,
@@ -225,52 +225,6 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": null,
-      "endBinding": null,
-      "startArrowhead": null,
-      "endArrowhead": null,
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "line",
-      "id": "adapter_target_divider",
-      "x": 420,
-      "y": 218,
-      "width": 350,
-      "height": 0,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          350,
-          0
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "adapter_target_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 400007,
-      "version": 1,
-      "versionNonce": 402006,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
       "fontSize": 18,
       "fontFamily": 3,
       "textAlign": "left",
@@ -278,14 +232,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ request(): String",
+      "originalText": "+ quote(Shipment): int\n+ book(Shipment): Tracking",
+      "id": "provider_members",
       "type": "text",
-      "id": "adapter_target_members",
-      "x": 440,
-      "y": 242,
-      "width": 310,
-      "height": 30,
-      "text": "+ request(): String"
+      "x": 466,
+      "y": 232,
+      "width": 488,
+      "height": 45,
+      "text": "+ quote(Shipment): int\n+ book(Shipment): Tracking"
     },
     {
       "angle": 0,
@@ -297,34 +251,34 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "adapter_adapter_group"
+        "adapter_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 400008,
+      "seed": 400007,
       "version": 1,
-      "versionNonce": 402007,
+      "versionNonce": 402006,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "adapter_realizes",
+          "id": "rel_adapter_provider_0",
           "type": "arrow"
         },
         {
-          "id": "adapter_holds",
+          "id": "rel_adapter_legacy_1",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "adapter",
       "type": "rectangle",
-      "id": "adapter_adapter",
-      "x": 420,
-      "y": 440,
-      "width": 350,
-      "height": 180
+      "x": 40,
+      "y": 490,
+      "width": 580,
+      "height": 230
     },
     {
       "angle": 0,
@@ -336,7 +290,46 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "adapter_adapter_group"
+        "adapter_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 400008,
+      "version": 1,
+      "versionNonce": 402007,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "CourierAdapter",
+      "id": "adapter_name",
+      "type": "text",
+      "x": 56,
+      "y": 502,
+      "width": 548,
+      "height": 25,
+      "text": "CourierAdapter"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "adapter_group"
       ],
       "frameId": null,
       "index": null,
@@ -349,25 +342,32 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "Adapter",
-      "type": "text",
-      "id": "adapter_adapter_name",
-      "x": 440,
-      "y": 455,
-      "width": 310,
-      "height": 30,
-      "text": "Adapter"
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "adapter_divider",
+      "type": "line",
+      "x": 40,
+      "y": 560,
+      "width": 580,
+      "height": 0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          580,
+          0
+        ]
+      ]
     },
     {
       "angle": 0,
-      "strokeColor": "#1e3a5f",
+      "strokeColor": "#374151",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
@@ -375,7 +375,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "adapter_adapter_group"
+        "adapter_group"
       ],
       "frameId": null,
       "index": null,
@@ -388,52 +388,6 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "startBinding": null,
-      "endBinding": null,
-      "startArrowhead": null,
-      "endArrowhead": null,
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "line",
-      "id": "adapter_adapter_divider",
-      "x": 420,
-      "y": 499,
-      "width": 350,
-      "height": 0,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          350,
-          0
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "adapter_adapter_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 400011,
-      "version": 1,
-      "versionNonce": 402010,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
       "fontSize": 18,
       "fontFamily": 3,
       "textAlign": "left",
@@ -441,14 +395,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "- old: OldSdk\n+ Adapter(old)\n+ request(): String",
+      "originalText": "- sdk: LegacyCourierSdk\n- kilograms(Shipment): int\n+ quote(Shipment): int\n+ book(Shipment): Tracking",
+      "id": "adapter_members",
       "type": "text",
-      "id": "adapter_adapter_members",
-      "x": 440,
-      "y": 519,
-      "width": 310,
-      "height": 80,
-      "text": "- old: OldSdk\n+ Adapter(old)\n+ request(): String"
+      "x": 56,
+      "y": 572,
+      "width": 548,
+      "height": 90,
+      "text": "- sdk: LegacyCourierSdk\n- kilograms(Shipment): int\n+ quote(Shipment): int\n+ book(Shipment): Tracking"
     },
     {
       "angle": 0,
@@ -460,30 +414,30 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "adapter_old_group"
+        "legacy_group"
       ],
       "frameId": null,
       "index": null,
       "roundness": null,
-      "seed": 400012,
+      "seed": 400011,
       "version": 1,
-      "versionNonce": 402011,
+      "versionNonce": 402010,
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "adapter_holds",
+          "id": "rel_adapter_legacy_1",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "legacy",
       "type": "rectangle",
-      "id": "adapter_old",
-      "x": 920,
-      "y": 440,
-      "width": 330,
-      "height": 180
+      "x": 870,
+      "y": 490,
+      "width": 510,
+      "height": 230
     },
     {
       "angle": 0,
@@ -495,7 +449,46 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "adapter_old_group"
+        "legacy_group"
+      ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 400012,
+      "version": 1,
+      "versionNonce": 402011,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 20,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "LegacyCourierSdk",
+      "id": "legacy_name",
+      "type": "text",
+      "x": 886,
+      "y": 502,
+      "width": 478,
+      "height": 25,
+      "text": "LegacyCourierSdk"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#1e3a5f",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [
+        "legacy_group"
       ],
       "frameId": null,
       "index": null,
@@ -508,56 +501,17 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "OldSdk",
-      "type": "text",
-      "id": "adapter_old_name",
-      "x": 940,
-      "y": 455,
-      "width": 290,
-      "height": 30,
-      "text": "OldSdk"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [
-        "adapter_old_group"
-      ],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 400014,
-      "version": 1,
-      "versionNonce": 402013,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "legacy_divider",
       "type": "line",
-      "id": "adapter_old_divider",
-      "x": 920,
-      "y": 499,
-      "width": 330,
+      "x": 870,
+      "y": 560,
+      "width": 510,
       "height": 0,
       "points": [
         [
@@ -565,7 +519,7 @@
           0
         ],
         [
-          330,
+          510,
           0
         ]
       ]
@@ -580,8 +534,45 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "adapter_old_group"
+        "legacy_group"
       ],
+      "frameId": null,
+      "index": null,
+      "roundness": null,
+      "seed": 400014,
+      "version": 1,
+      "versionNonce": 402013,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 18,
+      "fontFamily": 3,
+      "textAlign": "left",
+      "verticalAlign": "top",
+      "containerId": null,
+      "lineHeight": 1.25,
+      "autoResize": false,
+      "originalText": "tariff(kilograms): int\ncreate(destination, kilograms)\n  : LegacyTicket",
+      "id": "legacy_members",
+      "type": "text",
+      "x": 886,
+      "y": 572,
+      "width": 478,
+      "height": 67.5,
+      "text": "tariff(kilograms): int\ncreate(destination, kilograms)\n  : LegacyTicket"
+    },
+    {
+      "angle": 0,
+      "strokeColor": "#374151",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
       "frameId": null,
       "index": null,
       "roundness": null,
@@ -600,22 +591,22 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ oldRequest(): String",
+      "originalText": "业务数据：Shipment(orderId, address, parcels)；Parcel(sku, grams, quantity)；Tracking(orderId, waybill, feeCents)。\n1700 克 → 2 公斤；LegacyTicket.code → 业务错误。Go：结构体实现 ShippingProvider，持有旧 SDK。",
+      "id": "notes",
       "type": "text",
-      "id": "adapter_old_members",
-      "x": 940,
-      "y": 519,
-      "width": 290,
-      "height": 55,
-      "text": "+ oldRequest(): String"
+      "x": 40,
+      "y": 820,
+      "width": 1510,
+      "height": 45,
+      "text": "业务数据：Shipment(orderId, address, parcels)；Parcel(sku, grams, quantity)；Tracking(orderId, waybill, feeCents)。\n1700 克 → 2 公斤；LegacyTicket.code → 业务错误。Go：结构体实现 ShippingProvider，持有旧 SDK。"
     },
     {
       "angle": 0,
-      "strokeColor": "#374151",
+      "strokeColor": "#1e3a5f",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
-      "strokeStyle": "solid",
+      "strokeStyle": "dashed",
       "roughness": 0,
       "opacity": 100,
       "groupIds": [],
@@ -630,21 +621,44 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "调用路径：Target.request() → Adapter.request() → old.oldRequest()\nGo：Adapter 隐式实现 Target；通过 old *OldSDK 组合旧 SDK，而不是继承它。",
-      "type": "text",
-      "id": "adapter_note",
-      "x": 40,
-      "y": 680,
-      "width": 1210,
-      "height": 60,
-      "text": "调用路径：Target.request() → Adapter.request() → old.oldRequest()\nGo：Adapter 隐式实现 Target；通过 old *OldSDK 组合旧 SDK，而不是继承它。"
+      "startBinding": {
+        "elementId": "adapter",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "provider",
+        "focus": 0,
+        "gap": 2
+      },
+      "startArrowhead": null,
+      "endArrowhead": "triangle_outline",
+      "elbowed": false,
+      "lastCommittedPoint": null,
+      "id": "rel_adapter_provider_0",
+      "type": "arrow",
+      "x": 330,
+      "y": 488,
+      "width": 290,
+      "height": 126,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          -83
+        ],
+        [
+          290,
+          -83
+        ],
+        [
+          290,
+          -126
+        ]
+      ]
     },
     {
       "angle": 0,
@@ -652,7 +666,7 @@
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 2,
-      "strokeStyle": "dashed",
+      "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
       "groupIds": [],
@@ -668,12 +682,12 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "adapter_client",
+        "elementId": "adapter",
         "focus": 0,
-        "gap": 5
+        "gap": 2
       },
       "endBinding": {
-        "elementId": "adapter_target",
+        "elementId": "legacy",
         "focus": 0,
         "gap": 2
       },
@@ -681,11 +695,11 @@
       "endArrowhead": "arrow",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_adapter_legacy_1",
       "type": "arrow",
-      "id": "adapter_client_uses",
-      "x": 285,
-      "y": 232,
-      "width": 133,
+      "x": 622,
+      "y": 595,
+      "width": 246,
       "height": 0,
       "points": [
         [
@@ -693,7 +707,7 @@
           0
         ],
         [
-          133,
+          246,
           0
         ]
       ]
@@ -726,192 +740,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "调用",
+      "originalText": "sdk 1",
+      "id": "rel_adapter_legacy_1_label",
       "type": "text",
-      "id": "adapter_uses_label",
-      "x": 304,
-      "y": 197,
-      "width": 100,
-      "height": 25,
-      "text": "调用"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "dashed",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 400019,
-      "version": 1,
-      "versionNonce": 402018,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "startBinding": {
-        "elementId": "adapter_adapter",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "adapter_target",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": null,
-      "endArrowhead": "triangle_outline",
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "adapter_realizes",
-      "x": 595,
-      "y": 438,
-      "width": 0,
-      "height": 126,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          -126
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 400020,
-      "version": 1,
-      "versionNonce": 402019,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "实现",
-      "type": "text",
-      "id": "adapter_realizes_label",
-      "x": 615,
-      "y": 360,
-      "width": 120,
-      "height": 25,
-      "text": "实现"
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#1e3a5f",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 400021,
-      "version": 1,
-      "versionNonce": 402020,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "startBinding": {
-        "elementId": "adapter_adapter",
-        "focus": 0,
-        "gap": 2
-      },
-      "endBinding": {
-        "elementId": "adapter_old",
-        "focus": 0,
-        "gap": 2
-      },
-      "startArrowhead": null,
-      "endArrowhead": "arrow",
-      "elbowed": false,
-      "lastCommittedPoint": null,
-      "type": "arrow",
-      "id": "adapter_holds",
-      "x": 772,
-      "y": 550,
-      "width": 146,
-      "height": 0,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          146,
-          0
-        ]
-      ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 400022,
-      "version": 1,
-      "versionNonce": 402021,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "old: 1\n持有 / 委托",
-      "type": "text",
-      "id": "adapter_holds_label",
-      "x": 787,
-      "y": 499,
-      "width": 130,
-      "height": 50,
-      "text": "old: 1\n持有 / 委托"
+      "x": 700,
+      "y": 560,
+      "width": 180,
+      "height": 24,
+      "text": "sdk 1"
     }
   ]
 }

@@ -36,14 +36,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "07  策略 Strategy",
+      "originalText": "07  策略 Strategy · 同一包裹比较普通和加急配送",
+      "id": "title",
       "type": "text",
-      "id": "strategy_title",
       "x": 40,
       "y": 20,
-      "width": 1180,
-      "height": 40,
-      "text": "07  策略 Strategy"
+      "width": 1480,
+      "height": 37.5,
+      "text": "07  策略 Strategy · 同一包裹比较普通和加急配送"
     },
     {
       "angle": 0,
@@ -73,14 +73,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "Order 依赖折扣接口；具体折扣算法可以在使用前注入或替换。",
+      "originalText": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建",
+      "id": "subtitle",
       "type": "text",
-      "id": "strategy_subtitle",
       "x": 40,
-      "y": 70,
-      "width": 1180,
-      "height": 25,
-      "text": "Order 依赖折扣接口；具体折扣算法可以在使用前注入或替换。"
+      "y": 80,
+      "width": 1480,
+      "height": 22.5,
+      "text": "类图以 Java 结构为主 · 虚线空心三角：实现 · 实线空心三角：继承 · 实线箭头：持有 · 虚线箭头：依赖 / 创建"
     },
     {
       "angle": 0,
@@ -92,7 +92,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_order_group"
+        "checkout_group"
       ],
       "frameId": null,
       "index": null,
@@ -103,19 +103,19 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "strategy_holds",
+          "id": "rel_checkout_policy_0",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "checkout",
       "type": "rectangle",
-      "id": "strategy_order",
       "x": 40,
-      "y": 160,
-      "width": 390,
-      "height": 220
+      "y": 150,
+      "width": 440,
+      "height": 230
     },
     {
       "angle": 0,
@@ -127,7 +127,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_order_group"
+        "checkout_group"
       ],
       "frameId": null,
       "index": null,
@@ -140,21 +140,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "Order",
+      "originalText": "Checkout",
+      "id": "checkout_name",
       "type": "text",
-      "id": "strategy_order_name",
-      "x": 60,
-      "y": 176,
-      "width": 350,
-      "height": 30,
-      "text": "Order"
+      "x": 56,
+      "y": 162,
+      "width": 408,
+      "height": 25,
+      "text": "Checkout"
     },
     {
       "angle": 0,
@@ -166,7 +166,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_order_group"
+        "checkout_group"
       ],
       "frameId": null,
       "index": null,
@@ -185,11 +185,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "checkout_divider",
       "type": "line",
-      "id": "strategy_order_divider",
       "x": 40,
       "y": 220,
-      "width": 390,
+      "width": 440,
       "height": 0,
       "points": [
         [
@@ -197,7 +197,7 @@
           0
         ],
         [
-          390,
+          440,
           0
         ]
       ]
@@ -212,7 +212,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_order_group"
+        "checkout_group"
       ],
       "frameId": null,
       "index": null,
@@ -232,14 +232,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "- discount: Discount\n+ setDiscount(discount): void\n+ getPrice(origin): double",
+      "originalText": "- policy: ShippingPolicy\nuse(ShippingPolicy)\nquote(Parcel): ShippingQuote",
+      "id": "checkout_members",
       "type": "text",
-      "id": "strategy_order_members",
-      "x": 60,
-      "y": 239,
-      "width": 350,
-      "height": 110,
-      "text": "- discount: Discount\n+ setDiscount(discount): void\n+ getPrice(origin): double"
+      "x": 56,
+      "y": 232,
+      "width": 408,
+      "height": 67.5,
+      "text": "- policy: ShippingPolicy\nuse(ShippingPolicy)\nquote(Parcel): ShippingQuote"
     },
     {
       "angle": 0,
@@ -251,7 +251,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_discount_group"
+        "policy_group"
       ],
       "frameId": null,
       "index": null,
@@ -262,27 +262,27 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "strategy_holds",
+          "id": "rel_checkout_policy_0",
           "type": "arrow"
         },
         {
-          "id": "strategy_full_realizes",
+          "id": "rel_standard_policy_1",
           "type": "arrow"
         },
         {
-          "id": "strategy_percent_realizes",
+          "id": "rel_express_policy_2",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "policy",
       "type": "rectangle",
-      "id": "strategy_discount",
-      "x": 700,
-      "y": 140,
-      "width": 350,
-      "height": 180
+      "x": 850,
+      "y": 150,
+      "width": 450,
+      "height": 200
     },
     {
       "angle": 0,
@@ -294,7 +294,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_discount_group"
+        "policy_group"
       ],
       "frameId": null,
       "index": null,
@@ -307,21 +307,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "«interface»\nDiscount",
+      "originalText": "«interface»\nShippingPolicy",
+      "id": "policy_name",
       "type": "text",
-      "id": "strategy_discount_name",
-      "x": 720,
-      "y": 155,
-      "width": 310,
-      "height": 55,
-      "text": "«interface»\nDiscount"
+      "x": 866,
+      "y": 162,
+      "width": 418,
+      "height": 50,
+      "text": "«interface»\nShippingPolicy"
     },
     {
       "angle": 0,
@@ -333,7 +333,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_discount_group"
+        "policy_group"
       ],
       "frameId": null,
       "index": null,
@@ -352,11 +352,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "policy_divider",
       "type": "line",
-      "id": "strategy_discount_divider",
-      "x": 700,
-      "y": 218,
-      "width": 350,
+      "x": 850,
+      "y": 220,
+      "width": 450,
       "height": 0,
       "points": [
         [
@@ -364,7 +364,7 @@
           0
         ],
         [
-          350,
+          450,
           0
         ]
       ]
@@ -379,7 +379,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_discount_group"
+        "policy_group"
       ],
       "frameId": null,
       "index": null,
@@ -399,14 +399,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ calc(price): double",
+      "originalText": "+ fee(Parcel): int",
+      "id": "policy_members",
       "type": "text",
-      "id": "strategy_discount_members",
-      "x": 720,
-      "y": 242,
-      "width": 310,
-      "height": 30,
-      "text": "+ calc(price): double"
+      "x": 866,
+      "y": 232,
+      "width": 418,
+      "height": 22.5,
+      "text": "+ fee(Parcel): int"
     },
     {
       "angle": 0,
@@ -418,7 +418,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_full_group"
+        "standard_group"
       ],
       "frameId": null,
       "index": null,
@@ -429,19 +429,19 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "strategy_full_realizes",
+          "id": "rel_standard_policy_1",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "standard",
       "type": "rectangle",
-      "id": "strategy_full",
-      "x": 450,
-      "y": 470,
-      "width": 350,
-      "height": 150
+      "x": 580,
+      "y": 530,
+      "width": 400,
+      "height": 190
     },
     {
       "angle": 0,
@@ -453,7 +453,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_full_group"
+        "standard_group"
       ],
       "frameId": null,
       "index": null,
@@ -466,21 +466,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "FullReduction",
+      "originalText": "StandardShipping",
+      "id": "standard_name",
       "type": "text",
-      "id": "strategy_full_name",
-      "x": 470,
-      "y": 485,
-      "width": 310,
-      "height": 30,
-      "text": "FullReduction"
+      "x": 596,
+      "y": 542,
+      "width": 368,
+      "height": 25,
+      "text": "StandardShipping"
     },
     {
       "angle": 0,
@@ -492,7 +492,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_full_group"
+        "standard_group"
       ],
       "frameId": null,
       "index": null,
@@ -511,11 +511,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "standard_divider",
       "type": "line",
-      "id": "strategy_full_divider",
-      "x": 450,
-      "y": 529,
-      "width": 350,
+      "x": 580,
+      "y": 600,
+      "width": 400,
       "height": 0,
       "points": [
         [
@@ -523,7 +523,7 @@
           0
         ],
         [
-          350,
+          400,
           0
         ]
       ]
@@ -538,7 +538,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_full_group"
+        "standard_group"
       ],
       "frameId": null,
       "index": null,
@@ -558,14 +558,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ calc(price): double",
+      "originalText": "+ fee(Parcel): int\n500 + kg × 200\n偏远附加 1000",
+      "id": "standard_members",
       "type": "text",
-      "id": "strategy_full_members",
-      "x": 470,
-      "y": 549,
-      "width": 310,
-      "height": 30,
-      "text": "+ calc(price): double"
+      "x": 596,
+      "y": 612,
+      "width": 368,
+      "height": 67.5,
+      "text": "+ fee(Parcel): int\n500 + kg × 200\n偏远附加 1000"
     },
     {
       "angle": 0,
@@ -577,7 +577,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_percent_group"
+        "express_group"
       ],
       "frameId": null,
       "index": null,
@@ -588,19 +588,19 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "strategy_percent_realizes",
+          "id": "rel_express_policy_2",
           "type": "arrow"
         }
       ],
       "updated": 1,
       "link": null,
       "locked": false,
+      "id": "express",
       "type": "rectangle",
-      "id": "strategy_percent",
-      "x": 880,
-      "y": 470,
-      "width": 350,
-      "height": 150
+      "x": 1050,
+      "y": 530,
+      "width": 400,
+      "height": 190
     },
     {
       "angle": 0,
@@ -612,7 +612,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_percent_group"
+        "express_group"
       ],
       "frameId": null,
       "index": null,
@@ -625,21 +625,21 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "fontSize": 22,
+      "fontSize": 20,
       "fontFamily": 3,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "PercentOff",
+      "originalText": "ExpressShipping",
+      "id": "express_name",
       "type": "text",
-      "id": "strategy_percent_name",
-      "x": 900,
-      "y": 485,
-      "width": 310,
-      "height": 30,
-      "text": "PercentOff"
+      "x": 1066,
+      "y": 542,
+      "width": 368,
+      "height": 25,
+      "text": "ExpressShipping"
     },
     {
       "angle": 0,
@@ -651,7 +651,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_percent_group"
+        "express_group"
       ],
       "frameId": null,
       "index": null,
@@ -670,11 +670,11 @@
       "endArrowhead": null,
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "express_divider",
       "type": "line",
-      "id": "strategy_percent_divider",
-      "x": 880,
-      "y": 529,
-      "width": 350,
+      "x": 1050,
+      "y": 600,
+      "width": 400,
       "height": 0,
       "points": [
         [
@@ -682,7 +682,7 @@
           0
         ],
         [
-          350,
+          400,
           0
         ]
       ]
@@ -697,7 +697,7 @@
       "roughness": 0,
       "opacity": 100,
       "groupIds": [
-        "strategy_percent_group"
+        "express_group"
       ],
       "frameId": null,
       "index": null,
@@ -717,14 +717,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "+ calc(price): double",
+      "originalText": "+ fee(Parcel): int\n1200 + kg × 400\n偏远附加 2000",
+      "id": "express_members",
       "type": "text",
-      "id": "strategy_percent_members",
-      "x": 900,
-      "y": 549,
-      "width": 310,
-      "height": 30,
-      "text": "+ calc(price): double"
+      "x": 1066,
+      "y": 612,
+      "width": 368,
+      "height": 67.5,
+      "text": "+ fee(Parcel): int\n1200 + kg × 400\n偏远附加 2000"
     },
     {
       "angle": 0,
@@ -754,14 +754,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "调用：order.getPrice(origin) → discount.calc(origin)\nGo：Discount.Calc()；Order 持有接口值，SetDiscount() 更换具体策略。",
+      "originalText": "业务数据：Parcel(grams, remoteArea, goodsCents) → ShippingQuote(goodsCents, feeCents)。\n同一包裹：普通运费 1900，加急 4000。Go：Checkout.policy 是接口值；策略互不依赖，也不负责创建。",
+      "id": "notes",
       "type": "text",
-      "id": "strategy_note",
       "x": 40,
-      "y": 680,
-      "width": 1190,
-      "height": 65,
-      "text": "调用：order.getPrice(origin) → discount.calc(origin)\nGo：Discount.Calc()；Order 持有接口值，SetDiscount() 更换具体策略。"
+      "y": 820,
+      "width": 1510,
+      "height": 45,
+      "text": "业务数据：Parcel(grams, remoteArea, goodsCents) → ShippingQuote(goodsCents, feeCents)。\n同一包裹：普通运费 1900，加急 4000。Go：Checkout.policy 是接口值；策略互不依赖，也不负责创建。"
     },
     {
       "angle": 0,
@@ -785,12 +785,12 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "strategy_order",
+        "elementId": "checkout",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "strategy_discount",
+        "elementId": "policy",
         "focus": 0,
         "gap": 2
       },
@@ -798,11 +798,11 @@
       "endArrowhead": "arrow",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_checkout_policy_0",
       "type": "arrow",
-      "id": "strategy_holds",
-      "x": 432,
+      "x": 482,
       "y": 270,
-      "width": 266,
+      "width": 366,
       "height": 0,
       "points": [
         [
@@ -810,7 +810,7 @@
           0
         ],
         [
-          266,
+          366,
           0
         ]
       ]
@@ -843,14 +843,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "discount: 0..1\n使用前设置，持有并委托",
+      "originalText": "policy 1",
+      "id": "rel_checkout_policy_0_label",
       "type": "text",
-      "id": "strategy_holds_label",
-      "x": 458,
-      "y": 212,
-      "width": 230,
-      "height": 55,
-      "text": "discount: 0..1\n使用前设置，持有并委托"
+      "x": 590,
+      "y": 230,
+      "width": 180,
+      "height": 24,
+      "text": "policy 1"
     },
     {
       "angle": 0,
@@ -874,12 +874,12 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "strategy_full",
+        "elementId": "standard",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "strategy_discount",
+        "elementId": "policy",
         "focus": 0,
         "gap": 2
       },
@@ -887,12 +887,12 @@
       "endArrowhead": "triangle_outline",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_standard_policy_1",
       "type": "arrow",
-      "id": "strategy_full_realizes",
-      "x": 625,
-      "y": 468,
-      "width": 155,
-      "height": 146,
+      "x": 780,
+      "y": 528,
+      "width": 180,
+      "height": 176,
       "points": [
         [
           0,
@@ -900,15 +900,15 @@
         ],
         [
           0,
-          -80
+          -98
         ],
         [
-          155,
-          -80
+          180,
+          -98
         ],
         [
-          155,
-          -146
+          180,
+          -176
         ]
       ]
     },
@@ -934,12 +934,12 @@
       "link": null,
       "locked": false,
       "startBinding": {
-        "elementId": "strategy_percent",
+        "elementId": "express",
         "focus": 0,
         "gap": 2
       },
       "endBinding": {
-        "elementId": "strategy_discount",
+        "elementId": "policy",
         "focus": 0,
         "gap": 2
       },
@@ -947,12 +947,12 @@
       "endArrowhead": "triangle_outline",
       "elbowed": false,
       "lastCommittedPoint": null,
+      "id": "rel_express_policy_2",
       "type": "arrow",
-      "id": "strategy_percent_realizes",
-      "x": 1055,
-      "y": 468,
-      "width": 85,
-      "height": 146,
+      "x": 1250,
+      "y": 528,
+      "width": 0,
+      "height": 176,
       "points": [
         [
           0,
@@ -960,54 +960,9 @@
         ],
         [
           0,
-          -80
-        ],
-        [
-          -85,
-          -80
-        ],
-        [
-          -85,
-          -146
+          -176
         ]
       ]
-    },
-    {
-      "angle": 0,
-      "strokeColor": "#374151",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 2,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": null,
-      "roundness": null,
-      "seed": 700024,
-      "version": 1,
-      "versionNonce": 702023,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1,
-      "link": null,
-      "locked": false,
-      "fontSize": 18,
-      "fontFamily": 3,
-      "textAlign": "left",
-      "verticalAlign": "top",
-      "containerId": null,
-      "lineHeight": 1.25,
-      "autoResize": false,
-      "originalText": "实现",
-      "type": "text",
-      "id": "strategy_realizes_label",
-      "x": 817,
-      "y": 405,
-      "width": 100,
-      "height": 25,
-      "text": "实现"
     }
   ]
 }
