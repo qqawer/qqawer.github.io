@@ -137,7 +137,7 @@
       "index": null,
       "roundness": null,
       "seed": 300004,
-      "version": 1,
+      "version": 2,
       "versionNonce": 302003,
       "isDeleted": false,
       "boundElements": null,
@@ -151,14 +151,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "ReportJob.Builder",
+      "originalText": "Builder / ConcreteBuilder\nReportJob.Builder",
       "id": "builder_name",
       "type": "text",
       "x": 56,
       "y": 162,
       "width": 518,
-      "height": 25,
-      "text": "ReportJob.Builder"
+      "height": 50,
+      "text": "Builder / ConcreteBuilder\nReportJob.Builder"
     },
     {
       "angle": 0,
@@ -300,7 +300,7 @@
       "index": null,
       "roundness": null,
       "seed": 300008,
-      "version": 1,
+      "version": 2,
       "versionNonce": 302007,
       "isDeleted": false,
       "boundElements": null,
@@ -314,14 +314,14 @@
       "containerId": null,
       "lineHeight": 1.25,
       "autoResize": false,
-      "originalText": "ReportJob",
+      "originalText": "Product\nReportJob",
       "id": "job_name",
       "type": "text",
       "x": 866,
       "y": 162,
       "width": 478,
-      "height": 25,
-      "text": "ReportJob"
+      "height": 50,
+      "text": "Product\nReportJob"
     },
     {
       "angle": 0,

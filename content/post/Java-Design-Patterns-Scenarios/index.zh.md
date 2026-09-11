@@ -63,7 +63,40 @@ toc: true
 | `+` / `-` / `#` | `public` / `private` / `protected` | 未标记可见性的成员请以源码为准 |
 | `{static}` / `{final}` | 静态成员 / 不可重新赋值或不可重写的成员 | 结合所在字段、方法或类理解 |
 
-类图只突出模式参与者，简单的数据载体集中列在图下方，完整定义见代码。没有自定义接口的例子按实际结构绘制。Java 的 record 用来缩短数据类的样板代码，它不会自动让嵌套的 List、Map 也不可变，因此需要时仍然显式复制。Go 采用结构体、接口与组合；嵌入与 Java 继承的区别可参见 [Effective Go 的嵌入说明](https://go.dev/doc/effective_go#embedding)。
+类图只突出模式参与者，简单的数据载体集中列在图下方，完整定义见代码。没有自定义接口的例子按实际结构绘制。Go 采用结构体、接口与组合；嵌入与 Java 继承的区别可参见 [Effective Go 的嵌入说明](https://go.dev/doc/effective_go#embedding)。
+
+
+## 先对齐术语：模式角色、业务类名与 record
+
+**模式角色说明对象如何协作，业务类名说明它在当前业务里做什么。** 例如观察者模式里的 Subject（被观察者）、Observer（观察者接口）、ConcreteObserver（具体观察者），在本文分别由 `PaidEvents`、`PaidListener`、`LoyaltyListener / ReceiptListener` 承担。业务名不要求与角色名相同，但学习时需要能一一对应，因此下面每节的职责表、代码注释和类图都明确标出标准角色。
+
+类图标题栏同时保留角色名与业务类型名；`«interface»`、`«abstract class»` 仍然表示实际的接口、抽象类，旁边的 Subject、Strategy 等是模式角色。业务数据和辅助服务会单独注明，不给它们硬套模式角色；示例中省略或合并的参与者也会在相应章节说明。手机上可横向滑动表格，查看完整的类名、角色与职责。
+
+### Java 的 record 是什么
+
+`record` 用于声明数据载体类，Java 16 已正式支持，本文统一使用 JDK 17+。它适合订单事件、支付回执、报价明细这类主要承载一组数据的对象。[Java 16 官方发布说明](https://inside.java/2021/03/16/the-arrival-of-java16/)
+
+```java
+record OrderPaid(String orderId, String customerId, int paidCents) {}
+
+class RecordExample {
+    public static void main(String[] args) {
+        OrderPaid event = new OrderPaid("O-300", "C-7", 12800);
+        System.out.println(event.orderId());   // O-300
+        System.out.println(event.paidCents()); // 12800
+    }
+}
+```
+
+这一行声明会自动提供以下成员，所以后文的数据类看起来很短：
+
+- 三个 `private final` 字段和接收三个参数的构造方法。
+- `orderId()`、`customerId()`、`paidCents()` 访问方法；名称直接使用组件名，不是 `getOrderId()`。
+- 根据组件值比较的 `equals()`、与之对应的 `hashCode()`，以及显示组件名称和值的 `toString()`。
+
+它仍然是一种类：可以写业务方法、实现接口，也可以在构造时校验参数；类本身隐式为 `final`，不能被继承。如果使用普通 `class` 表达同样的数据契约，就需要自己补上字段、构造方法和这些方法。[Java record 官方说明](https://docs.oracle.com/en/java/javase/17/language/records.html)
+
+`final` 限制字段重新赋值，不会递归冻结字段指向的对象。例如 record 中保存 `List` 时，外部仍可能修改原列表；因此本文在需要隔离集合修改的地方使用 `List.copyOf()` 等防御性复制。`OrderPaid` 的组件只有 `String` 和 `int`，可以作为不可变的事件数据。`record` 是实现数据类的语言工具，Subject / Observer 才是当前模式的协作角色。
 
 ## 一、8 个常用模式：创建、连接与可替换行为
 
@@ -73,12 +106,11 @@ toc: true
 
 商城有东区、西区两套运费规则，结算服务要计算实付金额，补货服务要读取预警阈值。如果每个服务都自行加载配置，既会重复读取，也可能在启动过程中拿到不同版本。这里把启动配置作为一份只读快照，通过 `AppConfig.getInstance()` 取得，然后注入各个业务服务。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| AppConfig | 持有区域运费表和补货阈值，控制实例创建，不承担结算逻辑 |
-| ShippingRule | 保存基础运费、包邮门槛，用 feeFor() 计算运费 |
-| CheckoutService | 按区域获取规则，payable() 返回商品金额加运费 |
-| RestockService | needsRestock() 用同一份配置判断库存是否低于阈值 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `AppConfig` | Singleton（单例） | 持有区域运费表和补货阈值，通过 getInstance() 控制实例访问 |
+| `ShippingRule` | 业务数据 | 保存基础运费、包邮门槛，用 feeFor() 计算运费 |
+| `CheckoutService / RestockService` | Client（客户端） | 分别计算实付金额、判断是否补货，使用同一份配置 |
 
 #### 一次请求怎样走
 
@@ -104,6 +136,7 @@ record ShippingRule(int baseFeeCents, int freeAboveCents) {
         return goodsCents >= freeAboveCents ? 0 : baseFeeCents;
     }
 }
+// Singleton（单例）。
 final class AppConfig {
     private final Map<String, ShippingRule> shipping;
     private final int restockThreshold;
@@ -124,6 +157,7 @@ final class AppConfig {
     }
     public int restockThreshold() { return restockThreshold; }
 }
+// Client（客户端）。
 class CheckoutService {
     private final AppConfig config;
     CheckoutService(AppConfig config) { this.config = config; }
@@ -132,11 +166,13 @@ class CheckoutService {
         return goodsCents + config.shippingFor(region).feeFor(goodsCents);
     }
 }
+// Client（客户端）。
 class RestockService {
     private final AppConfig config;
     RestockService(AppConfig config) { this.config = config; }
     boolean needsRestock(int available) { return available < config.restockThreshold(); }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         AppConfig config = AppConfig.getInstance();
@@ -169,6 +205,7 @@ func (r ShippingRule) FeeFor(goods int) int {
 	return r.BaseFeeCents
 }
 
+// Singleton（单例）。
 type AppConfig struct {
 	shipping         map[string]ShippingRule
 	restockThreshold int
@@ -194,6 +231,7 @@ func (c *AppConfig) ShippingFor(region string) (ShippingRule, error) {
 }
 func (c *AppConfig) RestockThreshold() int { return c.restockThreshold }
 
+// Client（客户端）。
 type CheckoutService struct{ config *AppConfig }
 
 func (s CheckoutService) Payable(region string, goods int) (int, error) {
@@ -207,11 +245,13 @@ func (s CheckoutService) Payable(region string, goods int) (int, error) {
 	return goods + r.FeeFor(goods), nil
 }
 
+// Client（客户端）。
 type RestockService struct{ config *AppConfig }
 
 func (s RestockService) NeedsRestock(available int) bool {
 	return available < s.config.RestockThreshold()
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	config := GetConfig()
 	checkout, restock := CheckoutService{config}, RestockService{config}
@@ -250,12 +290,15 @@ west 实付=10500
 
 商城收到订单 O-100、应付 12800 分和用户选择的渠道。支付宝需要商户号，微信需要应用号；结算规则还要求渠道具备退款能力。如果控制器、定时任务和补单程序都自己拼这些创建参数，新增渠道时会同时改很多入口。`PaymentFactory` 收拢这件事，结算服务只依赖统一的支付契约。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| PaymentRequest / Receipt | 承载订单号、金额、渠道和交易流水，而不是只传一段提示文字 |
-| PaymentGateway | charge() 返回支付回执，supportsRefund() 声明渠道能力 |
-| AlipayGateway / WechatGateway | 保存各自接入配置，生成对应格式的模拟流水 |
-| PaymentFactory / CheckoutService | 前者选择并配置对象；后者检查业务约束，再调用 charge() |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `PaymentRequest / Receipt` | 业务数据 | 承载订单号、金额、渠道和交易流水 |
+| `PaymentGateway` | Product（产品接口） | charge() 返回支付回执，supportsRefund() 声明渠道能力 |
+| `AlipayGateway / WechatGateway` | ConcreteProduct（具体产品） | 保存各自接入配置，生成对应格式的模拟流水 |
+| `PaymentFactory` | SimpleFactory（简单工厂） | 按渠道选择并配置支付对象 |
+| `CheckoutService` | Client（客户端） | 检查业务约束，再通过产品接口发起支付 |
+
+这里的 SimpleFactory 是集中创建对象的写法，不等同于 GoF 工厂方法模式中的 Creator / ConcreteCreator；不要仅凭名字把两者混为一谈。
 
 #### 一次请求怎样走
 
@@ -281,10 +324,12 @@ record PaymentRequest(String orderId, int amountCents) {
     }
 }
 record Receipt(String orderId, String channel, String transactionId, int chargedCents) {}
+// Product（产品接口）。
 interface PaymentGateway {
     Receipt charge(PaymentRequest request);
     boolean supportsRefund();
 }
+// ConcreteProduct（具体产品）。
 class AlipayGateway implements PaymentGateway {
     private final String merchantId;
     AlipayGateway(String merchantId) { this.merchantId = merchantId; }
@@ -293,6 +338,7 @@ class AlipayGateway implements PaymentGateway {
     }
     public boolean supportsRefund() { return true; }
 }
+// ConcreteProduct（具体产品）。
 class WechatGateway implements PaymentGateway {
     private final String appId;
     WechatGateway(String appId) { this.appId = appId; }
@@ -301,6 +347,7 @@ class WechatGateway implements PaymentGateway {
     }
     public boolean supportsRefund() { return true; }
 }
+// SimpleFactory（简单工厂）。
 class PaymentFactory {
     PaymentGateway create(String channel) {
         return switch (channel) {
@@ -310,6 +357,7 @@ class PaymentFactory {
         };
     }
 }
+// Client（客户端）。
 class CheckoutService {
     private final PaymentFactory factory;
     CheckoutService(PaymentFactory factory) { this.factory = factory; }
@@ -319,6 +367,7 @@ class CheckoutService {
         return gateway.charge(request);
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         CheckoutService checkout = new CheckoutService(new PaymentFactory());
@@ -347,6 +396,7 @@ type Receipt struct {
 	OrderID, Channel, TransactionID string
 	ChargedCents                    int
 }
+// Product（产品接口）。
 type PaymentGateway interface {
 	Charge(PaymentRequest) (Receipt, error)
 	SupportsRefund() bool
@@ -359,6 +409,7 @@ func validate(r PaymentRequest) error {
 	return nil
 }
 
+// ConcreteProduct（具体产品）。
 type AlipayGateway struct{ merchantID string }
 
 func (g AlipayGateway) Charge(r PaymentRequest) (Receipt, error) {
@@ -369,6 +420,7 @@ func (g AlipayGateway) Charge(r PaymentRequest) (Receipt, error) {
 }
 func (AlipayGateway) SupportsRefund() bool { return true }
 
+// ConcreteProduct（具体产品）。
 type WechatGateway struct{ appID string }
 
 func (g WechatGateway) Charge(r PaymentRequest) (Receipt, error) {
@@ -379,6 +431,7 @@ func (g WechatGateway) Charge(r PaymentRequest) (Receipt, error) {
 }
 func (WechatGateway) SupportsRefund() bool { return true }
 
+// SimpleFactory（简单工厂）。
 type PaymentFactory struct{}
 
 func (PaymentFactory) Create(channel string) (PaymentGateway, error) {
@@ -392,6 +445,7 @@ func (PaymentFactory) Create(channel string) (PaymentGateway, error) {
 	}
 }
 
+// Client（客户端）。
 type CheckoutService struct{ factory PaymentFactory }
 
 func (s CheckoutService) Pay(channel string, r PaymentRequest) (Receipt, error) {
@@ -404,6 +458,7 @@ func (s CheckoutService) Pay(channel string, r PaymentRequest) (Receipt, error) 
 	}
 	return g.Charge(r)
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	checkout := CheckoutService{PaymentFactory{}}
 	for _, channel := range []string{"alipay", "wechat"} {
@@ -440,12 +495,14 @@ wechat app-02:O-100 12800
 
 运营要导出一周订单，选择列、最大行数和收件人。时间范围是必填项，列不能空，行数限制在 1 到 10000 之间。有些任务下载到本地，有些发给运营邮箱。把这些参数都放进一个长构造方法，调用处很难看出每个值的含义，而且容易得到配置不完整的任务。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| DateRange | 校验起止日期，表示完整时间区间 |
-| ReportJob | 已构建的任务，保存列、收件人和行数限制 |
-| ReportJob.Builder | 逐步收集参数，在 build() 时检查跨字段约束 |
-| Go ReportBuilder | 记录链式配置错误，在 Build() 统一返回错误并复制切片 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `DateRange` | 业务数据 | 校验起止日期，表示完整时间区间 |
+| `ReportJob` | Product（产品） | 已构建的任务，保存列、收件人和行数限制 |
+| `ReportJob.Builder / Go ReportBuilder` | Builder / ConcreteBuilder（建造者及其实现） | 逐步收集参数，在 build() / Build() 时检查约束并复制集合；Go 同时记录链式配置错误 |
+| `main` | Client（客户端） | 选择构建步骤并取得 ReportJob |
+
+本例把 Builder 契约与 ConcreteBuilder 实现合在一个类中，没有另外声明 Builder 接口或 Director（指挥者）。构建步骤由客户端直接选择，读图时不需要寻找代码中不存在的 Director。
 
 #### 一次请求怎样走
 
@@ -472,6 +529,7 @@ record DateRange(LocalDate from, LocalDate to) {
         if (from.isAfter(to)) throw new IllegalArgumentException("开始日期晚于结束日期");
     }
 }
+// Product（产品）。
 final class ReportJob {
     private final DateRange range;
     private final List<String> columns;
@@ -487,6 +545,7 @@ final class ReportJob {
         return range.from() + "~" + range.to() + " columns=" + columns.size()
             + " limit=" + rowLimit + " to=" + recipient;
     }
+    // Builder / ConcreteBuilder（建造者及其实现）。
     static class Builder {
         private final DateRange range;
         private final List<String> columns = new ArrayList<>();
@@ -508,6 +567,7 @@ final class ReportJob {
         }
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         DateRange range = new DateRange(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-09-07"));
@@ -550,6 +610,7 @@ func NewDateRange(from, to string) (DateRange, error) {
 	return DateRange{a, b}, nil
 }
 
+// Product（产品）。
 type ReportJob struct {
 	dateRange DateRange
 	columns   []string
@@ -562,6 +623,7 @@ func (j ReportJob) Describe() string {
 		j.dateRange.to.Format("2006-01-02"), len(j.columns), j.rowLimit, j.recipient)
 }
 
+// Builder / ConcreteBuilder（建造者及其实现）。
 type ReportBuilder struct {
 	job ReportJob
 	err error
@@ -596,6 +658,7 @@ func (b *ReportBuilder) Build() (ReportJob, error) {
 	j.columns = append([]string(nil), j.columns...) // 隔离底层数组
 	return j, nil
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	r, err := NewDateRange("2026-09-01", "2026-09-07")
 	if err != nil {
@@ -639,12 +702,12 @@ func main() {
 
 商城发货单包含订单号、收件地址和多条包裹明细，每条明细有重量与数量。旧快递 SDK 却要求整数公斤，还用数值状态码表示创建失败。让业务层到处换算重量、解析状态码，会把第三方细节扩散到发货、退货和运费预估功能。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| Shipment / Parcel | 表示一票货物及其商品明细，totalGrams() 合计重量 |
-| ShippingProvider | 业务需要的 quote() 与 book() 契约 |
-| LegacyCourierSdk | 旧接口 tariff()、create()，使用公斤和 LegacyTicket 状态码 |
-| CourierAdapter | 实现新接口，组合旧 SDK，完成单位、参数和结果转换 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `Shipment / Parcel` | 业务数据 | 表示一票货物及其商品明细，totalGrams() 合计重量 |
+| `ShippingProvider` | Target（目标接口） | 业务需要的 quote() 与 book() 契约 |
+| `LegacyCourierSdk（Go：LegacyCourierSDK）` | Adaptee（被适配者） | 旧接口 tariff()、create()，使用公斤和 LegacyTicket 状态码 |
+| `CourierAdapter` | Adapter（适配器） | 实现目标接口，组合旧 SDK，完成单位、参数和结果转换 |
 
 #### 一次请求怎样走
 
@@ -670,11 +733,13 @@ record Shipment(String orderId, String address, List<Parcel> parcels) {
     int totalGrams() { return parcels.stream().mapToInt(p -> p.grams() * p.quantity()).sum(); }
 }
 record Tracking(String orderId, String waybill, int feeCents) {}
+// Target（目标接口）。
 interface ShippingProvider {
     int quote(Shipment shipment);
     Tracking book(Shipment shipment);
 }
 record LegacyTicket(int code, String number) {}
+// Adaptee（被适配者）。
 class LegacyCourierSdk {
     int tariff(int kilograms) { return 600 + kilograms * 200; }
     LegacyTicket create(String destination, int kilograms) {
@@ -682,6 +747,7 @@ class LegacyCourierSdk {
         return new LegacyTicket(0, "WB-" + kilograms); // SDK 的本地替身
     }
 }
+// Adapter（适配器）。
 class CourierAdapter implements ShippingProvider {
     private final LegacyCourierSdk sdk;
     CourierAdapter(LegacyCourierSdk sdk) { this.sdk = sdk; }
@@ -697,6 +763,7 @@ class CourierAdapter implements ShippingProvider {
         return new Tracking(s.orderId(), ticket.number(), quote(s));
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         ShippingProvider courier = new CourierAdapter(new LegacyCourierSdk());
@@ -737,6 +804,7 @@ type Tracking struct {
 	OrderID, Waybill string
 	FeeCents         int
 }
+// Target（目标接口）。
 type ShippingProvider interface {
 	Quote(Shipment) (int, error)
 	Book(Shipment) (Tracking, error)
@@ -745,6 +813,7 @@ type LegacyTicket struct {
 	Code   int
 	Number string
 }
+// Adaptee（被适配者）。
 type LegacyCourierSDK struct{}
 
 func (LegacyCourierSDK) Tariff(kg int) int { return 600 + kg*200 }
@@ -755,6 +824,7 @@ func (LegacyCourierSDK) Create(destination string, kg int) LegacyTicket {
 	return LegacyTicket{0, fmt.Sprintf("WB-%d", kg)}
 }
 
+// Adapter（适配器）。
 type CourierAdapter struct{ sdk LegacyCourierSDK }
 
 func kilograms(s Shipment) (int, error) {
@@ -786,6 +856,7 @@ func (a CourierAdapter) Book(s Shipment) (Tracking, error) {
 	}
 	return Tracking{s.OrderID, ticket.Number, a.sdk.Tariff(kg)}, nil
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	var courier ShippingProvider = CourierAdapter{LegacyCourierSDK{}}
 	parcels := []Parcel{{"BOOK", 600, 2}, {"CUP", 500, 1}}
@@ -820,12 +891,14 @@ O-200 WB-2 fee=1000
 
 购物车里有三本单价 4000 分的书，会员享九折，折后商品金额满 11000 分包邮。原价计算、会员权益和配送费用由不同规则负责，组合也可能随活动变化。如果为每种组合都建一个计价类，类数量会快速增加。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| Cart / CartLine | 保存会员身份、SKU、单价和数量 |
-| Pricing / Quote | 统一报价入口；结果区分商品金额、运费和合计 |
-| CatalogPricing | 计算未优惠的商品金额 |
-| MemberPricing / ShippingPricing | 都实现 Pricing 并持有另一个 Pricing，分别叠加折扣和运费 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `Cart / CartLine / Quote` | 业务数据 | 保存会员身份和商品明细；报价结果区分商品金额、运费和合计 |
+| `Pricing` | Component（组件接口） | 定义所有报价对象共同遵守的报价入口 |
+| `CatalogPricing` | ConcreteComponent（具体组件） | 计算未优惠的商品金额 |
+| `MemberPricing / ShippingPricing` | ConcreteDecorator（具体装饰器） | 都实现 Pricing 并持有另一个 Pricing，分别叠加折扣和运费 |
+
+传统结构还会画出 Decorator（装饰器基类）。这里两个具体装饰器直接实现 Component，并各自持有内部 Component，因此没有额外的 Decorator 父类；包装与转发的角色仍然存在。
 
 #### 一次请求怎样走
 
@@ -852,7 +925,9 @@ record Cart(List<CartLine> lines, boolean member) {
 record Quote(int goodsCents, int shippingCents) {
     int total() { return goodsCents + shippingCents; }
 }
+// Component（组件接口）。
 interface Pricing { Quote quote(Cart cart); }
+// ConcreteComponent（具体组件）。
 class CatalogPricing implements Pricing {
     public Quote quote(Cart c) {
         int goods = 0;
@@ -864,6 +939,7 @@ class CatalogPricing implements Pricing {
         return new Quote(goods, 0);
     }
 }
+// ConcreteDecorator（具体装饰器）。
 class MemberPricing implements Pricing {
     private final Pricing next;
     MemberPricing(Pricing next) { this.next = next; }
@@ -873,6 +949,7 @@ class MemberPricing implements Pricing {
         return new Quote(goods, q.shippingCents());
     }
 }
+// ConcreteDecorator（具体装饰器）。
 class ShippingPricing implements Pricing {
     private final Pricing next;
     ShippingPricing(Pricing next) { this.next = next; }
@@ -882,6 +959,7 @@ class ShippingPricing implements Pricing {
         return new Quote(q.goodsCents(), q.goodsCents() >= 11000 ? 0 : 800);
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         Cart cart = new Cart(List.of(new CartLine("BOOK", 4000, 3)), true);
@@ -913,7 +991,9 @@ type Quote struct{ GoodsCents, ShippingCents int }
 
 func (q Quote) Total() int { return q.GoodsCents + q.ShippingCents }
 
+// Component（组件接口）。
 type Pricing interface{ Quote(Cart) (Quote, error) }
+// ConcreteComponent（具体组件）。
 type CatalogPricing struct{}
 
 func (CatalogPricing) Quote(c Cart) (Quote, error) {
@@ -927,6 +1007,7 @@ func (CatalogPricing) Quote(c Cart) (Quote, error) {
 	return Quote{goods, 0}, nil
 }
 
+// ConcreteDecorator（具体装饰器）。
 type MemberPricing struct{ next Pricing }
 
 func (p MemberPricing) Quote(c Cart) (Quote, error) {
@@ -940,6 +1021,7 @@ func (p MemberPricing) Quote(c Cart) (Quote, error) {
 	return q, nil
 }
 
+// ConcreteDecorator（具体装饰器）。
 type ShippingPricing struct{ next Pricing }
 
 func (p ShippingPricing) Quote(c Cart) (Quote, error) {
@@ -953,6 +1035,7 @@ func (p ShippingPricing) Quote(c Cart) (Quote, error) {
 	}
 	return q, nil
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	c := Cart{[]CartLine{{"BOOK", 4000, 3}}, true}
 	var pricing Pricing = ShippingPricing{MemberPricing{CatalogPricing{}}}
@@ -991,12 +1074,15 @@ func main() {
 
 企业文档服务提供合同读取功能。用户不仅需要 document:read 权限，还必须属于文档所在租户。控制器如果先取正文再判断权限，会产生无谓读取，也容易在遗漏校验的入口泄露数据。所有业务入口应拿到同一个受保护的 `DocumentService`。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| User / Document | 用户带租户和权限集合，文档带标题、页数和标识 |
-| DocumentService / DocumentStore | 统一读取契约与真实存储；存储计数用于观察是否被调用 |
-| AccessPolicy | 独立判断操作权限和租户归属 |
-| DocumentProxy | 先执行策略校验，通过后才委托真实服务 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `User / Document` | 业务数据 | 用户带租户和权限集合，文档带标题、页数和标识 |
+| `DocumentService` | Subject（共同接口） | 定义代理与真实对象共同实现的读取契约 |
+| `DocumentStore` | RealSubject（真实主题） | 执行真实读取，调用计数便于观察代理是否放行 |
+| `AccessPolicy` | 辅助服务 | 独立判断操作权限和租户归属 |
+| `DocumentProxy` | Proxy（代理） | 先执行权限校验，通过后才委托真实服务 |
+
+这里的 Subject 表示代理和真实对象共有的访问接口；观察者模式也使用 Subject 一词，但表示被订阅的通知主体。角色名要结合所在模式理解。
 
 #### 一次请求怎样走
 
@@ -1020,7 +1106,9 @@ record User(String id, String tenant, Set<String> permissions) {
     User { permissions = Set.copyOf(permissions); }
 }
 record Document(String id, String title, int pages) {}
+// Subject（代理与真实对象的共同接口）。
 interface DocumentService { Document read(User user, String documentId); }
+// RealSubject（真实主题）。
 class DocumentStore implements DocumentService {
     private final Map<String, Document> documents = Map.of("D-1", new Document("D-1", "采购合同", 12));
     private int reads;
@@ -1039,6 +1127,7 @@ class AccessPolicy {
             && user.tenant().equals(owners.get(documentId));
     }
 }
+// Proxy（代理）。
 class DocumentProxy implements DocumentService {
     private final DocumentService real;
     private final AccessPolicy policy;
@@ -1048,6 +1137,7 @@ class DocumentProxy implements DocumentService {
         return real.read(user, id);
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         DocumentStore store = new DocumentStore();
@@ -1077,9 +1167,11 @@ type Document struct {
 	ID, Title string
 	Pages     int
 }
+// Subject（代理与真实对象的共同接口）。
 type DocumentService interface {
 	Read(User, string) (Document, error)
 }
+// RealSubject（真实主题）。
 type DocumentStore struct {
 	documents map[string]Document
 	reads     int
@@ -1101,6 +1193,7 @@ func (p AccessPolicy) Allows(u User, id string) bool {
 	return ok && u.Permissions["document:read"] && owner == u.Tenant
 }
 
+// Proxy（代理）。
 type DocumentProxy struct {
 	real   DocumentService
 	policy AccessPolicy
@@ -1112,6 +1205,7 @@ func (p DocumentProxy) Read(u User, id string) (Document, error) {
 	}
 	return p.real.Read(u, id)
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	store := &DocumentStore{documents: map[string]Document{"D-1": {"D-1", "采购合同", 12}}}
 	var service DocumentService = DocumentProxy{store, AccessPolicy{map[string]string{"D-1": "tenant-A"}}}
@@ -1149,12 +1243,12 @@ func main() {
 
 用户在结算页给一个 1700 克、发往偏远地区的包裹切换配送方式。普通和加急各有基础价、每公斤价格与偏远地区附加费，商品金额不变。把这些公式塞进结算类，每增加配送产品都会修改整个结算流程。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| Parcel | 提供重量、偏远地区标记和商品金额 |
-| ShippingPolicy | fee() 专门表达运费算法 |
-| StandardShipping / ExpressShipping | 分别实现普通和加急收费公式 |
-| Checkout / ShippingQuote | 上下文调用所选算法，组合商品金额与运费，不参与公式细节 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `Parcel / ShippingQuote` | 业务数据 | 输入重量、偏远地区标记和商品金额；输出商品金额、运费与总价 |
+| `ShippingPolicy` | Strategy（策略接口） | fee() 专门表达运费算法 |
+| `StandardShipping / ExpressShipping` | ConcreteStrategy（具体策略） | 分别实现普通和加急收费公式 |
+| `Checkout` | Context（上下文） | 持有并调用所选策略，组合结果，不参与公式细节 |
 
 #### 一次请求怎样走
 
@@ -1182,23 +1276,28 @@ record Parcel(int grams, boolean remoteArea, int goodsCents) {
 record ShippingQuote(int goodsCents, int feeCents) {
     int payable() { return goodsCents + feeCents; }
 }
+// Strategy（策略接口）。
 interface ShippingPolicy { int fee(Parcel parcel); }
+// ConcreteStrategy（具体策略）。
 class StandardShipping implements ShippingPolicy {
     public int fee(Parcel p) {
         return 500 + p.kilograms() * 200 + (p.remoteArea() ? 1000 : 0);
     }
 }
+// ConcreteStrategy（具体策略）。
 class ExpressShipping implements ShippingPolicy {
     public int fee(Parcel p) {
         return 1200 + p.kilograms() * 400 + (p.remoteArea() ? 2000 : 0);
     }
 }
+// Context（上下文）。
 class Checkout {
     private ShippingPolicy policy;
     Checkout(ShippingPolicy policy) { use(policy); }
     void use(ShippingPolicy policy) { this.policy = java.util.Objects.requireNonNull(policy); }
     ShippingQuote quote(Parcel parcel) { return new ShippingQuote(parcel.goodsCents(), policy.fee(parcel)); }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         Parcel parcel = new Parcel(1700, true, 12800);
@@ -1231,7 +1330,9 @@ type ShippingQuote struct{ GoodsCents, FeeCents int }
 
 func (q ShippingQuote) Payable() int { return q.GoodsCents + q.FeeCents }
 
+// Strategy（策略接口）。
 type ShippingPolicy interface{ Fee(Parcel) int }
+// ConcreteStrategy（具体策略）。
 type StandardShipping struct{}
 
 func (StandardShipping) Fee(p Parcel) int {
@@ -1242,6 +1343,7 @@ func (StandardShipping) Fee(p Parcel) int {
 	return fee
 }
 
+// ConcreteStrategy（具体策略）。
 type ExpressShipping struct{}
 
 func (ExpressShipping) Fee(p Parcel) int {
@@ -1252,6 +1354,7 @@ func (ExpressShipping) Fee(p Parcel) int {
 	return fee
 }
 
+// Context（上下文）。
 type Checkout struct{ policy ShippingPolicy }
 
 func (c *Checkout) Use(p ShippingPolicy) { c.policy = p }
@@ -1264,6 +1367,7 @@ func (c Checkout) Quote(p Parcel) (ShippingQuote, error) {
 	}
 	return ShippingQuote{p.GoodsCents, c.policy.Fee(p)}, nil
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	parcel := Parcel{1700, true, 12800}
 	checkout := Checkout{StandardShipping{}}
@@ -1302,12 +1406,15 @@ func main() {
 
 订单确认到账后，需要给顾客加积分、写回执、通知邮件系统。这些是不同的附属功能。把它们全写在付款确认方法里，每次增加功能都要改主流程；邮件出错还可能阻止回执生成。本例明确规定：付款事实先成立，订阅者独立处理，通知失败要汇总返回。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| OrderPaid | 包含订单号、顾客号和到账金额的不可变事件 |
-| OrderService | 检查到账金额与重复确认，再发布付款事实 |
-| PaidEvents / PaidListener | 维护订阅列表，逐个通知并收集失败 |
-| LoyaltyListener / ReceiptListener | 分别更新积分账本和本地回执列表 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `OrderPaid` | 事件数据 | 包含订单号、顾客号和到账金额的不可变付款事实 |
+| `OrderService` | Client（发布事件的业务调用方） | 检查到账金额与重复确认，再调用 Subject 发布付款事实 |
+| `PaidEvents` | Subject（被观察者；同时承担 ConcreteSubject） | 持有观察者列表，接受订阅，逐个通知并收集失败 |
+| `PaidListener` | Observer（观察者接口） | 用 onPaid() 约定观察者收到付款事件后的处理入口 |
+| `LoyaltyListener / ReceiptListener` | ConcreteObserver（具体观察者） | 分别更新积分账本和本地回执列表 |
+
+**对照教材中的名称：** `PaidEvents` 是 Subject，`PaidListener` 是 Observer（标准拼写是 Observer）。`subscribe()` 对应常见的 `attach()`，`publish()` 对应 `notify()`，`onPaid()` 对应观察者的 `update()`。本例没有实现 `detach()` / 取消订阅，也没有把 Subject 接口与 ConcreteSubject 分成两个类型；`PaidEvents` 同时保存订阅列表并实现通知。`OrderService` 提供付款事实，`OrderPaid` 承载该事实，二者都不能与 Observer 接口混为一谈。
 
 #### 一次请求怎样走
 
@@ -1328,7 +1435,9 @@ func main() {
 ```java
 import java.util.*;
 record OrderPaid(String orderId, String customerId, int paidCents) {}
+// Observer（观察者接口）：onPaid 对应通常所说的 update 回调。
 interface PaidListener { void onPaid(OrderPaid event); }
+// Subject（被观察者）：同时承担 ConcreteSubject 的订阅管理与通知实现。
 class PaidEvents {
     private final List<PaidListener> listeners = new ArrayList<>();
     void subscribe(PaidListener listener) { listeners.add(listener); }
@@ -1341,16 +1450,19 @@ class PaidEvents {
         return failures;
     }
 }
+// ConcreteObserver（具体观察者）：积分处理。
 class LoyaltyListener implements PaidListener {
     private final Map<String, Integer> points = new HashMap<>();
     public void onPaid(OrderPaid e) { points.merge(e.customerId(), e.paidCents() / 100, Integer::sum); }
     int pointsOf(String customer) { return points.getOrDefault(customer, 0); }
 }
+// ConcreteObserver（具体观察者）：回执处理。
 class ReceiptListener implements PaidListener {
     private final List<String> receipts = new ArrayList<>();
     public void onPaid(OrderPaid e) { receipts.add(e.orderId() + ":" + e.paidCents()); }
     int count() { return receipts.size(); }
 }
+// Client（业务调用方）：确认付款后调用 Subject。
 class OrderService {
     private final Set<String> paidOrders = new HashSet<>();
     private final PaidEvents events;
@@ -1362,6 +1474,7 @@ class OrderService {
     }
     boolean isPaid(String id) { return paidOrders.contains(id); }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         PaidEvents events = new PaidEvents();
@@ -1390,11 +1503,13 @@ type OrderPaid struct {
 	OrderID, CustomerID string
 	PaidCents           int
 }
+// Observer（观察者接口）：onPaid 对应通常所说的 update 回调。
 type PaidListener interface{ OnPaid(OrderPaid) error }
 type ListenerFunc func(OrderPaid) error
 
 func (f ListenerFunc) OnPaid(e OrderPaid) error { return f(e) }
 
+// Subject（被观察者）：同时承担 ConcreteSubject 的订阅管理与通知实现。
 type PaidEvents struct{ listeners []PaidListener }
 
 func (b *PaidEvents) Subscribe(l PaidListener) { b.listeners = append(b.listeners, l) }
@@ -1408,6 +1523,7 @@ func (b *PaidEvents) Publish(e OrderPaid) []error {
 	return failures
 }
 
+// ConcreteObserver（具体观察者）：积分处理。
 type LoyaltyListener struct{ points map[string]int }
 
 func (l *LoyaltyListener) OnPaid(e OrderPaid) error {
@@ -1416,6 +1532,7 @@ func (l *LoyaltyListener) OnPaid(e OrderPaid) error {
 }
 func (l *LoyaltyListener) PointsOf(id string) int { return l.points[id] }
 
+// ConcreteObserver（具体观察者）：回执处理。
 type ReceiptListener struct{ receipts []string }
 
 func (l *ReceiptListener) OnPaid(e OrderPaid) error {
@@ -1424,6 +1541,7 @@ func (l *ReceiptListener) OnPaid(e OrderPaid) error {
 }
 func (l *ReceiptListener) Count() int { return len(l.receipts) }
 
+// Client（业务调用方）：确认付款后调用 Subject。
 type OrderService struct {
 	paidOrders map[string]bool
 	events     *PaidEvents
@@ -1439,6 +1557,7 @@ func (s *OrderService) ConfirmPayment(e OrderPaid) ([]error, error) {
 	s.paidOrders[e.OrderID] = true
 	return s.events.Publish(e), nil
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	events := &PaidEvents{}
 	loyalty := &LoyaltyListener{map[string]int{}}
@@ -1547,12 +1666,12 @@ func (p ShippingPreview) Quote(method string, parcel Parcel) (ShippingQuote, err
 
 仓库操作员只想提交订单号、SKU、数量和地址。系统却需要先预留库存，再计算含包装的重量，最后向承运商叫件。每个入口若都复制这段编排，失败时是否释放库存很容易不一致。`FulfillmentFacade.dispatch()` 提供统一入口，并集中处理本例可以确定恢复的失败。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| FulfillmentRequest / Dispatch | 把发货请求和最终运单结果封装为业务对象 |
-| Inventory | reserve() 预留库存，release() 释放，available() 查询余额 |
-| PackagingService / CarrierService | 分别生成 PackageInfo 和创建运单 |
-| FulfillmentFacade | 持有三个子系统，决定调用顺序并在叫件拒绝时释放预留 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `FulfillmentRequest / PackageInfo / Dispatch` | 业务数据 | 封装发货请求、包装结果和最终运单 |
+| `Inventory` | Subsystem（子系统） | reserve() 预留库存，release() 释放，available() 查询余额 |
+| `PackagingService / CarrierService` | Subsystem（子系统） | 分别生成 PackageInfo 和创建运单 |
+| `FulfillmentFacade` | Facade（外观） | 持有三个子系统，决定调用顺序并在叫件拒绝时释放预留 |
 
 #### 一次请求怎样走
 
@@ -1575,6 +1694,7 @@ import java.util.*;
 record FulfillmentRequest(String orderId, String sku, int quantity, String address) {}
 record PackageInfo(String orderId, int grams, String address) {}
 record Dispatch(String orderId, String waybill, int grams) {}
+// Subsystem（库存子系统）。
 class Inventory {
     private final Map<String, Integer> stock = new HashMap<>(Map.of("BOOK", 10));
     void reserve(String sku, int quantity) {
@@ -1584,11 +1704,13 @@ class Inventory {
     void release(String sku, int quantity) { stock.put(sku, available(sku) + quantity); }
     int available(String sku) { return stock.getOrDefault(sku, 0); }
 }
+// Subsystem（包装子系统）。
 class PackagingService {
     PackageInfo pack(FulfillmentRequest r) {
         return new PackageInfo(r.orderId(), r.quantity() * 600 + 100, r.address());
     }
 }
+// Subsystem（物流子系统）。
 class CarrierService {
     private int bookings;
     String book(PackageInfo p) {
@@ -1596,6 +1718,7 @@ class CarrierService {
         return "WB-" + (++bookings);
     }
 }
+// Facade（外观）。
 class FulfillmentFacade {
     private final Inventory inventory;
     private final PackagingService packaging;
@@ -1615,6 +1738,7 @@ class FulfillmentFacade {
         }
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         Inventory inventory = new Inventory();
@@ -1649,6 +1773,7 @@ type Dispatch struct {
 	OrderID, Waybill string
 	Grams            int
 }
+// Subsystem（库存子系统）。
 type Inventory struct{ stock map[string]int }
 
 func (i *Inventory) Available(sku string) int { return i.stock[sku] }
@@ -1661,12 +1786,14 @@ func (i *Inventory) Reserve(sku string, q int) error {
 }
 func (i *Inventory) Release(sku string, q int) { i.stock[sku] += q }
 
+// Subsystem（包装子系统）。
 type PackagingService struct{}
 
 func (PackagingService) Pack(r FulfillmentRequest) PackageInfo {
 	return PackageInfo{r.OrderID, r.Quantity*600 + 100, r.Address}
 }
 
+// Subsystem（物流子系统）。
 type CarrierService struct{ bookings int }
 
 func (c *CarrierService) Book(p PackageInfo) (string, error) {
@@ -1677,6 +1804,7 @@ func (c *CarrierService) Book(p PackageInfo) (string, error) {
 	return fmt.Sprintf("WB-%d", c.bookings), nil
 }
 
+// Facade（外观）。
 type FulfillmentFacade struct {
 	inventory *Inventory
 	packaging PackagingService
@@ -1695,6 +1823,7 @@ func (f FulfillmentFacade) Dispatch(r FulfillmentRequest) (Dispatch, error) {
 	}
 	return Dispatch{r.OrderID, waybill, p.Grams}, nil
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	inventory := &Inventory{map[string]int{"BOOK": 10}}
 	facade := FulfillmentFacade{inventory, PackagingService{}, &CarrierService{}}
@@ -1731,12 +1860,12 @@ O-400 WB-1 grams=1300 库存=8
 
 采购入口要检查用户标识、商品数量、账号状态和可用库存。无效参数不该访问后续资源；冻结账号也不该继续查库存。每个检查负责一个原因，遇到拒绝立即停止，同时保留已经通过的步骤，方便页面解释失败位置。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| PurchaseRequest / CheckContext | 请求保存用户、SKU、数量；上下文保存通过轨迹 |
-| PurchaseCheck | Java 抽象基类保存 next，固定先检查再传递 |
-| ParameterCheck / AccountCheck / StockCheck | 分别检查参数、账号和库存 |
-| Go PurchaseCheck / NextCheck | 接口定义处理入口，嵌入对象只负责转发到下一节点 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `PurchaseRequest / CheckContext` | 业务数据 | 请求保存用户、SKU、数量；上下文保存通过轨迹 |
+| `PurchaseCheck` | Handler（处理者） | Java 抽象基类保存 next，固定先检查再传递；Go 接口定义处理入口 |
+| `ParameterCheck / AccountCheck / StockCheck` | ConcreteHandler（具体处理者） | 分别检查参数、账号和库存 |
+| `Go NextCheck` | 转发辅助对象 | 负责传递到下一节点，本身没有完整实现 Handler 接口 |
 
 #### 一次请求怎样走
 
@@ -1762,6 +1891,7 @@ class CheckContext {
     void record(String step) { passed.add(step); }
     String trace() { return String.join(" -> ", passed); }
 }
+// Handler（处理者）。
 abstract class PurchaseCheck {
     private PurchaseCheck next;
     PurchaseCheck then(PurchaseCheck next) { this.next = next; return next; }
@@ -1771,6 +1901,7 @@ abstract class PurchaseCheck {
     }
     protected abstract void check(PurchaseRequest r, CheckContext context);
 }
+// ConcreteHandler（具体处理者）。
 class ParameterCheck extends PurchaseCheck {
     protected void check(PurchaseRequest r, CheckContext c) {
         if (r.userId().isBlank() || r.sku().isBlank() || r.quantity() <= 0)
@@ -1778,12 +1909,14 @@ class ParameterCheck extends PurchaseCheck {
         c.record("参数通过");
     }
 }
+// ConcreteHandler（具体处理者）。
 class AccountCheck extends PurchaseCheck {
     protected void check(PurchaseRequest r, CheckContext c) {
         if (!r.active()) throw new IllegalStateException("账户已冻结");
         c.record("账户通过");
     }
 }
+// ConcreteHandler（具体处理者）。
 class StockCheck extends PurchaseCheck {
     private final Map<String, Integer> stock;
     StockCheck(Map<String, Integer> stock) { this.stock = Map.copyOf(stock); }
@@ -1792,6 +1925,7 @@ class StockCheck extends PurchaseCheck {
         c.record("库存通过");
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         PurchaseCheck head = new ParameterCheck();
@@ -1829,6 +1963,7 @@ type CheckContext struct{ passed []string }
 func (c *CheckContext) Record(step string) { c.passed = append(c.passed, step) }
 func (c *CheckContext) Trace() string      { return strings.Join(c.passed, " -> ") }
 
+// Handler（处理者）。
 type PurchaseCheck interface {
 	Handle(PurchaseRequest, *CheckContext) error
 }
@@ -1841,6 +1976,7 @@ func (n NextCheck) Forward(r PurchaseRequest, c *CheckContext) error {
 	return nil
 }
 
+// ConcreteHandler（具体处理者）。
 type ParameterCheck struct{ NextCheck }
 
 func (p ParameterCheck) Handle(r PurchaseRequest, c *CheckContext) error {
@@ -1851,6 +1987,7 @@ func (p ParameterCheck) Handle(r PurchaseRequest, c *CheckContext) error {
 	return p.Forward(r, c)
 }
 
+// ConcreteHandler（具体处理者）。
 type AccountCheck struct{ NextCheck }
 
 func (p AccountCheck) Handle(r PurchaseRequest, c *CheckContext) error {
@@ -1861,6 +1998,7 @@ func (p AccountCheck) Handle(r PurchaseRequest, c *CheckContext) error {
 	return p.Forward(r, c)
 }
 
+// ConcreteHandler（具体处理者）。
 type StockCheck struct {
 	NextCheck
 	stock map[string]int
@@ -1873,6 +2011,7 @@ func (p StockCheck) Handle(r PurchaseRequest, c *CheckContext) error {
 	c.Record("库存通过")
 	return p.Forward(r, c)
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	stock := StockCheck{stock: map[string]int{"BOOK": 3}}
 	account := AccountCheck{NextCheck{stock}}
@@ -1911,13 +2050,13 @@ func main() {
 
 订单待付款时可以付款或取消；付款后才允许发货；发货后不能再次付款或直接取消。区别不仅是状态名称不同，同一个 `ship()` 操作在不同状态下必须有不同结果。把所有动作与状态的组合都放进 `Order` 的多层条件分支，后续加入退款、拦截发货等逻辑会更难维护。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| Order | 保存金额、付款凭据、运单和当前状态，业务动作委托给状态对象 |
-| OrderState | 定义 pay()、ship()、cancel()，默认拒绝不支持的动作 |
-| Pending / Paid | 分别实现付款、取消以及发货前校验，并决定后继状态 |
-| Shipped / Cancelled | 终态，沿用默认拒绝行为 |
-| PaymentReceipt / Shipment | 承载需要校验的交易流水、金额和运单 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `Order` | Context（上下文） | 保存金额、付款凭据、运单和当前状态，业务动作委托给状态对象 |
+| `OrderState` | State（状态接口） | 定义 pay()、ship()、cancel()，Java 默认方法拒绝不支持的动作 |
+| `Pending / Paid` | ConcreteState（具体状态） | 分别实现付款、取消以及发货前校验，并决定后继状态 |
+| `Shipped / Cancelled` | ConcreteState（具体状态） | 终态，沿用默认拒绝行为 |
+| `PaymentReceipt / Shipment` | 业务数据 | 承载需要校验的交易流水、金额和运单 |
 
 #### 一次请求怎样走
 
@@ -1938,12 +2077,14 @@ func main() {
 ```java
 record PaymentReceipt(String transactionId, int amountCents) {}
 record Shipment(String waybill) {}
+// State（状态接口）。
 interface OrderState {
     String name();
     default void pay(Order o, PaymentReceipt r) { throw new IllegalStateException("当前状态不能付款"); }
     default void ship(Order o, Shipment s) { throw new IllegalStateException("当前状态不能发货"); }
     default void cancel(Order o) { throw new IllegalStateException("当前状态不能取消"); }
 }
+// ConcreteState（具体状态）。
 class Pending implements OrderState {
     public String name() { return "待付款"; }
     public void pay(Order o, PaymentReceipt r) {
@@ -1953,6 +2094,7 @@ class Pending implements OrderState {
     }
     public void cancel(Order o) { o.transition(new Cancelled()); }
 }
+// ConcreteState（具体状态）。
 class Paid implements OrderState {
     public String name() { return "已付款"; }
     public void ship(Order o, Shipment s) {
@@ -1960,8 +2102,11 @@ class Paid implements OrderState {
         o.recordShipment(s); o.transition(new Shipped());
     }
 }
+// ConcreteState（具体状态）。
 class Shipped implements OrderState { public String name() { return "已发货"; } }
+// ConcreteState（具体状态）。
 class Cancelled implements OrderState { public String name() { return "已取消"; } }
+// Context（上下文）。
 class Order {
     private final int amountCents;
     private OrderState state = new Pending();
@@ -1983,6 +2128,7 @@ class Order {
             + " waybill=" + (shipment == null ? "-" : shipment.waybill());
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         Order order = new Order(12800);
@@ -2010,6 +2156,7 @@ type PaymentReceipt struct {
 	AmountCents   int
 }
 type Shipment struct{ Waybill string }
+// State（状态接口）。
 type OrderState interface {
 	Name() string
 	Pay(*Order, PaymentReceipt) error
@@ -2022,6 +2169,7 @@ func (Unsupported) Pay(*Order, PaymentReceipt) error { return fmt.Errorf("当前
 func (Unsupported) Ship(*Order, Shipment) error      { return fmt.Errorf("当前状态不能发货") }
 func (Unsupported) Cancel(*Order) error              { return fmt.Errorf("当前状态不能取消") }
 
+// ConcreteState（具体状态）。
 type Pending struct{ Unsupported }
 
 func (Pending) Name() string { return "待付款" }
@@ -2035,6 +2183,7 @@ func (Pending) Pay(o *Order, r PaymentReceipt) error {
 }
 func (Pending) Cancel(o *Order) error { o.state = Cancelled{}; return nil }
 
+// ConcreteState（具体状态）。
 type Paid struct{ Unsupported }
 
 func (Paid) Name() string { return "已付款" }
@@ -2047,14 +2196,17 @@ func (Paid) Ship(o *Order, s Shipment) error {
 	return nil
 }
 
+// ConcreteState（具体状态）。
 type Shipped struct{ Unsupported }
 
 func (Shipped) Name() string { return "已发货" }
 
+// ConcreteState（具体状态）。
 type Cancelled struct{ Unsupported }
 
 func (Cancelled) Name() string { return "已取消" }
 
+// Context（上下文）。
 type Order struct {
 	amountCents int
 	state       OrderState
@@ -2081,6 +2233,7 @@ func (o *Order) Summary() string {
 	}
 	return fmt.Sprintf("%s payment=%s waybill=%s", o.state.Name(), tx, wb)
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	o, err := NewOrder(12800)
 	if err != nil {
@@ -2129,12 +2282,13 @@ func main() {
 
 运营每天按日期导出销售数据。CSV 和 HTML 都需要加载数据、拒绝空结果、格式化、保存产物，但文件后缀和内容结构不同。如果两种导出各写一套流程，后来加入统一校验时可能漏改其中一种。模板方法把这些固定步骤收进一个入口。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| ReportRequest / Sale / ExportResult | 分别描述查询条件、销售行和导出产物 |
-| SalesRepository / ArtifactStore | 负责加载销售记录与保存内存产物 |
-| ReportExporter | Java 的 final export() 固定流程，保留 format() 和 extension() 扩展点 |
-| CsvExporter / HtmlExporter | 只实现格式转换和文件后缀；CSV 处理引号，HTML 处理文本转义 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `ReportRequest / Sale / ExportResult` | 业务数据 | 分别描述查询条件、销售行和导出产物 |
+| `SalesRepository / ArtifactStore` | 辅助服务 | 负责加载销售记录与保存内存产物 |
+| `Java ReportExporter` | AbstractClass（抽象类） | final export() 是 TemplateMethod（模板方法），format() 和 extension() 是留给子类的 PrimitiveOperations（基本操作） |
+| `Java CsvExporter / HtmlExporter` | ConcreteClass（具体类） | 实现格式转换和文件后缀；CSV 处理引号，HTML 处理文本转义 |
+| `Go ReportExporter + ReportFormat` | 用组合表达固定流程与可变步骤 | Export() 固定流程，CSVFormat / HTMLFormat 提供可替换步骤；Go 没有照搬 Java 的抽象类继承 |
 
 #### 一次请求怎样走
 
@@ -2168,6 +2322,7 @@ class ArtifactStore {
     void save(String path, String content) { files.put(path, content); }
     int count() { return files.size(); }
 }
+// AbstractClass（抽象类）：export 是 TemplateMethod（模板方法）。
 abstract class ReportExporter {
     private final SalesRepository repository;
     private final ArtifactStore store;
@@ -2183,6 +2338,7 @@ abstract class ReportExporter {
     protected abstract String format(List<Sale> rows);
     protected abstract String extension();
 }
+// ConcreteClass（具体类）。
 class CsvExporter extends ReportExporter {
     CsvExporter(SalesRepository r, ArtifactStore s) { super(r, s); }
     protected String extension() { return ".csv"; }
@@ -2192,6 +2348,7 @@ class CsvExporter extends ReportExporter {
             .collect(Collectors.joining());
     }
 }
+// ConcreteClass（具体类）。
 class HtmlExporter extends ReportExporter {
     HtmlExporter(SalesRepository r, ArtifactStore s) { super(r, s); }
     protected String extension() { return ".html"; }
@@ -2202,6 +2359,7 @@ class HtmlExporter extends ReportExporter {
             .collect(Collectors.joining()) + "</table>";
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         SalesRepository repo = new SalesRepository(); ArtifactStore store = new ArtifactStore();
@@ -2255,10 +2413,12 @@ type ArtifactStore struct{ files map[string]string }
 
 func (s *ArtifactStore) Save(path, content string) { s.files[path] = content }
 
+// 可变步骤接口：对应 Java 留给子类的基本操作。
 type ReportFormat interface {
 	Format([]Sale) (string, error)
 	Extension() string
 }
+// 可变步骤的 CSV 实现（Go 组合）。
 type CSVFormat struct{}
 
 func (CSVFormat) Extension() string { return ".csv" }
@@ -2275,6 +2435,7 @@ func (CSVFormat) Format(rows []Sale) (string, error) {
 	return buffer.String(), nil
 }
 
+// 可变步骤的 HTML 实现（Go 组合）。
 type HTMLFormat struct{}
 
 func (HTMLFormat) Extension() string { return ".html" }
@@ -2289,6 +2450,7 @@ func (HTMLFormat) Format(rows []Sale) (string, error) {
 }
 
 // 固定步骤放在普通方法中，变化步骤委托给接口；Go 不需要模拟继承。
+// 固定流程的承载者：Export 保留 TemplateMethod 的流程骨架，Go 使用组合。
 type ReportExporter struct {
 	repository SalesRepository
 	store      *ArtifactStore
@@ -2308,6 +2470,7 @@ func (e ReportExporter) Export(r ReportRequest) (ExportResult, error) {
 	e.store.Save(path, content)
 	return ExportResult{path, len(rows), content}, nil
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	repo := SalesRepository{[]Sale{{"2026-09-01", "BOOK", 2, 8000}, {"2026-09-02", "CUP", 1, 3000}}}
 	store := &ArtifactStore{map[string]string{}}
@@ -2347,11 +2510,12 @@ daily.html rows=1
 
 销售编辑一份企业报价：修改标题、把两本书改成三本，并追加 2000 分优惠。用户点一次撤销，希望整份报价回到修改前，包括标题、数量和优惠，而不只是把某个提示文本改回去。历史管理器不应理解报价单每个字段如何存储。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| QuoteDraft / QuoteLine | 原发器保存标题、报价行和优惠；报价行可计算小计 |
-| QuoteDraft.Snapshot | 私有保存所属草稿、标题、报价行列表和优惠金额 |
-| History | 只管理快照栈，通过 checkpoint() 保存，通过 undo() 交还快照 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `QuoteDraft` | Originator（原发器） | 保存并恢复标题、报价行和优惠 |
+| `QuoteLine` | 业务数据 | 保存报价明细并计算小计 |
+| `QuoteDraft.Snapshot（Go：snapshot）` | Memento（备忘录） | 私有保存所属草稿、标题、报价行列表和优惠金额 |
+| `History` | Caretaker（管理者） | 只管理快照栈，通过 checkpoint() 保存，通过 undo() 交还快照 |
 
 #### 一次请求怎样走
 
@@ -2377,6 +2541,7 @@ record QuoteLine(String sku, int quantity, int unitPriceCents) {
     }
     int subtotal() { return quantity * unitPriceCents; }
 }
+// Originator（原发器）。
 class QuoteDraft {
     private String title;
     private List<QuoteLine> lines = new ArrayList<>();
@@ -2399,6 +2564,7 @@ class QuoteDraft {
         if (s.owner != this) throw new IllegalArgumentException("快照属于另一份报价");
         title = s.title; lines = new ArrayList<>(s.lines); discountCents = s.discountCents;
     }
+    // Memento（备忘录）。
     static final class Snapshot {
         private final QuoteDraft owner;
         private final String title;
@@ -2409,6 +2575,7 @@ class QuoteDraft {
         }
     }
 }
+// Caretaker（管理者）。
 class History {
     private final QuoteDraft draft;
     private final Deque<QuoteDraft.Snapshot> snapshots = new ArrayDeque<>();
@@ -2419,6 +2586,7 @@ class History {
         draft.restore(snapshots.peek()); snapshots.pop(); return true;
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         QuoteDraft draft = new QuoteDraft("企业采购");
@@ -2448,6 +2616,7 @@ type QuoteLine struct {
 
 func (l QuoteLine) Subtotal() int { return l.Quantity * l.UnitPriceCents }
 
+// Originator（原发器）。
 type QuoteDraft struct {
 	title         string
 	lines         []QuoteLine
@@ -2490,6 +2659,7 @@ func (d *QuoteDraft) Summary() string {
 	return fmt.Sprintf("%s qty=%d total=%d", d.title, d.lines[0].Quantity, d.Total())
 }
 
+// Memento（备忘录）。
 type snapshot struct {
 	owner         *QuoteDraft
 	title         string
@@ -2510,6 +2680,7 @@ func (d *QuoteDraft) Restore(s snapshot) error {
 	return nil
 }
 
+// Caretaker（管理者）。
 type History struct {
 	draft     *QuoteDraft
 	snapshots []snapshot
@@ -2527,6 +2698,7 @@ func (h *History) Undo() (bool, error) {
 	h.snapshots = h.snapshots[:n-1]
 	return true, nil
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	d := &QuoteDraft{title: "企业采购"}
 	if err := d.Add(QuoteLine{"BOOK", 2, 5000}); err != nil {
@@ -2578,12 +2750,16 @@ func main() {
 
 对账程序需要累计所有已付款订单的金额。数据源分页返回订单，过滤之后可能出现空页，但空页后仍然有数据。若每个对账调用者都处理分页、缓冲区、耗尽判断和失败，重复逻辑既多又容易提前结束。这里让调用者只取下一条订单。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| OrderSource / MemoryOrderSource | 分页数据源契约和内存实现，记录请求次数 |
-| OrderRow / Page | 订单业务字段、当前页内容和下一页游标，-1 表示结束 |
-| PaidOrders | Java 实现 Iterable，每次 iterator() 创建独立遍历状态 |
-| PagedIterator | 持有数据源、缓冲区、索引和游标，按需请求下一页 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `OrderSource / MemoryOrderSource` | 数据源接口与辅助实现 | 提供分页读取，内存实现记录请求次数 |
+| `OrderRow / Page` | 业务数据 | 订单字段、当前页内容和下一页游标，-1 表示结束 |
+| `Java Iterable<OrderRow>` | Aggregate（聚合接口） | 约定创建迭代器的入口 |
+| `PaidOrders` | ConcreteAggregate（具体聚合） | 每次创建独立遍历状态；Java 实现 Iterable，Go 直接提供构造迭代器的方法 |
+| `Java Iterator<OrderRow> / Go OrderIterator` | Iterator（迭代器接口） | 约定遍历操作；Go 通过返回值同时表达数据、结束与错误 |
+| `PagedIterator` | ConcreteIterator（具体迭代器） | 持有数据源、缓冲区、索引和游标，按需请求下一页 |
+
+Java 直接使用标准库的 Aggregate / Iterator 契约，因此代码没有重复声明自定义 Aggregate 接口。Go 的 OrderIterator 对应迭代器接口，PaidOrders 直接提供遍历入口，没有额外声明聚合接口。
 
 #### 一次请求怎样走
 
@@ -2622,6 +2798,7 @@ class MemoryOrderSource implements OrderSource {
     }
     int calls() { return calls; }
 }
+// ConcreteAggregate（具体聚合）：负责创建独立的迭代器。
 class PaidOrders implements Iterable<OrderRow> {
     private final OrderSource source;
     private final int pageSize;
@@ -2631,6 +2808,7 @@ class PaidOrders implements Iterable<OrderRow> {
     }
     public Iterator<OrderRow> iterator() { return new PagedIterator(source, pageSize); }
 }
+// ConcreteIterator（具体迭代器）。
 class PagedIterator implements Iterator<OrderRow> {
     private final OrderSource source;
     private final int pageSize;
@@ -2653,6 +2831,7 @@ class PagedIterator implements Iterator<OrderRow> {
         return buffer.get(index++);
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         MemoryOrderSource source = new MemoryOrderSource(List.of(
@@ -2718,9 +2897,11 @@ func (s *MemoryOrderSource) Fetch(cursor, size int) (Page, error) {
 	return Page{paid, next}, nil
 }
 
+// Iterator（迭代器接口）。
 type OrderIterator interface {
 	Next() (OrderRow, bool, error)
 }
+// ConcreteAggregate（具体聚合）：负责创建独立的迭代器。
 type PaidOrders struct {
 	source   OrderSource
 	pageSize int
@@ -2733,6 +2914,7 @@ func (p PaidOrders) Iterator() (OrderIterator, error) {
 	return &PagedIterator{source: p.source, pageSize: p.pageSize}, nil
 }
 
+// ConcreteIterator（具体迭代器）。
 type PagedIterator struct {
 	source        OrderSource
 	pageSize      int
@@ -2762,6 +2944,7 @@ func (i *PagedIterator) Next() (OrderRow, bool, error) {
 	i.index++
 	return row, true, nil
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	source := &MemoryOrderSource{rows: []OrderRow{{"O-1", false, 1000}, {"O-2", false, 2000},
 		{"O-3", true, 3000}, {"O-4", true, 4000}, {"O-5", true, 5000}}}
@@ -2837,13 +3020,14 @@ Java 的耗尽契约可参见 [Iterator.next() 官方说明](https://docs.oracle
 
 购物车页面既有加购按钮，也有快捷操作和优惠券输入框。不同操作改变的状态不同，但都希望进入统一的历史列表，按最近一次操作撤销。按钮如果直接修改 map，撤销逻辑就会散落在各个组件里。命令对象把接收者、参数和恢复信息放在一起。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| Cart | 接收者，校验 SKU、设置数量、应用优惠券并计算总价 |
-| Command | 统一 execute() / undo() 契约 |
-| AddItemCommand | 保存 SKU、增加数量及执行前的数量 |
-| ApplyCouponCommand | 保存新优惠金额及执行前的优惠 |
-| CommandBus | 调用者，只管理命令执行与历史栈，成功后才入栈 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `Cart` | Receiver（接收者） | 校验 SKU、设置数量、应用优惠券并计算总价 |
+| `Command` | Command（命令接口） | 统一 execute() / undo() 契约 |
+| `AddItemCommand` | ConcreteCommand（具体命令） | 保存 SKU、增加数量及执行前的数量 |
+| `ApplyCouponCommand` | ConcreteCommand（具体命令） | 保存新优惠金额及执行前的优惠 |
+| `CommandBus` | Invoker（调用者） | 只管理命令执行与历史栈，成功后才入栈 |
+| `main` | Client（客户端） | 创建接收者和命令，将命令交给调用者 |
 
 #### 一次请求怎样走
 
@@ -2863,6 +3047,7 @@ Java 的耗尽契约可参见 [Iterator.next() 官方说明](https://docs.oracle
 {{< tab "Java" >}}
 ```java
 import java.util.*;
+// Receiver（接收者）。
 class Cart {
     private final Map<String, Integer> prices = Map.of("BOOK", 5000, "CUP", 3000);
     private final Map<String, Integer> quantities = new HashMap<>();
@@ -2882,7 +3067,9 @@ class Cart {
         return Math.max(0, goods - couponCents);
     }
 }
+// Command（命令接口）。
 interface Command { void execute(); void undo(); }
+// ConcreteCommand（具体命令）。
 class AddItemCommand implements Command {
     private final Cart cart;
     private final String sku;
@@ -2900,6 +3087,7 @@ class AddItemCommand implements Command {
         cart.setQuantity(sku, previous); active = false;
     }
 }
+// ConcreteCommand（具体命令）。
 class ApplyCouponCommand implements Command {
     private final Cart cart;
     private final int cents;
@@ -2915,6 +3103,7 @@ class ApplyCouponCommand implements Command {
         cart.applyCoupon(previous); active = false;
     }
 }
+// Invoker（调用者）。
 class CommandBus {
     private final Deque<Command> history = new ArrayDeque<>();
     void run(Command command) { command.execute(); history.push(command); }
@@ -2924,6 +3113,7 @@ class CommandBus {
     }
     int historySize() { return history.size(); }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         Cart cart = new Cart(); CommandBus bus = new CommandBus();
@@ -2947,6 +3137,7 @@ package main
 
 import "fmt"
 
+// Receiver（接收者）。
 type Cart struct {
 	prices, quantities map[string]int
 	couponCents        int
@@ -2983,10 +3174,12 @@ func (c *Cart) Total() int {
 	return total
 }
 
+// Command（命令接口）。
 type Command interface {
 	Execute() error
 	Undo() error
 }
+// ConcreteCommand（具体命令）。
 type AddItemCommand struct {
 	cart               *Cart
 	sku                string
@@ -3017,6 +3210,7 @@ func (c *AddItemCommand) Undo() error {
 	return nil
 }
 
+// ConcreteCommand（具体命令）。
 type ApplyCouponCommand struct {
 	cart            *Cart
 	cents, previous int
@@ -3046,6 +3240,7 @@ func (c *ApplyCouponCommand) Undo() error {
 	return nil
 }
 
+// Invoker（调用者）。
 type CommandBus struct{ history []Command }
 
 func (b *CommandBus) Run(c Command) error {
@@ -3066,6 +3261,7 @@ func (b *CommandBus) UndoLast() (bool, error) {
 	b.history = b.history[:n-1]
 	return true, nil
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	cart := &Cart{prices: map[string]int{"BOOK": 5000, "CUP": 3000}, quantities: map[string]int{}}
 	bus := &CommandBus{}
@@ -3113,13 +3309,16 @@ func main() {
 
 监控系统捕获 checkout 服务 errorRate=12、阈值为 5 的告警。普通通知发送摘要，紧急通知还必须包含处置手册，并要求更高优先级；邮件需要邮箱和主题正文，短信需要手机号且有长度限制。如果用 NormalEmail、UrgentEmail、NormalSms、UrgentSms 为每个组合建类，新增级别或渠道都会复制逻辑。
 
-| 类 / 接口 | 具体职责 |
-|---|---|
-| Alert / Recipient | 输入包含服务、指标、实测值、阈值、处置手册和联系方式 |
-| Notification | Java 抽象类持有 Sender，代表通知业务维度 |
-| NormalNotification / UrgentNotification | 决定内容、优先级和处置手册校验 |
-| Sender / EmailSender / SmsSender | 渠道维度，检查地址、转换载荷并写入本地发送队列 |
-| Delivery / DeliveryReceipt | 连接两个维度的载荷契约与发送回执 |
+| 类 / 接口 | 模式角色 | 具体职责 |
+|---|---|---|
+| `Alert / Recipient` | 业务数据 | 输入包含服务、指标、实测值、阈值、处置手册和联系方式 |
+| `Notification` | Abstraction（抽象部分） | Java 抽象类持有 Sender，代表通知业务维度 |
+| `NormalNotification / UrgentNotification` | RefinedAbstraction（扩展抽象） | 决定内容、优先级和处置手册校验 |
+| `Sender` | Implementor（实现部分接口） | 定义通知业务调用渠道的发送契约 |
+| `EmailSender / SmsSender` | ConcreteImplementor（具体实现） | 检查地址、转换载荷并写入本地发送队列 |
+| `Delivery / DeliveryReceipt` | 业务数据 | 连接两个维度的载荷契约与发送回执 |
+
+Abstraction / Implementor 指两个协作的变化维度。Java 的 Notification 持有 Sender，通过组合调用它，并不实现 Sender 接口；Go 用 Notification 接口及其具体结构体表达通知维度，由具体结构体持有 Sender。
 
 #### 一次请求怎样走
 
@@ -3145,7 +3344,9 @@ record Alert(String service, String metric, int actual, int threshold, String ru
 record Recipient(String email, String phone) {}
 record Delivery(Recipient recipient, String subject, String body, int priority) {}
 record DeliveryReceipt(String channel, String address, int priority) {}
+// Implementor（实现部分接口）。
 interface Sender { DeliveryReceipt send(Delivery delivery); }
+// ConcreteImplementor（具体实现）。
 class EmailSender implements Sender {
     private final List<Delivery> outbox = new ArrayList<>();
     public DeliveryReceipt send(Delivery d) {
@@ -3155,6 +3356,7 @@ class EmailSender implements Sender {
     }
     int queued() { return outbox.size(); }
 }
+// ConcreteImplementor（具体实现）。
 class SmsSender implements Sender {
     private final List<String> outbox = new ArrayList<>();
     public DeliveryReceipt send(Delivery d) {
@@ -3167,17 +3369,20 @@ class SmsSender implements Sender {
     }
     int queued() { return outbox.size(); }
 }
+// Abstraction（抽象部分）。
 abstract class Notification {
     protected final Sender sender;
     Notification(Sender sender) { this.sender = Objects.requireNonNull(sender); }
     abstract DeliveryReceipt notify(Alert alert, Recipient recipient);
 }
+// RefinedAbstraction（扩展抽象）。
 class NormalNotification extends Notification {
     NormalNotification(Sender sender) { super(sender); }
     DeliveryReceipt notify(Alert a, Recipient r) {
         return sender.send(new Delivery(r, "告警摘要", a.detail(), 1));
     }
 }
+// RefinedAbstraction（扩展抽象）。
 class UrgentNotification extends Notification {
     UrgentNotification(Sender sender) { super(sender); }
     DeliveryReceipt notify(Alert a, Recipient r) {
@@ -3185,6 +3390,7 @@ class UrgentNotification extends Notification {
         return sender.send(new Delivery(r, "立即处理", a.detail() + " runbook=" + a.runbook(), 9));
     }
 }
+// Client（客户端）：组装参与者并发起调用。
 public class Main {
     public static void main(String[] args) {
         Alert alert = new Alert("checkout", "errorRate", 12, 5, "ops/errors");
@@ -3229,9 +3435,11 @@ type DeliveryReceipt struct {
 	Channel, Address string
 	Priority         int
 }
+// Implementor（实现部分接口）。
 type Sender interface {
 	Send(Delivery) (DeliveryReceipt, error)
 }
+// ConcreteImplementor（具体实现）。
 type EmailSender struct{ outbox []Delivery }
 
 func (s *EmailSender) Send(d Delivery) (DeliveryReceipt, error) {
@@ -3242,6 +3450,7 @@ func (s *EmailSender) Send(d Delivery) (DeliveryReceipt, error) {
 	return DeliveryReceipt{"email", d.Recipient.Email, d.Priority}, nil
 }
 
+// ConcreteImplementor（具体实现）。
 type SmsSender struct{ outbox []string }
 
 func (s *SmsSender) Send(d Delivery) (DeliveryReceipt, error) {
@@ -3256,15 +3465,18 @@ func (s *SmsSender) Send(d Delivery) (DeliveryReceipt, error) {
 	return DeliveryReceipt{"sms", d.Recipient.Phone, d.Priority}, nil
 }
 
+// Abstraction（抽象部分）。
 type Notification interface {
 	Notify(Alert, Recipient) (DeliveryReceipt, error)
 }
+// RefinedAbstraction（扩展抽象）。
 type NormalNotification struct{ sender Sender }
 
 func (n NormalNotification) Notify(a Alert, r Recipient) (DeliveryReceipt, error) {
 	return n.sender.Send(Delivery{r, "告警摘要", a.Detail(), 1})
 }
 
+// RefinedAbstraction（扩展抽象）。
 type UrgentNotification struct{ sender Sender }
 
 func (n UrgentNotification) Notify(a Alert, r Recipient) (DeliveryReceipt, error) {
@@ -3273,6 +3485,7 @@ func (n UrgentNotification) Notify(a Alert, r Recipient) (DeliveryReceipt, error
 	}
 	return n.sender.Send(Delivery{r, "立即处理", a.Detail() + " runbook=" + a.Runbook, 9})
 }
+// Client（客户端）：组装参与者并发起调用。
 func main() {
 	alert := Alert{"checkout", "errorRate", 12, 5, "ops/errors"}
 	recipient := Recipient{"ops@example.com", "+8613800000000"}
